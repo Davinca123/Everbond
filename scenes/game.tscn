@@ -48,6 +48,7 @@ script = ExtResource("4_gee14")
 
 [node name="Sprite2D" type="Sprite2D" parent="Companion" unique_id=2046099303]
 material = SubResource("ShaderMaterial_0tnpc")
+position = Vector2(179.99998, 261.99997)
 scale = Vector2(0.2, 0.2)
 texture = ExtResource("4_u5sy4")
 region_enabled = true
