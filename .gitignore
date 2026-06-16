@@ -1,0 +1,10 @@
+
+# Godot-specifikus ideiglenes gyorsítótárak és importfájlok
+.godot/
+*.translation
+/android/
+
+# Android exportálás során keletkező ideiglenes fájlok és kész telepítők
+*.apk
+*.ap_
+*.aab
