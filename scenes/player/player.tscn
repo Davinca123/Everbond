@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://dxesken2bk8s"]
+
+[ext_resource type="Script" uid="uid://yhq0hdmxc1qp" path="res://scenes/player/player.gd" id="1_gmlin"]
+[ext_resource type="Shader" uid="uid://br6gyyt3h0vo7" path="res://scenes/game.gdshader" id="2_lvxji"]
+[ext_resource type="Texture2D" uid="uid://c5uhmulaom413" path="res://scenes/player/character.png" id="3_p47bc"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_p57ef"]
+shader = ExtResource("2_lvxji")
+
+[node name="Player" type="CharacterBody2D" unique_id=476416376]
+script = ExtResource("1_gmlin")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=246524643]
+material = SubResource("ShaderMaterial_p57ef")
+position = Vector2(333, 274)
+scale = Vector2(0.37403598, 0.3693182)
+texture = ExtResource("3_p47bc")
+region_enabled = true
+region_rect = Rect2(316.628, 1183.6975, 389.66315, 528.69775)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=753372928]

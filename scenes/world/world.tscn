@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://c5lc3kwm41j6l"]
+
+[ext_resource type="Script" uid="uid://dg7e2nan2j8nd" path="res://scenes/ui/game.gd" id="1_0tnpc"]
+[ext_resource type="PackedScene" uid="uid://dxesken2bk8s" path="res://scenes/player/player.tscn" id="2_u5sy4"]
+[ext_resource type="PackedScene" uid="uid://gyyw12df1337" path="res://scenes/companion/companion.tscn" id="3_gee14"]
+[ext_resource type="PackedScene" uid="uid://dwudlhw4kt30x" path="res://scenes/ui/screen_ui.tscn" id="4_6m72w"]
+
+[node name="World" type="Node2D" unique_id=1611066378]
+script = ExtResource("1_0tnpc")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=2056627150]
+offset_left = -204.0
+offset_top = -686.0
+offset_right = 2324.0
+offset_bottom = 1314.0
+mouse_filter = 2
+color = Color(0.5382061, 0.7502522, 0.5451619, 1)
+
+[node name="Player" parent="." unique_id=476416376 instance=ExtResource("2_u5sy4")]
+
+[node name="Companion" parent="." unique_id=1321202551 instance=ExtResource("3_gee14")]
+
+[node name="ScreenUI" parent="." unique_id=17775954 instance=ExtResource("4_6m72w")]
