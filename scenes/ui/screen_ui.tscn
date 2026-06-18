@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://dwudlhw4kt30x"]
+
+[ext_resource type="Texture2D" uid="uid://d2ktuqndykj3b" path="res://scenes/ui/attack-btn.png" id="1_yvstt"]
+[ext_resource type="Shader" uid="uid://br6gyyt3h0vo7" path="res://scenes/game.gdshader" id="2_m08gu"]
+[ext_resource type="Script" uid="uid://l1bj4yg1180w" path="res://scenes/ui/joystick.gd" id="2_p7mho"]
+[ext_resource type="Texture2D" uid="uid://blus2yrbpw3cm" path="res://scenes/ui/Joystick-base.jpg" id="3_p7mho"]
+[ext_resource type="Texture2D" uid="uid://lqn40wgi2per" path="res://scenes/ui/Joystick-tip.png" id="4_m2ohg"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gee14"]
+shader = ExtResource("2_m08gu")
+
+[node name="ScreenUI" type="CanvasLayer" unique_id=17775954]
+
+[node name="AttackButton" type="TouchScreenButton" parent="." unique_id=1785424267]
+position = Vector2(1887, 701)
+texture_normal = ExtResource("1_yvstt")
+texture_pressed = ExtResource("1_yvstt")
+action = "ui_attack"
+
+[node name="JoystickVisual" type="Control" parent="." unique_id=843325025]
+visible = false
+modulate = Color(1, 1, 1, 0.5411765)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("2_p7mho")
+
+[node name="JoystickBase" type="Sprite2D" parent="JoystickVisual" unique_id=1976427094]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_gee14")
+position = Vector2(263, 748)
+scale = Vector2(0.55, 0.55)
+texture = ExtResource("3_p7mho")
+
+[node name="JoystickTip" type="Sprite2D" parent="JoystickVisual" unique_id=868022775]
+unique_name_in_owner = true
+position = Vector2(255, 735)
+scale = Vector2(0.12, 0.12)
+texture = ExtResource("4_m2ohg")

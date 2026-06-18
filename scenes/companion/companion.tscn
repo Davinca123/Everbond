@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://gyyw12df1337"]
+
+[ext_resource type="Script" uid="uid://25q17y2ps7cg" path="res://scenes/companion/companion.gd" id="1_10l3g"]
+[ext_resource type="Shader" uid="uid://br6gyyt3h0vo7" path="res://scenes/game.gdshader" id="2_7fnbs"]
+[ext_resource type="Texture2D" uid="uid://juj0tk4b86t0" path="res://scenes/companion/animal.png" id="3_h1a0s"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0tnpc"]
+shader = ExtResource("2_7fnbs")
+
+[node name="Companion" type="CharacterBody2D" unique_id=1321202551]
+script = ExtResource("1_10l3g")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=2126555834]
+material = SubResource("ShaderMaterial_0tnpc")
+position = Vector2(179.99998, 261.99997)
+scale = Vector2(0.2, 0.2)
+texture = ExtResource("3_h1a0s")
+region_enabled = true
+region_rect = Rect2(335.6311, 916.006, 525.423, 541.7666)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1925061364]
