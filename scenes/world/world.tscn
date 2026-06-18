@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://dxesken2bk8s" path="res://scenes/player/player.tscn" id="2_u5sy4"]
 [ext_resource type="PackedScene" uid="uid://gyyw12df1337" path="res://scenes/companion/companion.tscn" id="3_gee14"]
 [ext_resource type="PackedScene" uid="uid://dwudlhw4kt30x" path="res://scenes/ui/screen_ui.tscn" id="4_6m72w"]
+[ext_resource type="PackedScene" uid="uid://4lqc8dw283u7" path="res://scenes/npc/npc.tscn" id="5_v5dby"]
 
 [node name="World" type="Node2D" unique_id=1611066378]
 script = ExtResource("1_0tnpc")
@@ -21,3 +22,7 @@ color = Color(0.5382061, 0.7502522, 0.5451619, 1)
 [node name="Companion" parent="." unique_id=1321202551 instance=ExtResource("3_gee14")]
 
 [node name="ScreenUI" parent="." unique_id=17775954 instance=ExtResource("4_6m72w")]
+
+[node name="CharacterBody2D" type="CharacterBody2D" parent="." unique_id=1841051541]
+
+[node name="Npc" parent="." unique_id=82338993 instance=ExtResource("5_v5dby")]
