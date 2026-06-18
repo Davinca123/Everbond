@@ -15,6 +15,11 @@ run/main_scene="uid://c5lc3kwm41j6l"
 config/features=PackedStringArray("4.6", "Mobile")
 config/icon="res://icon.svg"
 
+[autoload]
+
+SignalBus="*uid://cuxy8ctsom6mi"
+PlayerData="*uid://t0a1ep6vs0kc"
+
 [input]
 
 ui_attack={
