@@ -1,11 +1,19 @@
 [gd_scene format=3 uid="uid://4lqc8dw283u7"]
 
+[ext_resource type="Script" uid="uid://dxuakiuasod1c" path="res://scenes/npc/npc.gd" id="1_pcwmf"]
 [ext_resource type="Texture2D" uid="uid://bi7t4p8mb5rsw" path="res://icon.svg" id="1_sspvn"]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_pcwmf"]
+radius = 100.0
+
 [node name="Npc" type="CharacterBody2D" unique_id=82338993]
+position = Vector2(1024, 550)
+script = ExtResource("1_pcwmf")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=620422056]
-position = Vector2(1042, 509)
 texture = ExtResource("1_sspvn")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=271986414]
+[node name="InteractionArea" type="Area2D" parent="." unique_id=1925118786]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea" unique_id=605020225]
+shape = SubResource("CircleShape2D_pcwmf")

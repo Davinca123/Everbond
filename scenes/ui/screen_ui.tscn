@@ -1,21 +1,59 @@
 [gd_scene format=3 uid="uid://dwudlhw4kt30x"]
 
+[ext_resource type="Script" uid="uid://bs015hwiv6aux" path="res://scenes/ui/screen_ui.gd" id="1_m2ohg"]
 [ext_resource type="Texture2D" uid="uid://d2ktuqndykj3b" path="res://scenes/ui/attack-btn.png" id="1_yvstt"]
 [ext_resource type="Shader" uid="uid://br6gyyt3h0vo7" path="res://scenes/game.gdshader" id="2_m08gu"]
 [ext_resource type="Script" uid="uid://l1bj4yg1180w" path="res://scenes/ui/joystick.gd" id="2_p7mho"]
 [ext_resource type="Texture2D" uid="uid://blus2yrbpw3cm" path="res://scenes/ui/Joystick-base.jpg" id="3_p7mho"]
+[ext_resource type="Script" uid="uid://b8p2g5fp5epwc" path="res://scenes/ui/interaction_button.gd" id="4_ao5ua"]
 [ext_resource type="Texture2D" uid="uid://lqn40wgi2per" path="res://scenes/ui/Joystick-tip.png" id="4_m2ohg"]
+[ext_resource type="Script" uid="uid://bpllg8tk4axmt" path="res://scenes/ui/dialogue_box.gd" id="6_p7mho"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_ao5ua"]
+font_size = 100
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_gee14"]
 shader = ExtResource("2_m08gu")
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ao5ua"]
+bg_color = Color(0.41450483, 0.31326887, 0.14075226, 0.81960785)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+border_color = Color(0.25845435, 0.18363103, 0.03678744, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="LabelSettings" id="LabelSettings_p7mho"]
+font_size = 48
+
+[sub_resource type="Theme" id="Theme_ao5ua"]
+
 [node name="ScreenUI" type="CanvasLayer" unique_id=17775954]
+script = ExtResource("1_m2ohg")
 
 [node name="AttackButton" type="TouchScreenButton" parent="." unique_id=1785424267]
 position = Vector2(1887, 701)
 texture_normal = ExtResource("1_yvstt")
 texture_pressed = ExtResource("1_yvstt")
 action = "ui_attack"
+
+[node name="InteractionButton" type="TouchScreenButton" parent="." unique_id=1502868133]
+unique_name_in_owner = true
+visible = false
+position = Vector2(1911, 398)
+scale = Vector2(0.2, 0.2)
+texture_normal = ExtResource("4_m2ohg")
+texture_pressed = ExtResource("4_m2ohg")
+script = ExtResource("4_ao5ua")
+
+[node name="Label" type="Label" parent="InteractionButton" unique_id=1104557432]
+offset_right = 40.0
+offset_bottom = 23.0
+label_settings = SubResource("LabelSettings_ao5ua")
 
 [node name="JoystickVisual" type="Control" parent="." unique_id=843325025]
 visible = false
@@ -38,3 +76,54 @@ unique_name_in_owner = true
 position = Vector2(255, 735)
 scale = Vector2(0.12, 0.12)
 texture = ExtResource("4_m2ohg")
+
+[node name="DialogueBox" type="Control" parent="." unique_id=2021558575]
+layout_mode = 3
+anchors_preset = 0
+offset_top = 654.0
+offset_right = 2229.0
+offset_bottom = 1030.0
+mouse_filter = 2
+script = ExtResource("6_p7mho")
+
+[node name="Panel" type="Panel" parent="DialogueBox" unique_id=1314253814]
+layout_mode = 0
+offset_right = 2205.0
+offset_bottom = 366.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ao5ua")
+
+[node name="MarginContainer" type="MarginContainer" parent="DialogueBox/Panel" unique_id=2006107440]
+layout_mode = 0
+offset_right = 2198.0
+offset_bottom = 360.0
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogueBox/Panel/MarginContainer" unique_id=924439220]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="DialogueBox/Panel/MarginContainer/VBoxContainer" unique_id=1188028779]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 64
+label_settings = SubResource("LabelSettings_p7mho")
+
+[node name="TextLabel" type="RichTextLabel" parent="DialogueBox/Panel/MarginContainer/VBoxContainer" unique_id=8031718]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme = SubResource("Theme_ao5ua")
+theme_override_font_sizes/normal_font_size = 32
+bbcode_enabled = true
+fit_content = true
+scroll_following = true
+
+[node name="Timer" type="Timer" parent="DialogueBox" unique_id=1647971175]
+wait_time = 0.030000000000000002
+one_shot = true
+
+[connection signal="pressed" from="InteractionButton" to="." method="_on_interaction_button_pressed"]
+[connection signal="timeout" from="DialogueBox/Timer" to="DialogueBox" method="_on_timer_timeout"]

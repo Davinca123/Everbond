@@ -8,11 +8,11 @@
 shader = ExtResource("2_7fnbs")
 
 [node name="Companion" type="CharacterBody2D" unique_id=1321202551]
+position = Vector2(180, 260)
 script = ExtResource("1_10l3g")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=2126555834]
 material = SubResource("ShaderMaterial_0tnpc")
-position = Vector2(179.99998, 261.99997)
 scale = Vector2(0.2, 0.2)
 texture = ExtResource("3_h1a0s")
 region_enabled = true

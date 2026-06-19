@@ -7,15 +7,22 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_p57ef"]
 shader = ExtResource("2_lvxji")
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_gmlin"]
+radius = 30.7
+height = 127.56
+
 [node name="Player" type="CharacterBody2D" unique_id=476416376]
+position = Vector2(300, 270)
 script = ExtResource("1_gmlin")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=246524643]
 material = SubResource("ShaderMaterial_p57ef")
-position = Vector2(333, 274)
 scale = Vector2(0.37403598, 0.3693182)
 texture = ExtResource("3_p47bc")
 region_enabled = true
 region_rect = Rect2(316.628, 1183.6975, 389.66315, 528.69775)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=753372928]
+position = Vector2(4, 75)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_gmlin")

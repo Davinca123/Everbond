@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Everbond"
 run/main_scene="uid://c5lc3kwm41j6l"
-config/features=PackedStringArray("4.6", "Mobile")
+config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
