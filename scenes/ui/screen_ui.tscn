@@ -36,21 +36,32 @@ font_size = 48
 script = ExtResource("1_m2ohg")
 
 [node name="AttackButton" type="TouchScreenButton" parent="." unique_id=1785424267]
-position = Vector2(1887, 701)
+position = Vector2(2165, 849)
 texture_normal = ExtResource("1_yvstt")
 texture_pressed = ExtResource("1_yvstt")
 action = "ui_attack"
 
-[node name="InteractionButton" type="TouchScreenButton" parent="." unique_id=1502868133]
+[node name="InteractionButtonAnchor" type="Control" parent="." unique_id=1474784981]
+layout_mode = 3
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -40.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="InteractionButton" type="TouchScreenButton" parent="InteractionButtonAnchor" unique_id=1502868133]
 unique_name_in_owner = true
-visible = false
-position = Vector2(1911, 398)
+position = Vector2(-247, -601.00006)
 scale = Vector2(0.2, 0.2)
 texture_normal = ExtResource("4_m2ohg")
 texture_pressed = ExtResource("4_m2ohg")
 script = ExtResource("4_ao5ua")
 
-[node name="Label" type="Label" parent="InteractionButton" unique_id=1104557432]
+[node name="Label" type="Label" parent="InteractionButtonAnchor/InteractionButton" unique_id=1104557432]
 offset_right = 40.0
 offset_bottom = 23.0
 label_settings = SubResource("LabelSettings_ao5ua")
@@ -79,24 +90,30 @@ texture = ExtResource("4_m2ohg")
 
 [node name="DialogueBox" type="Control" parent="." unique_id=2021558575]
 layout_mode = 3
-anchors_preset = 0
-offset_top = 654.0
-offset_right = 2229.0
-offset_bottom = 1030.0
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -360.0
+offset_bottom = -360.0
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_vertical = 0
 mouse_filter = 2
 script = ExtResource("6_p7mho")
 
 [node name="Panel" type="Panel" parent="DialogueBox" unique_id=1314253814]
 layout_mode = 0
-offset_right = 2205.0
-offset_bottom = 366.0
+offset_left = 30.0
+offset_right = 2370.0
+offset_bottom = 330.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_ao5ua")
 
 [node name="MarginContainer" type="MarginContainer" parent="DialogueBox/Panel" unique_id=2006107440]
 layout_mode = 0
-offset_right = 2198.0
-offset_bottom = 360.0
+offset_right = 2340.0
+offset_bottom = 330.0
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
@@ -125,5 +142,5 @@ scroll_following = true
 wait_time = 0.030000000000000002
 one_shot = true
 
-[connection signal="pressed" from="InteractionButton" to="." method="_on_interaction_button_pressed"]
+[connection signal="pressed" from="InteractionButtonAnchor/InteractionButton" to="." method="_on_interaction_button_pressed"]
 [connection signal="timeout" from="DialogueBox/Timer" to="DialogueBox" method="_on_timer_timeout"]
