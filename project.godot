@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 SignalBus="*uid://cuxy8ctsom6mi"
 PlayerData="*uid://t0a1ep6vs0kc"
+GameManager="*uid://gyqio55e54d4"
 
 [display]
 

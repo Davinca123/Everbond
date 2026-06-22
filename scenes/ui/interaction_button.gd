@@ -24,6 +24,8 @@ func _on_show_interaction(type: String) -> void:
 			label.text = "Felvesz"
 		"chest":
 			label.text = "Kinyit"
+		"door_enter":
+			label.text = "Belép"
 		_:
 			label.text = "Interakció"
 

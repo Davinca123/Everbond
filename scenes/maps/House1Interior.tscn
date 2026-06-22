@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://c26rmcpxyas7m"]
+
+[ext_resource type="Script" uid="uid://ldr7l887aiqy" path="res://scenes/maps/house_1_interior.gd" id="1_4jjnt"]
+[ext_resource type="PackedScene" uid="uid://brltg8tefhlph" path="res://scenes/objects/door.tscn" id="1_7l1wv"]
+[ext_resource type="PackedScene" uid="uid://dxesken2bk8s" path="res://scenes/player/player.tscn" id="1_mysaq"]
+[ext_resource type="PackedScene" uid="uid://dwudlhw4kt30x" path="res://scenes/ui/screen_ui.tscn" id="2_7l1wv"]
+
+[node name="House1Interior" type="Node2D" unique_id=1321779917]
+script = ExtResource("1_4jjnt")
+
+[node name="Ground_TileMapLayer" type="TileMapLayer" parent="." unique_id=1229902948]
+
+[node name="Doors" type="Node2D" parent="." unique_id=1298723081]
+
+[node name="ExitDoor" parent="Doors" unique_id=1863234116 instance=ExtResource("1_7l1wv")]
+target_scene_path = "uid://c5lc3kwm41j6l"
+
+[node name="Walls_TileMapLayer" type="TileMapLayer" parent="." unique_id=1424282499]
+
+[node name="YSort_Entities" type="Node2D" parent="." unique_id=72282758]
+y_sort_enabled = true
+
+[node name="Player" parent="YSort_Entities" unique_id=476416376 instance=ExtResource("1_mysaq")]
+
+[node name="SpawnPoint" type="Marker2D" parent="YSort_Entities" unique_id=1252692801]
+position = Vector2(605, 191)
+
+[node name="ScreenUI" parent="." unique_id=17775954 instance=ExtResource("2_7l1wv")]
