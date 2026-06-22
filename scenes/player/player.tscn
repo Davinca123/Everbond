@@ -26,3 +26,11 @@ region_rect = Rect2(316.628, 1183.6975, 389.66315, 528.69775)
 position = Vector2(4, 75)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_gmlin")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=171419408]
+limit_left = -10000
+limit_top = -10000
+limit_right = 10000
+limit_bottom = 10000
+limit_smoothed = true
+position_smoothing_enabled = true

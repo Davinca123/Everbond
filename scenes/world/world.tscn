@@ -633,7 +633,4 @@ y_sort_enabled = true
 
 [node name="Roof_TileMapLayer" type="TileMapLayer" parent="." unique_id=788650988]
 
-[node name="Camera2D" type="Camera2D" parent="." unique_id=1196268603]
-anchor_mode = 0
-
 [node name="ScreenUI" parent="." unique_id=17775954 instance=ExtResource("4_6m72w")]
