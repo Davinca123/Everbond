@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://fapgip4ljce6" path="res://assets/Pixel Art Top Down - Basic v1.2.3/Texture/TX Tileset Wall.png" id="3_j2gmx"]
 [ext_resource type="Texture2D" uid="uid://d0ntxmxs3g2sd" path="res://assets/Pixel Art Top Down - Basic v1.2.3/Texture/TX Struct.png" id="4_1yooq"]
 [ext_resource type="PackedScene" uid="uid://dwudlhw4kt30x" path="res://scenes/ui/screen_ui.tscn" id="4_6m72w"]
+[ext_resource type="PackedScene" uid="uid://brltg8tefhlph" path="res://scenes/objects/door.tscn" id="5_gb53w"]
 [ext_resource type="PackedScene" uid="uid://4lqc8dw283u7" path="res://scenes/npc/npc.tscn" id="5_v5dby"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_j2gmx"]
@@ -600,6 +601,12 @@ physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_1yooq")
 sources/1 = SubResource("TileSetAtlasSource_gb53w")
 
+[sub_resource type="TileSetScenesCollectionSource" id="TileSetScenesCollectionSource_5qq27"]
+scenes/1/scene = ExtResource("5_gb53w")
+
+[sub_resource type="TileSet" id="TileSet_g7b7a"]
+sources/1 = SubResource("TileSetScenesCollectionSource_5qq27")
+
 [node name="World" type="Node2D" unique_id=1611066378]
 script = ExtResource("1_0tnpc")
 
@@ -615,6 +622,11 @@ tile_set = SubResource("TileSet_mkds3")
 scale = Vector2(5, 5)
 tile_map_data = PackedByteArray("AAAFAP3/AAABAAEAAAAFAP7/AAABAAIAAAAFAP//AAAGAAYAAAAFAAAAAAAGAAcAAAAGAP3/AAACAAEAAAAGAP//AAACAAMAAAAGAAAAAAACAAQAAAAHAP3/AAADAAEAAAAHAP7/AAADAAIAAAAHAP//AAADAAMAAAAHAAAAAAADAAQAAAAJAAAAAAAMAAMAAAAJAAEAAAAMAAQAAAAKAAAAAAAGAAYAAAAKAAEAAAAGAAcAAAALAAAAAAAJAAEAAAALAAEAAAAJAAIAAAADAP//AQAEAAEAAAADAAAAAQAEAAIAAAAEAP//AQAFAAEAAAAEAAAAAQAFAAIAAAAIAAQAAQAFAAoAAAAIAAUAAQAFAAsAAAAJAAQAAQAGAAoAAAAJAAUAAQAGAAsAAAAKAAQAAQAHAAoAAAAKAAUAAQAHAAsAAAALAAQAAQAIAAoAAAALAAUAAQAIAAsAAAAMAAYAAAACAAYAAAAMAAcAAAACAAcAAAANAAYAAAADAAYAAAANAAcAAAADAAcAAAAOAAYAAAAEAAYAAAAOAAcAAAAEAAcAAAAPAAYAAAAEAAYAAAAPAAcAAAAEAAcAAAALAAYAAAAMAAMAAAALAAcAAAAMAAQAAAD+////AAABAAYAAAD+/wAAAAABAAcAAAD/////AAABAAYAAAD//wAAAAADAAcAAAAAAP//AAACAAYAAAABAP//AAADAAYAAAACAP//AAAEAAYAAAALAAIAAAAJAAMAAAAJAP3/AAAJAAEAAAAJAP7/AAAJAAIAAAAJAP//AAAJAAMAAAALAAMAAQAIAAkAAAAKAAMAAQAHAAkAAAAJAAMAAQAGAAkAAAAIAAMAAQAFAAkAAAABAAAAAAADAAcAAAACAAAAAAAEAAcAAAAAAAAAAAAEAAcAAAADAAEAAQAEAAMAAAAEAAEAAQAFAAMAAAACAAMAAQAMAAAAAAADAAMAAQANAAAAAAADAAQAAQANAAEAAAADAAUAAQANAAIAAAAEAAMAAQAOAAAAAAAEAAQAAQAOAAEAAAAEAAUAAQAOAAIAAAAFAAMAAQAPAAAAAAA=")
 tile_set = SubResource("TileSet_2lyp8")
+
+[node name="Objects_TileMapLayer" type="TileMapLayer" parent="." unique_id=876665083]
+scale = Vector2(5, 5)
+tile_map_data = PackedByteArray("AAACAAgAAQAAAAAAAQA=")
+tile_set = SubResource("TileSet_g7b7a")
 
 [node name="ColorRect" type="Sprite2D" parent="." unique_id=1993824651]
 visible = false

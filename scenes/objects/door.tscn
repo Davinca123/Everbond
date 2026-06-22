@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://brltg8tefhlph"]
+
+[ext_resource type="Script" uid="uid://csnlf4knnf8tk" path="res://scenes/objects/door.gd" id="1_uw3m6"]
+[ext_resource type="Texture2D" uid="uid://cgk0755v22bpp" path="res://assets/Pixel Art Top Down - Basic v1.2.3/Texture/Extra/TX Props with Shadow.png" id="1_yar34"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_uw3m6"]
+size = Vector2(32, 49)
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_xm0wp"]
+radius = 27.0
+height = 76.0
+
+[node name="Node2D" type="StaticBody2D" unique_id=1863234116]
+script = ExtResource("1_uw3m6")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=437628292]
+texture = ExtResource("1_yar34")
+vframes = 2
+region_enabled = true
+region_rect = Rect2(32, 96, 32, 128)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1363454685]
+visible = false
+position = Vector2(0, 0.5)
+shape = SubResource("RectangleShape2D_uw3m6")
+
+[node name="InteractionArea" type="Area2D" parent="." unique_id=830554990]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea" unique_id=1957453873]
+shape = SubResource("CapsuleShape2D_xm0wp")
