@@ -4,12 +4,11 @@ extends StaticBody2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var sprite_2d: Sprite2D = $Sprite2D
 
-const FRAME_CLOSED: int = 0  # A csukott ajtó csempe indexe
-const FRAME_OPEN: int = 1    # A nyitott ajtó csempe indexe
-
 var player_in_range: bool = false
 var is_open: bool = false
 var interaction_type: String = "door_enter"
+var FRAME_CLOSED: int = 0
+var FRAME_OPEN: int = 1
 
 # --- EDITORTÓL FÜGGŐ EGYEDI TULAJDONSÁGOK ---
 @export_group("Teleportáció")
@@ -52,8 +51,8 @@ func _on_interaction_pressed() -> void:
 			is_locked = false # Feloldjuk a zárat véglegesen
 			open_door()
 		else:
-			print("Door: It's locked! You need a key.")
-			# Itt küldhetsz egy üzenetet a DialogueBox-nak, hogy írja ki: "Zárva van..."
+			SignalBus.hide_interaction_button.emit()
+			SignalBus.dialogue_started.emit("", (["Zárva van..."] as Array[String]))
 			return
 	else:
 		open_door()

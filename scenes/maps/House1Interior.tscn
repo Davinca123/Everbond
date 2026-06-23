@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://brltg8tefhlph" path="res://scenes/objects/door.tscn" id="1_7l1wv"]
 [ext_resource type="PackedScene" uid="uid://dxesken2bk8s" path="res://scenes/player/player.tscn" id="1_mysaq"]
 [ext_resource type="PackedScene" uid="uid://dwudlhw4kt30x" path="res://scenes/ui/screen_ui.tscn" id="2_7l1wv"]
+[ext_resource type="Texture2D" uid="uid://bi7t4p8mb5rsw" path="res://icon.svg" id="3_w2buc"]
 
 [node name="House1Interior" type="Node2D" unique_id=1321779917]
 script = ExtResource("1_4jjnt")
@@ -14,6 +15,11 @@ script = ExtResource("1_4jjnt")
 
 [node name="ExitDoor" parent="Doors" unique_id=1863234116 instance=ExtResource("1_7l1wv")]
 target_scene_path = "uid://c5lc3kwm41j6l"
+door_texture = ExtResource("3_w2buc")
+
+[node name="Sprite2D" parent="Doors/ExitDoor" index="0" unique_id=437628292]
+region_rect = Rect2(96, 0, 32, 128)
+region_filter_clip_enabled = true
 
 [node name="Walls_TileMapLayer" type="TileMapLayer" parent="." unique_id=1424282499]
 
@@ -26,3 +32,5 @@ y_sort_enabled = true
 position = Vector2(605, 191)
 
 [node name="ScreenUI" parent="." unique_id=17775954 instance=ExtResource("2_7l1wv")]
+
+[editable path="Doors/ExitDoor"]

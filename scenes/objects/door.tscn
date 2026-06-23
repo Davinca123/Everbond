@@ -26,6 +26,7 @@ position = Vector2(0.5, 32)
 shape = SubResource("RectangleShape2D_uw3m6")
 
 [node name="InteractionArea" type="Area2D" parent="." unique_id=830554990]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea" unique_id=1957453873]
 position = Vector2(0, 45)
