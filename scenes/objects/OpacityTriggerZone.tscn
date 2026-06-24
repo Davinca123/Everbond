@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://bvl4f5kvirnj5"]
+
+[ext_resource type="Script" uid="uid://byvwmwwureah2" path="res://scenes/objects/opacity_trigger_zone.gd" id="1_rhi58"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_tytul"]
+size = Vector2(200, 200)
+
+[node name="OpacityTriggerZone" type="Area2D" unique_id=149705546]
+script = ExtResource("1_rhi58")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2127471705]
+shape = SubResource("RectangleShape2D_tytul")
