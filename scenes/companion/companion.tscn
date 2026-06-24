@@ -7,6 +7,9 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_0tnpc"]
 shader = ExtResource("2_7fnbs")
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_5qq27"]
+radius = 31.4
+
 [sub_resource type="Animation" id="Animation_10l3g"]
 length = 0.001
 tracks/0/type = "value"
@@ -129,7 +132,7 @@ tracks/0/keys = {
 
 [sub_resource type="Animation" id="Animation_fkaci"]
 resource_name = "walk"
-length = 1.5999999999999999
+length = 1.6
 loop_mode = 1
 step = 0.2
 tracks/0/type = "value"
@@ -170,6 +173,8 @@ vframes = 7
 region_rect = Rect2(335.6311, 916.006, 525.423, 541.7666)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1925061364]
+position = Vector2(4, 43)
+shape = SubResource("CircleShape2D_5qq27")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1127006173]
 root_node = NodePath("../Sprite2D")
