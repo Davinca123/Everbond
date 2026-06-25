@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cr2dqwf614ji1"]
+
+[ext_resource type="Script" uid="uid://bd52vqohesr3n" path="res://scenes/objects/OpacityZones/opacity_polygon_zone.gd" id="1_hbs54"]
+
+[node name="OpacityPolygonZone" type="Area2D" unique_id=1926408232]
+script = ExtResource("1_hbs54")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="." unique_id=218426760]
