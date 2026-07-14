@@ -816,9 +816,11 @@ y_sort_enabled = true
 
 [node name="Player" parent="YSort_Entities" unique_id=476416376 instance=ExtResource("2_u5sy4")]
 z_index = 1
+collision_layer = 4
 
 [node name="Companion" parent="YSort_Entities" unique_id=1321202551 instance=ExtResource("3_gee14")]
 z_index = 1
+collision_layer = 8
 
 [node name="Npc" parent="YSort_Entities" unique_id=82338993 instance=ExtResource("5_v5dby")]
 
