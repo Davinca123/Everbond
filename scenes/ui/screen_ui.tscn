@@ -36,6 +36,7 @@ font_size = 48
 script = ExtResource("1_m2ohg")
 
 [node name="AttackButton" type="TouchScreenButton" parent="." unique_id=1785424267]
+visible = false
 position = Vector2(2165, 849)
 texture_normal = ExtResource("1_yvstt")
 texture_pressed = ExtResource("1_yvstt")
@@ -139,7 +140,7 @@ fit_content = true
 scroll_following = true
 
 [node name="Timer" type="Timer" parent="DialogueBox" unique_id=1647971175]
-wait_time = 0.030000000000000002
+wait_time = 0.03
 one_shot = true
 
 [connection signal="pressed" from="InteractionButtonAnchor/InteractionButton" to="." method="_on_interaction_button_pressed"]

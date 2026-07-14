@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://d2vuoocpx6jy8"]
+
+[ext_resource type="Script" uid="uid://dkt3jpcu4cxa8" path="res://scenes/objects/clim_zone.gd" id="1_xx2fx"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_208ws"]
+size = Vector2(50, 20)
+
+[node name="ClimZone" type="Area2D" unique_id=1466427892]
+script = ExtResource("1_xx2fx")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1314557536]
+scale = Vector2(5, 5)
+shape = SubResource("RectangleShape2D_208ws")

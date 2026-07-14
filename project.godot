@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 SignalBus="*uid://cuxy8ctsom6mi"
 PlayerData="*uid://t0a1ep6vs0kc"
+GameManager="*uid://gyqio55e54d4"
 
 [display]
 
@@ -34,6 +35,11 @@ ui_attack={
 "deadzone": 0.2,
 "events": []
 }
+
+[layer_names]
+
+2d_physics/layer_1="Lenti_Szint"
+2d_physics/layer_2="Fenti_Szint"
 
 [physics]
 
