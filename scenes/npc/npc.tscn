@@ -14,6 +14,7 @@ script = ExtResource("1_pcwmf")
 texture = ExtResource("1_sspvn")
 
 [node name="InteractionArea" type="Area2D" parent="." unique_id=1925118786]
+collision_mask = 13
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea" unique_id=605020225]
 shape = SubResource("CircleShape2D_pcwmf")

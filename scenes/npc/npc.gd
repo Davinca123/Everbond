@@ -25,6 +25,7 @@ func _ready() -> void:
 	SignalBus.dialogue_finished.connect(_on_dialogue_finished)
 
 func _on_body_entered(body: Node2D) -> void:
+	print("npc")
 	if body.name == "Player":
 		player_in_range = true
 		if not is_talking:
@@ -42,6 +43,7 @@ func _on_interaction_pressed() -> void:
 	if player_in_range and not is_talking:
 		is_talking = true
 		# Amíg beszélünk, tüntessük el az interakciós gombot
+		
 		SignalBus.hide_interaction_button.emit()
 		# Elindítjuk a párbeszédet
 		SignalBus.dialogue_started.emit(npc_name, dialogue_lines)
