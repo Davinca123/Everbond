@@ -1,13 +1,8 @@
 extends Area2D
 
-@export_group("Cél Rétegek")
-## A híd feletti talaj (ground_upper), ami elhalványul és feljebb ugrik Z-indexben
-@export var ground_upper: TileMapLayer
 #További rétegek, amiket el kell halványítani
 @export var additional_layers: Array[Node2D] = []
-
-@export_group("Beállítások")
-@export var target_opacity: float = 0.3
+@export var target_opacity: float = 0.4
 @export var fade_duration: float = 0.2
 
 # Lokális állapotok a Playernek és a Companionnek
@@ -128,13 +123,7 @@ func update_zone_state() -> void:
 
 
 func set_zone_state(opa: float) -> void:
-	if ground_upper and ground_upper.material is ShaderMaterial:
-		var mat: ShaderMaterial = ground_upper.material
-		mat.set_shader_parameter("point_count", global_points.size())
-		mat.set_shader_parameter("polygon_points", global_points)
-		var tween = create_tween()
-		tween.tween_property(mat, "shader_parameter/opacity", opa, fade_duration)
-	# Set additional layers opacity
+	# Set target layers opacity
 	for layer in additional_layers:
 		if layer and layer.material is ShaderMaterial:
 			var mat: ShaderMaterial = layer.material
