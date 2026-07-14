@@ -5,4 +5,8 @@
 [node name="OpacityPolygonZone" type="Area2D" unique_id=1926408232]
 script = ExtResource("1_hbs54")
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="." unique_id=218426760]
+[node name="ShaderZone" type="CollisionPolygon2D" parent="." unique_id=218426760]
+
+[node name="EnterZone1" type="CollisionPolygon2D" parent="." unique_id=1983808705]
+
+[node name="EnterZone2" type="CollisionPolygon2D" parent="." unique_id=760325951]

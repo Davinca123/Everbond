@@ -12,7 +12,6 @@
 [ext_resource type="PackedScene" uid="uid://4lqc8dw283u7" path="res://scenes/npc/npc.tscn" id="5_v5dby"]
 [ext_resource type="Shader" uid="uid://dvnu7oa6ul780" path="res://scenes/objects/OpacityZones/opacity_polygon.gdshader" id="6_umvgx"]
 [ext_resource type="PackedScene" uid="uid://d2vuoocpx6jy8" path="res://scenes/objects/ClimZone.tscn" id="11_5qq27"]
-[ext_resource type="PackedScene" uid="uid://bvl4f5kvirnj5" path="res://scenes/objects/OpacityZones/OpacitySquareZone.tscn" id="12_dlabj"]
 [ext_resource type="PackedScene" uid="uid://cr2dqwf614ji1" path="res://scenes/objects/OpacityZones/OpacityPolygonZone.tscn" id="13_srmg5"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_mxkvs"]
@@ -1077,9 +1076,6 @@ shader_parameter/polygon_points = PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 
 shader_parameter/point_count = 0
 shader_parameter/opacity = 1.0
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_umvgx"]
-size = Vector2(151, 530)
-
 [node name="World" type="Node2D" unique_id=1611066378]
 script = ExtResource("1_0tnpc")
 
@@ -1187,19 +1183,29 @@ scale = Vector2(0.7, 0.7)
 [node name="TRANSPARENCY_ZONES" type="Node2D" parent="." unique_id=481342190]
 z_index = 1
 
-[node name="OpacityTriggerZone" parent="TRANSPARENCY_ZONES" unique_id=149705546 node_paths=PackedStringArray("target_layers") instance=ExtResource("12_dlabj")]
-position = Vector2(1280, -220)
-target_layers = [NodePath("../../MAP_LAYERS/Layer2/Ground_Upper_TileMapLayer2"), NodePath("../../MAP_LAYERS/Layer2/Bridge_Upper_TileMapLayer2"), NodePath("../../MAP_LAYERS/Roof_TileMapLayer")]
-
-[node name="CollisionShape2D" parent="TRANSPARENCY_ZONES/OpacityTriggerZone" index="0" unique_id=2127471705]
-shape = SubResource("RectangleShape2D_umvgx")
-
-[node name="OpacityPolygonZone" parent="TRANSPARENCY_ZONES" unique_id=1926408232 node_paths=PackedStringArray("target_layers") instance=ExtResource("13_srmg5")]
+[node name="OpacityPolygonZone" parent="TRANSPARENCY_ZONES" unique_id=1926408232 node_paths=PackedStringArray("ground_upper", "additional_layers") instance=ExtResource("13_srmg5")]
 position = Vector2(2080, 1000)
-target_layers = [NodePath("../../MAP_LAYERS/Layer2/Ground_Upper_TileMapLayer2"), NodePath("../../MAP_LAYERS/Layer2/Bridge_Upper_TileMapLayer2")]
+ground_upper = NodePath("../../MAP_LAYERS/Layer2/Ground_Upper_TileMapLayer2")
+additional_layers = [NodePath("../../MAP_LAYERS/Layer2/Bridge_Upper_TileMapLayer2")]
 
-[node name="CollisionPolygon2D" parent="TRANSPARENCY_ZONES/OpacityPolygonZone" index="0" unique_id=218426760]
-polygon = PackedVector2Array(-100, 100, 100, 100, 100, -180, 500, -180, 500, -680, -100, -680)
+[node name="ShaderZone" parent="TRANSPARENCY_ZONES/OpacityPolygonZone" index="0" unique_id=218426760]
+polygon = PackedVector2Array(-100, 240, 100, 240, 100, -180, 500, -180, 500, -680, -100, -680)
 
-[editable path="TRANSPARENCY_ZONES/OpacityTriggerZone"]
+[node name="EnterZone1" parent="TRANSPARENCY_ZONES/OpacityPolygonZone" index="1" unique_id=1983808705]
+polygon = PackedVector2Array(-100, 250, 100, 250, 100, 240, -100, 240)
+
+[node name="OpacityPolygonZone2" parent="TRANSPARENCY_ZONES" unique_id=1076939799 node_paths=PackedStringArray("ground_upper", "additional_layers") instance=ExtResource("13_srmg5")]
+ground_upper = NodePath("../../MAP_LAYERS/Layer2/Ground_Upper_TileMapLayer2")
+additional_layers = [NodePath("../../MAP_LAYERS/Layer2/Bridge_Upper_TileMapLayer2")]
+
+[node name="ShaderZone" parent="TRANSPARENCY_ZONES/OpacityPolygonZone2" index="0" unique_id=218426760]
+polygon = PackedVector2Array(1180, 140, 1380, 140, 1380, -490, 1180, -490)
+
+[node name="EnterZone1" parent="TRANSPARENCY_ZONES/OpacityPolygonZone2" index="1" unique_id=1983808705]
+polygon = PackedVector2Array(1180, 130, 1380, 130, 1380, 140, 1180, 140)
+
+[node name="EnterZone2" parent="TRANSPARENCY_ZONES/OpacityPolygonZone2" index="2" unique_id=760325951]
+polygon = PackedVector2Array(1180, -490, 1380, -490, 1380, -480, 1180, -480)
+
 [editable path="TRANSPARENCY_ZONES/OpacityPolygonZone"]
+[editable path="TRANSPARENCY_ZONES/OpacityPolygonZone2"]
