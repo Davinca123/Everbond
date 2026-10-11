@@ -15,6 +15,7 @@ func _ready() -> void:
 
 func _on_show_interaction(type: String) -> void:
 	show()
+	print("gomb")
 	
 	# Dinamikusan átírja a saját feliratát
 	match type:
