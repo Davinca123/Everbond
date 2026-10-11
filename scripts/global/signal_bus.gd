@@ -12,6 +12,11 @@ signal interaction_pressed
 signal show_interaction_button(interaction_type: String)
 signal hide_interaction_button
 
+# --- NAVIGÁCIÓ ---
+# Akkor küldjük, ha egy akadály eltűnt vagy megjelent (pl. kinyílt egy ajtó),
+# így a navigációs hálót újra kell sütni
+signal navigation_obstacles_changed
+
 # --- KÍSÉRŐ / SZIMBIÓZIS JELZÉSEK ---
 signal companion_obedience_changed(new_level: int)
 signal companion_leveled_up(new_form: String)
