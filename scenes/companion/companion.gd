@@ -5,10 +5,22 @@ extends CharacterBody2D
 @export var min_distance: float = 60.0  # Milyen közel álljon meg a hőstől
 @export var target_margin: float = 5.0  # Pontosság a kattintott célpontnál
 
+# Útkeresés: ilyen gyakran számoljuk újra az utat (mp), és ilyen közel kell érni egy útponthoz
+const REPATH_INTERVAL: float = 0.25
+const WAYPOINT_REACHED_DISTANCE: float = 8.0
+
 # Hivatkozás a főhősre
 @onready var player = $"../Player"
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var sprite_2d: Sprite2D = $Sprite2D
+# A lábak (ütközési alakzat) helye, az útkeresés ehhez igazodik, nem a sprite közepéhez
+@onready var feet: CollisionShape2D = $CollisionShape2D
+@onready var player_feet: CollisionShape2D = player.get_node("CollisionShape2D")
+
+# Az aktuális út a navigációs hálón
+var path: PackedVector2Array = []
+var path_index: int = 0
+var repath_timer: float = 0.0
 
 # Változó, ami másodpercben méri, mióta állunk egy helyben
 var idle_time: float = 0.0
@@ -33,6 +45,7 @@ func _ready() -> void:
 			
 
 func _physics_process(delta):
+	repath_timer -= delta
 	match current_state:
 		State.FOLLOW:
 			handle_follow_logic()
@@ -89,24 +102,22 @@ func _physics_process(delta):
 
 # 1. LOGIKA: A főhős automatikus követése
 func handle_follow_logic():
-	# Kiszámoljuk a távolságot és az irányt a Player felé
-	var direction = player.global_position - global_position
-	var distance = direction.length()
-	
-	# Ha messzebb van a hős, mint a megengedett minimum, utána megyünk
-	if distance > min_distance:
-		velocity = direction.normalized() * follow_speed
+	# A navigációs hálón keresünk utat a hős lábához, így a falakat is megkerüli
+	update_path(player_feet.global_position)
+
+	# Ha messzebb van a hős (az úton mérve), mint a megengedett minimum, utána megyünk
+	if remaining_path_length() > min_distance:
+		velocity = path_direction() * follow_speed
 	else:
 		velocity = Vector2.ZERO # Ha elég közel van, megáll
 
 # 2. LOGIKA: Séta a kattintott pontra
 func handle_goto_logic():
-	var direction = click_target_pos - global_position
-	var distance = direction.length()
-	
+	update_path(click_target_pos)
+
 	# Ha még nem értük el a pontot
-	if distance > target_margin:
-		velocity = direction.normalized() * follow_speed
+	if remaining_path_length() > target_margin:
+		velocity = path_direction() * follow_speed
 	else:
 		# Megérkeztünk! Átváltunk IDLE (várakozó) állapotba
 		velocity = Vector2.ZERO
@@ -122,7 +133,50 @@ func handle_goto_logic():
 func send_to_position(target_pos: Vector2):
 	click_target_pos = target_pos
 	current_state = State.GO_TO_TARGET
+	repath_timer = 0.0 # Azonnal új utat számolunk az új célhoz
 	print("Lény: Indulok a koordinátára: ", target_pos)
+
+# --- ÚTKERESÉS ---
+
+# Újraszámolja az utat a célig, de csak REPATH_INTERVAL-onként
+func update_path(target: Vector2) -> void:
+	if repath_timer > 0.0 and not path.is_empty():
+		return
+	repath_timer = REPATH_INTERVAL
+
+	var nav_map: RID = get_world_2d().navigation_map
+	path = NavigationServer2D.map_get_path(nav_map, feet.global_position, target, true, get_navigation_layers())
+	path_index = 0
+	# Nincs navigációs háló (pl. belső tér) -> egyenesen megyünk a célhoz, mint régen
+	if path.is_empty():
+		path = PackedVector2Array([feet.global_position, target])
+
+# A Lenti/Fenti szint ütközési maszkjához tartozó navigációs réteget használjuk
+func get_navigation_layers() -> int:
+	var layers: int = 0
+	if get_collision_mask_value(1):
+		layers |= 1
+	if get_collision_mask_value(2):
+		layers |= 2
+	return layers
+
+# Irány a következő útpont felé (az elért útpontokat átlépjük)
+func path_direction() -> Vector2:
+	var from: Vector2 = feet.global_position
+	while path_index < path.size() - 1 and from.distance_to(path[path_index]) < WAYPOINT_REACHED_DISTANCE:
+		path_index += 1
+	if path_index >= path.size():
+		return Vector2.ZERO
+	return from.direction_to(path[path_index])
+
+# A hátralévő út hossza: a fal mögött álló hős ne számítson "közelinek"
+func remaining_path_length() -> float:
+	if path_index >= path.size():
+		return 0.0
+	var length: float = feet.global_position.distance_to(path[path_index])
+	for i in range(path_index, path.size() - 1):
+		length += path[i].distance_to(path[i + 1])
+	return length
 
 func _on_animation_finished(anim_name: String) -> void:
 	# Ha az idle2 ért véget (és közben nem indultunk el)

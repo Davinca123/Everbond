@@ -63,6 +63,8 @@ func open_door() -> void:
 	SignalBus.hide_interaction_button.emit()
 	
 	collision_shape.set_deferred("disabled", true)
+	# A kikapcsolás után szólunk, hogy a nyitott ajtón át is vezethessen út
+	SignalBus.navigation_obstacles_changed.emit.call_deferred()
 	sprite_2d.frame = FRAME_OPEN
 	
 	# 2. Ha az ajtó egy belső térbe vezet, elindítjuk a jelenetváltást egy kis szünet után
