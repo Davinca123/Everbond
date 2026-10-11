@@ -2,10 +2,10 @@
 
 Findings from a code review and a headless smoke test on Godot 4.7.2 (2026-10-11, commit `50a92df`).
 
-**Status:** the project imports and runs 600 frames without script errors. The smoke test passed 11 of 17 checks. Headless mode doesn't render, so shaders and visuals were not tested. No Android APK was built (no Android SDK or export templates were available).
+**Status:** the project imports and runs 600 frames without script errors. The headless smoke test passed 11 of 17 checks. A rendered playtest is covered under [Playtest findings](#playtest-findings). No Android APK was built (no Android SDK or export templates were available).
 
 Each bug is marked:
-- **Confirmed**: reproduced by the smoke test.
+- **Confirmed**: reproduced by the smoke test or the playtest.
 - **Code review**: found by reading the code, not reproduced.
 
 ---
@@ -43,7 +43,7 @@ The dialogue box only handles `InputEventScreenTouch`. `TouchScreenButton` also 
 
 **Fix:** delete the connection.
 
-### 5. Interactables share one button and one signal (Code review)
+### 5. Interactables share one button and one signal (Code review; locked-door part confirmed in playtest)
 `scenes/npc/npc.gd`, `scenes/objects/door.gd`, `scripts/global/signal_bus.gd`
 
 `interaction_pressed` goes to every listener, and each NPC or door shows and hides the button on its own. Problems:
@@ -82,6 +82,63 @@ The return spawn point is `door + (0, 32)`, which is inside the door's collision
 The companion is not moved on return. It ends up near the player only because Door1 is near the companion's start position.
 
 **Fix:** give each door a `Marker2D` for the return spawn point. Move the companion next to the player on return.
+
+---
+
+## Playtest findings
+
+The game was run with real rendering: Xvfb plus Mesa's software Vulkan (lavapipe), using the project's Forward Mobile renderer. A driver script played it through Godot's normal input pipeline (keyboard events, and multi-finger touch for the joystick and buttons) and the screenshots were reviewed.
+
+**Working:**
+- Keyboard and joystick movement.
+- The companion follows the player.
+- NPC dialogue: the button appears, the text types out, and the dialogue closes.
+- The locked-door message.
+- The tunnel fade: the wall above the player fades so they can be seen underneath.
+- Entering and leaving the house.
+
+**Not tested:** performance (software rendering isn't representative of phones), audio (no audio device was available), and real touch hardware.
+
+### 10. Player can walk off the map (Confirmed)
+`scenes/world/world.tscn`, `scenes/player/player.tscn`
+
+The map edge has no boundary colliders, so the player can walk out into the empty grey area (reached x = -1190). The camera limits are ±10000, so a grey strip already shows on the left edge of the starting view.
+
+**Fix:** add boundary collision around the map. Set the `Camera2D` limits to the map's bounds.
+
+### 11. House interior is a placeholder (Confirmed)
+`scenes/maps/House1Interior.tscn`
+
+- `Ground_TileMapLayer` and `Walls_TileMapLayer` have no tileset or tiles. The interior renders as an empty grey screen, and nothing blocks the player.
+- The `ExitDoor` sprite override (`region_rect = Rect2(96, 0, 32, 128)`) shows a chest instead of a door.
+- The exit door uses `interaction_type = "door_enter"`, so its button says "Belép" (Enter) instead of an exit label.
+
+### 12. Companion's idle animations are hidden behind the player (Confirmed)
+`scenes/companion/companion.gd:5`
+
+`min_distance = 60`, but the player sprite is about 145 px wide. When the companion stops, it sits behind the player, so the idle2 and sleep animations can barely be seen.
+
+**Fix:** raise `min_distance` (about 100–120), or stop beside the player rather than at their centre.
+
+### 13. UI text is too small or misplaced (Confirmed)
+`scenes/ui/screen_ui.tscn`
+
+- The interaction button's label is about 20 px tall on screen (`font_size = 100` × button scale `0.2`) and sits off-centre at the button's top-left.
+- Dialogue text is small inside a large, mostly empty panel.
+- The locked-door message has an empty speaker name, which leaves a blank line.
+
+**Fix:** centre the label, scale fonts for a 1080p screen, and hide `NameLabel` when the speaker name is empty.
+
+### 14. Visual polish issues (Confirmed)
+
+- The player sprite has a white halo from the white-to-transparent shader (see Code quality).
+- The fox is very small next to the player.
+- The NPC uses the Godot icon as a placeholder sprite, and the player walks through it.
+
+### 15. Opacity zones with an empty entrance (Confirmed)
+`scenes/world/world.tscn`
+
+`EnterZone2` has no polygon points in `OpacityPolygonZone` and `OpacityPolygonZone3`, so those zones have only one working entrance. Delete the empty nodes or draw the polygons.
 
 ---
 
