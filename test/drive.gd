@@ -6,7 +6,7 @@ extends Node
 # Futtatás (a projekt mappájából):
 #   SCENARIO=tunnel godot --path . res://test/drive.tscn
 # Környezeti változók:
-#   SCENARIO  tunnel | courtyard | inout (lásd SCENARIOS)
+#   SCENARIO  tunnel | courtyard | inout | tapcourtyard | tapcourtyard_join (lásd SCENARIOS)
 #   OUT       ha meg van adva, ide ment másodpercenként egy képernyőképet
 #   OVERLAY=0 kikapcsolja a navigációs háló / zónák / útvonal rajzolását
 # Videó: --write-movie kimenet.avi --fixed-fps 30
@@ -18,13 +18,22 @@ const SCENARIOS = {
 	# Courtyard (zone 1): in through the south arch, walk around inside, back out
 	"courtyard": [["nav", Vector2(2080, 1420)], ["line", Vector2(2080, 1150)], ["nav", Vector2(2280, 450)], ["wait", 6.0],
 		["nav", Vector2(2080, 1150)], ["line", Vector2(2080, 1420)], ["wait", 6.0]],
+	# A lényt koppintással beküldjük az udvar alá (2. szint), a hős közben felmegy a lépcsőn
+	# és fölötte áll meg (1. szint): a lénynek ki kell jönnie az íven és fel kell mennie
+	# keep: a koppintást ismételjük, amíg a "release" lépés el nem engedi (a lény ott vár)
+	"tapcourtyard": [["nav", Vector2(1900, 1400)], ["tap", Vector2(2080, 1050)], ["wait", 6.0],
+		["keep", Vector2(2080, 900)], ["nav", Vector2(2080, 900)], ["wait", 1.0], ["release"], ["wait", 25.0]],
+	# Ugyanígy beküldjük, de most a hős is ugyanazon az íven megy be utána: a lény bent marad
+	"tapcourtyard_join": [["nav", Vector2(1900, 1400)], ["tap", Vector2(2080, 1050)], ["wait", 6.0],
+		["keep", Vector2(2080, 900)], ["nav", Vector2(2080, 1420)], ["line", Vector2(2080, 1150)],
+		["release"], ["nav", Vector2(2280, 450)], ["wait", 6.0]],
 	# In and straight back out the same arch before the companion arrives
 	"inout": [["nav", Vector2(1280, 380)], ["line", Vector2(1280, 60)], ["line", Vector2(1280, 380)], ["wait", 6.0]],
 }
 var world; var player; var comp; var pfeet; var cfeet; var cam
 var steps = []; var step = 0; var leg_path = PackedVector2Array(); var leg_i = 0
 var wait_t = 0.0; var t = 0.0; var log_t = 0.0; var shot_t = 0.0; var shot_n = 0
-var started = false; var stuck_t = 0.0; var last_pos = Vector2.ZERO; var leg_t = 0.0
+var keep_target = null; var started = false; var stuck_t = 0.0; var last_pos = Vector2.ZERO; var leg_t = 0.0
 var out = OS.get_environment("OUT"); var name_ = OS.get_environment("SCENARIO")
 
 func _ready():
@@ -49,6 +58,12 @@ func start_leg():
 		leg_path = NavigationServer2D.map_get_path(world.get_world_2d().navigation_map, pfeet.global_position, s[1], true, lvl(player))
 	elif s[0] == "line":
 		leg_path = PackedVector2Array([s[1]])
+	elif s[0] == "tap":
+		comp.send_to_position(s[1])
+	elif s[0] == "keep":
+		keep_target = s[1]
+	elif s[0] == "release":
+		keep_target = null
 	else:
 		wait_t = s[1]
 	print("%6.2f LEG %d %s" % [t, step, str(s)])
@@ -67,7 +82,9 @@ func _physics_process(delta):
 	leg_t += delta
 	var s = steps[step]
 	var dir = Vector2.ZERO
-	if s[0] == "wait":
+	if s[0] in ["tap", "keep", "release"]:
+		next()
+	elif s[0] == "wait":
 		wait_t -= delta
 		if wait_t <= 0.0: next()
 	else:
@@ -84,6 +101,8 @@ func _physics_process(delta):
 			print("%6.2f PLAYER STUCK at %s heading %s" % [t, pfeet.global_position, s]); next()
 	last_pos = pfeet.global_position
 	SignalBus.joystick_moved.emit(dir)
+	if keep_target != null and comp.current_state != comp.State.GO_TO_TARGET:
+		comp.send_to_position(keep_target)
 	# camera frames both characters
 	cam.global_position = cam.global_position.lerp((pfeet.global_position + cfeet.global_position) / 2.0, 0.1)
 	log_t -= delta

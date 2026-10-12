@@ -35,10 +35,12 @@ var path: PackedVector2Array = []
 var path_index: int = 0
 var repath_timer: float = 0.0
 
-# Ahol a hős szintet váltott (alagút, lépcső), sorrendben. Ha a lény más szinten van,
-# ezeken a pontokon át követi, mert a navigációs háló szintenként külön van.
-# Elemei: { "approach": Vector2, "position": Vector2, "level": int }
-# approach: a zóna előtt (régi szint), position: a zóna mögött, level: a váltás utáni szint.
+# Szintváltó pontok, sorrendben: ezeken át jut el a lény a hős szintjére, mert a
+# navigációs háló szintenként külön van. A hős szintváltásai a sor végére kerülnek,
+# a lény saját (pl. koppintásra történt) szintváltásai a sor elejére, visszaútként.
+# Elemei: { "at": Vector2, "approach": Vector2, "position": Vector2, "level": int }
+# at: ahol a váltás történt, approach: a zóna előtt (régi szint), position: a zóna
+# mögött, level: a váltás utáni szint.
 var level_crossings: Array[Dictionary] = []
 var last_player_level: int = 0
 var last_level: int = 0
@@ -234,6 +236,10 @@ func track_level_changes() -> void:
 
 	var level: int = get_level(self)
 	if level != last_level:
+		# Ha nem a soron következő pont felé léptünk át (pl. koppintásra mentünk be az
+		# udvar alá), megjegyezzük a visszautat, különben a hős alatt ragadnánk
+		if level_crossings.is_empty() or level_crossings[0].level != level:
+			level_crossings.push_front(make_crossing(feet.global_position, -velocity.normalized(), last_level))
 		last_level = level
 		repath_timer = 0.0 # Új szint, új navigációs háló -> azonnal új út
 
@@ -245,20 +251,28 @@ func track_level_changes() -> void:
 
 func add_level_crossing(new_level: int) -> void:
 	# Az átlépés iránya: amerre a hős ment, abba az irányba lépünk túl a ponton
-	var direction: Vector2 = player.velocity.normalized()
-	var crossing_point: Vector2 = player_feet.global_position + direction * CROSSING_OVERSHOOT
-	var approach_point: Vector2 = player_feet.global_position - direction * CROSSING_APPROACH
+	var crossing: Dictionary = make_crossing(player_feet.global_position, player.velocity.normalized(), new_level)
 
-	# Ha a hős ugyanott vissza is fordult, mielőtt a lény odaért, a két pont kioltja egymást
+	# Ha ugyanazon a kapun visszafelé visz, mint az előző pont, a kettő kioltja egymást:
+	# pl. a hős ki-be ment, mielőtt a lény odaért, vagy a lény már bement oda, ahová most a hős
 	if not level_crossings.is_empty():
 		var previous: Dictionary = level_crossings.back()
-		if previous.level != new_level and previous.position.distance_to(crossing_point) < CROSSING_OVERSHOOT * 3.0:
+		if previous.level != new_level and previous.at.distance_to(crossing.at) < CROSSING_OVERSHOOT * 3.0:
 			level_crossings.pop_back()
 			repath_timer = 0.0
 			return
 
-	level_crossings.append({ "approach": approach_point, "position": crossing_point, "level": new_level })
+	level_crossings.append(crossing)
 	repath_timer = 0.0
+
+# Szintváltó pont: at = ahol a váltás történt, direction = az átlépés iránya, level = a cél szint
+func make_crossing(at: Vector2, direction: Vector2, level: int) -> Dictionary:
+	return {
+		"at": at,
+		"approach": at - direction * CROSSING_APPROACH,
+		"position": at + direction * CROSSING_OVERSHOOT,
+		"level": level,
+	}
 
 # Irány a következő útpont felé (az elért útpontokat átlépjük)
 func path_direction() -> Vector2:
