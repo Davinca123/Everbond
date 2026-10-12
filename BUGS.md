@@ -65,7 +65,7 @@ The dialogue box only handles `InputEventScreenTouch`. `TouchScreenButton` also 
 
 - **Line 84:** the code checks for `"idle"`, but the animation is named `"idle1"`. As a result, `play("idle1")` and `speed_scale` are set again every physics frame.
 - **Line 69:** the early `return` during the idle2 fidget skips `move_and_slide()`.
-- **Line 117:** the `await` timer can fire after the companion has been sent elsewhere and switch it back to FOLLOW too early. `send_to_position` isn't called anywhere yet, so this is latent.
+- ~~**Line 117:** the `await` timer can fire after the companion has been sent elsewhere and switch it back to FOLLOW too early.~~ Fixed: the wait is now a countdown in the IDLE state, so a new tap restarts it.
 
 ### 8. Joystick stays active after a dialogue (Code review)
 `scenes/ui/joystick.gd:20-21`
