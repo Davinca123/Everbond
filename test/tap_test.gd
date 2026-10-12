@@ -86,7 +86,14 @@ func run() -> void:
 	var target: Vector2 = pfeet.global_position + Vector2(350, 60)
 	var tp: Vector2 = to_window(target)
 	await tap(tp)
+	await frames(3)
+	var marker: Node2D = comp.target_marker
+	var marker_spot: Vector2 = marker.get_child(0).global_position
+	await check("marker_shown_while_walking", marker.is_visible_in_tree() and marker_spot.distance_to(target) < 2.0,
+			"visible=%s marker=%s target=%s" % [marker.visible, marker_spot.round(), target.round()])
 	await wait_until_idle(5.0)
+	await frames(2)
+	await check("marker_hidden_on_arrival", not marker.visible, "visible=%s" % marker.visible)
 	await check("right_tap", taps == 1 and comp.click_target_pos.distance_to(target) < 2.0 \
 			and cfeet.global_position.distance_to(target) < 10.0,
 			"taps=%d target=%s sent=%s comp=%s" % [taps, target.round(), comp.click_target_pos.round(), cfeet.global_position.round()])

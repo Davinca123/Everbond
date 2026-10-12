@@ -24,6 +24,12 @@ const STAY_BAR_THICKNESS: float = 4.0
 const STAY_BAR_OFFSET: Vector2 = Vector2(0, -5) # a csík közepe a lény origójához képest (épp a fül fölött)
 const STAY_BAR_COLOR: Color = Color(0.75, 0.75, 0.75, 0.9)
 const STAY_BAR_BACKGROUND_COLOR: Color = Color(0.2, 0.2, 0.2, 0.4)
+# A koppintott cél jelölése a földön, amíg a lény oda nem ér
+const TARGET_MARKER_TEXTURE: Texture2D = preload("res://scenes/companion/companion_spot_marker.png")
+const TARGET_MARKER_SCALE: Vector2 = Vector2(5, 5) # mint a lény sprite-ja, hogy a pixelméret egyezzen
+# A jelölő a YSort_Entities alatt van, és ennyivel feljebb rendezzük, mint ahol látszik:
+# így a rajta/mellette álló karakterek (lábuk max. ~75 px-re van az origójuktól) fölé kerülnek
+const TARGET_MARKER_SORT_LIFT: float = 100.0
 # Ha a célpont felé ennyi ideig nem jut előre (fal mögötti cél), feladja (mp)
 const GOTO_STUCK_TIME: float = 1.0
 # Ennyivel kell csökkennie a hátralévő útnak, hogy előrehaladásnak számítson
@@ -70,12 +76,15 @@ var current_state : State = State.FOLLOW
 var click_target_pos : Vector2 = Vector2.ZERO
 var wait_timer: float = 0.0
 var stay_bar_shown: bool = false
+var target_marker: Node2D
 var goto_stuck_timer: float = 0.0
 var goto_best_distance: float = INF
 
 func _ready() -> void:
 	# BIZTONSÁGI CSERE: Leválasztjuk a régit (ha volt), és tisztán kódból kötjük össze
 	animation_player.animation_finished.connect(_on_animation_finished)
+	target_marker = create_target_marker()
+	get_parent().add_child.call_deferred(target_marker)
 	last_player_level = get_level(player)
 	last_level = get_level(self)
 			
@@ -85,6 +94,7 @@ func _physics_process(delta):
 	# Várakozás közben (és egyszer utána, hogy eltűnjön) újrarajzoljuk a csíkot
 	if current_state == State.IDLE or stay_bar_shown:
 		queue_redraw()
+	update_target_marker()
 	track_level_changes()
 	match current_state:
 		State.FOLLOW:
@@ -302,6 +312,26 @@ func remaining_path_length() -> float:
 	for i in range(path_index, path.size() - 1):
 		length += path[i].distance_to(path[i + 1])
 	return length
+
+# --- CÉLJELÖLŐ ---
+
+func create_target_marker() -> Node2D:
+	var marker := Node2D.new()
+	marker.name = "CompanionTargetMarker"
+	marker.visible = false
+	var sprite := Sprite2D.new()
+	sprite.texture = TARGET_MARKER_TEXTURE
+	sprite.scale = TARGET_MARKER_SCALE
+	sprite.position = Vector2(0, TARGET_MARKER_SORT_LIFT)
+	marker.add_child(sprite)
+	return marker
+
+# Csak amíg a koppintott cél felé tart; a z_index a lényét követi (alagútban a híd eltakarja)
+func update_target_marker() -> void:
+	target_marker.visible = current_state == State.GO_TO_TARGET
+	if target_marker.visible:
+		target_marker.global_position = click_target_pos - Vector2(0, TARGET_MARKER_SORT_LIFT)
+		target_marker.z_index = z_index
 
 # A várakozás hátralévő ideje: balról jobbra fogyó szürke csík a lény feje fölött
 func _draw() -> void:
