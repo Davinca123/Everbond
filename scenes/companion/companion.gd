@@ -4,6 +4,9 @@ extends CharacterBody2D
 @export var follow_speed: float = 160.0 # Kicsit lassabb, mint a főhős
 @export var min_distance: float = 60.0  # Milyen közel álljon meg a hőstől
 @export var target_margin: float = 5.0  # Pontosság a kattintott célpontnál
+## Koppintott célnál ennyit vár (mp), mielőtt visszamegy a hőshöz.
+## Később a lény tanításával ("maradj!") nőhet.
+@export var stay_duration: float = 2.0
 
 # Útkeresés: ilyen gyakran számoljuk újra az utat (mp), és ilyen közel kell érni egy útponthoz
 const REPATH_INTERVAL: float = 0.25
@@ -15,8 +18,12 @@ const CROSSING_OVERSHOOT: float = 64.0
 # onnan egyenesen megyünk át (a zóna mögötti pont a régi szint hálóján akár egy
 # egészen más helyen, pl. a hídon/fennsíkon lehet elérhető)
 const CROSSING_APPROACH: float = 32.0
-# Koppintott célnál ennyit vár, mielőtt visszamegy a hőshöz (mp)
-const WAIT_AT_TARGET_TIME: float = 2.0
+# A várakozás visszaszámlálása: vékony szürke csík a lény feje fölött, ami fogy
+const STAY_BAR_WIDTH: float = 40.0
+const STAY_BAR_THICKNESS: float = 4.0
+const STAY_BAR_OFFSET: Vector2 = Vector2(0, -5) # a csík közepe a lény origójához képest (épp a fül fölött)
+const STAY_BAR_COLOR: Color = Color(0.75, 0.75, 0.75, 0.9)
+const STAY_BAR_BACKGROUND_COLOR: Color = Color(0.2, 0.2, 0.2, 0.4)
 # Ha a célpont felé ennyi ideig nem jut előre (fal mögötti cél), feladja (mp)
 const GOTO_STUCK_TIME: float = 1.0
 # Ennyivel kell csökkennie a hátralévő útnak, hogy előrehaladásnak számítson
@@ -62,6 +69,7 @@ var current_state : State = State.FOLLOW
 # Változók a kattintásos mozgáshoz
 var click_target_pos : Vector2 = Vector2.ZERO
 var wait_timer: float = 0.0
+var stay_bar_shown: bool = false
 var goto_stuck_timer: float = 0.0
 var goto_best_distance: float = INF
 
@@ -74,6 +82,9 @@ func _ready() -> void:
 
 func _physics_process(delta):
 	repath_timer -= delta
+	# Várakozás közben (és egyszer utána, hogy eltűnjön) újrarajzoljuk a csíkot
+	if current_state == State.IDLE or stay_bar_shown:
+		queue_redraw()
 	track_level_changes()
 	match current_state:
 		State.FOLLOW:
@@ -173,12 +184,12 @@ func handle_goto_logic(delta: float):
 	if remaining > target_margin and goto_stuck_timer < GOTO_STUCK_TIME:
 		velocity = path_direction() * follow_speed
 	else:
-		# Megérkeztünk! Átváltunk IDLE (várakozó) állapotba, majd WAIT_AT_TARGET_TIME
+		# Megérkeztünk! Átváltunk IDLE (várakozó) állapotba, majd stay_duration
 		# után visszaszalad a hőshöz (időzítő változóval, így egy új koppintás
 		# nem rövidíti le a következő várakozást)
 		velocity = Vector2.ZERO
 		current_state = State.IDLE
-		wait_timer = WAIT_AT_TARGET_TIME
+		wait_timer = stay_duration
 		print("Lény: Megérkeztem a célhoz!")
 
 # Ezt a függvényt a fő Game kód fogja meghívni, ha a játékos kattintott
@@ -291,6 +302,17 @@ func remaining_path_length() -> float:
 	for i in range(path_index, path.size() - 1):
 		length += path[i].distance_to(path[i + 1])
 	return length
+
+# A várakozás hátralévő ideje: balról jobbra fogyó szürke csík a lény feje fölött
+func _draw() -> void:
+	stay_bar_shown = current_state == State.IDLE and stay_duration > 0.0
+	if not stay_bar_shown:
+		return
+	var ratio: float = clampf(wait_timer / stay_duration, 0.0, 1.0)
+	var left := STAY_BAR_OFFSET - Vector2(STAY_BAR_WIDTH / 2.0, 0)
+	draw_line(left, left + Vector2(STAY_BAR_WIDTH, 0), STAY_BAR_BACKGROUND_COLOR, STAY_BAR_THICKNESS)
+	if ratio > 0.0:
+		draw_line(left, left + Vector2(STAY_BAR_WIDTH * ratio, 0), STAY_BAR_COLOR, STAY_BAR_THICKNESS)
 
 func _on_animation_finished(anim_name: String) -> void:
 	# Ha az idle2 ért véget (és közben nem indultunk el)
