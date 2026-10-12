@@ -7,6 +7,8 @@ signal dialogue_finished
 # --- IRÁNYÍTÁS JELZÉSEK ---
 signal joystick_moved(direction: Vector2)
 signal interaction_pressed
+# Rövid koppintás a képernyőn (képernyő koordinátában), pl. a lény elküldéséhez
+signal screen_tapped(screen_position: Vector2)
 
 # Ez a két szignál kezeli az UI gomb megjelenítését és elrejtését
 signal show_interaction_button(interaction_type: String)

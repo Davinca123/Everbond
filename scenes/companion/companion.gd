@@ -15,6 +15,12 @@ const CROSSING_OVERSHOOT: float = 64.0
 # onnan egyenesen megyünk át (a zóna mögötti pont a régi szint hálóján akár egy
 # egészen más helyen, pl. a hídon/fennsíkon lehet elérhető)
 const CROSSING_APPROACH: float = 32.0
+# Koppintott célnál ennyit vár, mielőtt visszamegy a hőshöz (mp)
+const WAIT_AT_TARGET_TIME: float = 2.0
+# Ha a célpont felé ennyi ideig nem jut előre (fal mögötti cél), feladja (mp)
+const GOTO_STUCK_TIME: float = 1.0
+# Ennyivel kell csökkennie a hátralévő útnak, hogy előrehaladásnak számítson
+const GOTO_PROGRESS_DISTANCE: float = 10.0
 
 # Hivatkozás a főhősre
 @onready var player = $"../Player"
@@ -53,6 +59,9 @@ var current_state : State = State.FOLLOW
 
 # Változók a kattintásos mozgáshoz
 var click_target_pos : Vector2 = Vector2.ZERO
+var wait_timer: float = 0.0
+var goto_stuck_timer: float = 0.0
+var goto_best_distance: float = INF
 
 func _ready() -> void:
 	# BIZTONSÁGI CSERE: Leválasztjuk a régit (ha volt), és tisztán kódból kötjük össze
@@ -68,9 +77,13 @@ func _physics_process(delta):
 		State.FOLLOW:
 			handle_follow_logic()
 		State.GO_TO_TARGET:
-			handle_goto_logic()
+			handle_goto_logic(delta)
 		State.IDLE:
 			velocity = Vector2.ZERO
+			# Kis várakozás után visszaszalad a hőshöz
+			wait_timer -= delta
+			if wait_timer <= 0.0:
+				current_state = State.FOLLOW
 			
 	# IRÁNYBA FORDULÁS:
 	# Ha a sebesség x tengelye negatív, balra megy -> tükrözzük a képet
@@ -142,27 +155,36 @@ func handle_follow_logic():
 		velocity = Vector2.ZERO # Ha elég közel van, megáll
 
 # 2. LOGIKA: Séta a kattintott pontra
-func handle_goto_logic():
+func handle_goto_logic(delta: float):
 	update_path(click_target_pos)
 
+	# Ha nem jutunk előre (pl. a cél fal mögött van, és nincs navigációs háló), feladjuk.
+	# A hátralévő út hosszát figyeljük, nem a sebességet, mert a fal mentén csúszva is mozog.
+	var remaining: float = remaining_path_length()
+	if remaining < goto_best_distance - GOTO_PROGRESS_DISTANCE:
+		goto_best_distance = remaining
+		goto_stuck_timer = 0.0
+	else:
+		goto_stuck_timer += delta
+
 	# Ha még nem értük el a pontot
-	if remaining_path_length() > target_margin:
+	if remaining > target_margin and goto_stuck_timer < GOTO_STUCK_TIME:
 		velocity = path_direction() * follow_speed
 	else:
-		# Megérkeztünk! Átváltunk IDLE (várakozó) állapotba
+		# Megérkeztünk! Átváltunk IDLE (várakozó) állapotba, majd WAIT_AT_TARGET_TIME
+		# után visszaszalad a hőshöz (időzítő változóval, így egy új koppintás
+		# nem rövidíti le a következő várakozást)
 		velocity = Vector2.ZERO
 		current_state = State.IDLE
+		wait_timer = WAIT_AT_TARGET_TIME
 		print("Lény: Megérkeztem a célhoz!")
-		
-		# IDŐZÍTŐ (Opcionális): Vár 2 másodpercet, majd visszaszalad a hőshöz
-		await get_tree().create_timer(2.0).timeout
-		if current_state == State.IDLE: # Ha közben nem küldtük máshova
-			current_state = State.FOLLOW
 
 # Ezt a függvényt a fő Game kód fogja meghívni, ha a játékos kattintott
 func send_to_position(target_pos: Vector2):
 	click_target_pos = target_pos
 	current_state = State.GO_TO_TARGET
+	goto_stuck_timer = 0.0
+	goto_best_distance = INF
 	repath_timer = 0.0 # Azonnal új utat számolunk az új célhoz
 	print("Lény: Indulok a koordinátára: ", target_pos)
 

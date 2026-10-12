@@ -5,6 +5,8 @@ extends Control
 @onready var joystick_tip: Sprite2D = %JoystickTip
 
 var joystick_active: bool = false
+# Melyik ujj irányítja a joysticket (több ujjnál a többi érintés, pl. koppintás, ne zavarja)
+var joystick_touch_index: int = -1
 var joystick_start_pos: Vector2 = Vector2.ZERO
 const JOYSTICK_MAX_LENGTH: float = 50.0
 
@@ -26,8 +28,9 @@ func _input(event: InputEvent) -> void:
 		return
 
 	if event is InputEventScreenTouch:
-		if event.position.x < get_viewport_rect().size.x / 2 and event.pressed:
+		if event.position.x < get_viewport_rect().size.x / 2 and event.pressed and not joystick_active:
 			joystick_active = true
+			joystick_touch_index = event.index
 			joystick_start_pos = event.position
 			
 			# GRAFIKA MEGJELENÍTÉSE
@@ -37,7 +40,7 @@ func _input(event: InputEvent) -> void:
 			joystick_base.global_position = joystick_start_pos
 			joystick_tip.global_position = joystick_start_pos
 			
-		elif !event.pressed and joystick_active:
+		elif !event.pressed and joystick_active and event.index == joystick_touch_index:
 			joystick_active = false
 			
 			# GRAFIKA ELREJTÉSE
@@ -46,7 +49,7 @@ func _input(event: InputEvent) -> void:
 			
 			SignalBus.joystick_moved.emit(Vector2.ZERO)
 
-	if event is InputEventScreenDrag and joystick_active:
+	if event is InputEventScreenDrag and joystick_active and event.index == joystick_touch_index:
 		var drag_vector = event.position - joystick_start_pos
 		
 		if drag_vector.length() > JOYSTICK_MAX_LENGTH:
