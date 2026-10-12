@@ -8,6 +8,13 @@ extends CharacterBody2D
 # Útkeresés: ilyen gyakran számoljuk újra az utat (mp), és ilyen közel kell érni egy útponthoz
 const REPATH_INTERVAL: float = 0.25
 const WAYPOINT_REACHED_DISTANCE: float = 8.0
+# Szintváltásnál ennyivel a hős átlépési pontja mögé célzunk, hogy a lény teste
+# biztosan belépjen a szintváltó zónába (a hős kapszulája magasabb, előbb ér bele)
+const CROSSING_OVERSHOOT: float = 64.0
+# A szintváltó zóna előtti pont távolsága: eddig a régi szint hálóján jövünk,
+# onnan egyenesen megyünk át (a zóna mögötti pont a régi szint hálóján akár egy
+# egészen más helyen, pl. a hídon/fennsíkon lehet elérhető)
+const CROSSING_APPROACH: float = 32.0
 
 # Hivatkozás a főhősre
 @onready var player = $"../Player"
@@ -21,6 +28,14 @@ const WAYPOINT_REACHED_DISTANCE: float = 8.0
 var path: PackedVector2Array = []
 var path_index: int = 0
 var repath_timer: float = 0.0
+
+# Ahol a hős szintet váltott (alagút, lépcső), sorrendben. Ha a lény más szinten van,
+# ezeken a pontokon át követi, mert a navigációs háló szintenként külön van.
+# Elemei: { "approach": Vector2, "position": Vector2, "level": int }
+# approach: a zóna előtt (régi szint), position: a zóna mögött, level: a váltás utáni szint.
+var level_crossings: Array[Dictionary] = []
+var last_player_level: int = 0
+var last_level: int = 0
 
 # Változó, ami másodpercben méri, mióta állunk egy helyben
 var idle_time: float = 0.0
@@ -42,10 +57,13 @@ var click_target_pos : Vector2 = Vector2.ZERO
 func _ready() -> void:
 	# BIZTONSÁGI CSERE: Leválasztjuk a régit (ha volt), és tisztán kódból kötjük össze
 	animation_player.animation_finished.connect(_on_animation_finished)
+	last_player_level = get_level(player)
+	last_level = get_level(self)
 			
 
 func _physics_process(delta):
 	repath_timer -= delta
+	track_level_changes()
 	match current_state:
 		State.FOLLOW:
 			handle_follow_logic()
@@ -102,6 +120,18 @@ func _physics_process(delta):
 
 # 1. LOGIKA: A főhős automatikus követése
 func handle_follow_logic():
+	# Ha a hős másik szintre ment, előbb az ő nyomában a szintváltó ponthoz megyünk
+	if not level_crossings.is_empty():
+		var crossing: Dictionary = level_crossings[0]
+		# Odaértünk, de a zóna nem váltott szintet -> feladjuk, ne ragadjunk itt örökre
+		if feet.global_position.distance_to(crossing.position) < WAYPOINT_REACHED_DISTANCE:
+			level_crossings.pop_front()
+			repath_timer = 0.0
+		else:
+			update_path(crossing.approach, true, crossing.position)
+			velocity = path_direction() * follow_speed
+			return
+
 	# A navigációs hálón keresünk utat a hős lábához, így a falakat is megkerüli
 	update_path(player_feet.global_position)
 
@@ -138,8 +168,11 @@ func send_to_position(target_pos: Vector2):
 
 # --- ÚTKERESÉS ---
 
-# Újraszámolja az utat a célig, de csak REPATH_INTERVAL-onként
-func update_path(target: Vector2) -> void:
+# Újraszámolja az utat a célig, de csak REPATH_INTERVAL-onként.
+# exact_target: a háló széle után egyenesen továbbmegyünk a célig (szintváltó zónába
+# lépéshez kell, mert a háló az agent_radius miatt a zóna előtt véget érhet)
+# then: ha meg van adva, a cél után egyenesen ide megyünk tovább (át a zónán)
+func update_path(target: Vector2, exact_target: bool = false, then = null) -> void:
 	if repath_timer > 0.0 and not path.is_empty():
 		return
 	repath_timer = REPATH_INTERVAL
@@ -150,15 +183,60 @@ func update_path(target: Vector2) -> void:
 	# Nincs navigációs háló (pl. belső tér) -> egyenesen megyünk a célhoz, mint régen
 	if path.is_empty():
 		path = PackedVector2Array([feet.global_position, target])
+	elif exact_target and path[path.size() - 1].distance_to(target) > 1.0:
+		path.append(target)
+	if then != null:
+		path.append(then)
 
 # A Lenti/Fenti szint ütközési maszkjához tartozó navigációs réteget használjuk
 func get_navigation_layers() -> int:
-	var layers: int = 0
-	if get_collision_mask_value(1):
-		layers |= 1
-	if get_collision_mask_value(2):
-		layers |= 2
-	return layers
+	return get_level(self)
+
+# Egy karakter szintje = az ütközési maszkjának Lenti/Fenti bitjei (egyben a navigációs réteg)
+func get_level(body: CollisionObject2D) -> int:
+	var level: int = 0
+	if body.get_collision_mask_value(1):
+		level |= 1
+	if body.get_collision_mask_value(2):
+		level |= 2
+	return level
+
+# --- SZINTVÁLTÁS KÖVETÉSE ---
+
+# A szintváltó zónák (alagút, lépcső) a maszkot állítják át, ezt figyeljük mindkét karakteren
+func track_level_changes() -> void:
+	var player_level: int = get_level(player)
+	if player_level != last_player_level:
+		last_player_level = player_level
+		add_level_crossing(player_level)
+
+	var level: int = get_level(self)
+	if level != last_level:
+		last_level = level
+		repath_timer = 0.0 # Új szint, új navigációs háló -> azonnal új út
+
+	# Ha már azon a szinten vagyunk, ahová a soron következő pont vezet, átléptük:
+	# jöhet a következő pont, vagy ha nincs több, közvetlenül a hős
+	if not level_crossings.is_empty() and level_crossings[0].level == level:
+		level_crossings.pop_front()
+		repath_timer = 0.0
+
+func add_level_crossing(new_level: int) -> void:
+	# Az átlépés iránya: amerre a hős ment, abba az irányba lépünk túl a ponton
+	var direction: Vector2 = player.velocity.normalized()
+	var crossing_point: Vector2 = player_feet.global_position + direction * CROSSING_OVERSHOOT
+	var approach_point: Vector2 = player_feet.global_position - direction * CROSSING_APPROACH
+
+	# Ha a hős ugyanott vissza is fordult, mielőtt a lény odaért, a két pont kioltja egymást
+	if not level_crossings.is_empty():
+		var previous: Dictionary = level_crossings.back()
+		if previous.level != new_level and previous.position.distance_to(crossing_point) < CROSSING_OVERSHOOT * 3.0:
+			level_crossings.pop_back()
+			repath_timer = 0.0
+			return
+
+	level_crossings.append({ "approach": approach_point, "position": crossing_point, "level": new_level })
+	repath_timer = 0.0
 
 # Irány a következő útpont felé (az elért útpontokat átlépjük)
 func path_direction() -> Vector2:
