@@ -1,31 +1,205 @@
 [gd_scene format=3 uid="uid://dxesken2bk8s"]
 
 [ext_resource type="Script" uid="uid://yhq0hdmxc1qp" path="res://scenes/player/player.gd" id="1_gmlin"]
-[ext_resource type="Shader" uid="uid://br6gyyt3h0vo7" path="res://scenes/game.gdshader" id="2_lvxji"]
-[ext_resource type="Texture2D" uid="uid://c5uhmulaom413" path="res://scenes/player/character.png" id="3_p47bc"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_p57ef"]
-shader = ExtResource("2_lvxji")
+[ext_resource type="Texture2D" uid="uid://pet1r1oysuso" path="res://scenes/player/SF_People1.png" id="2_sheet"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_gmlin"]
-radius = 30.7
-height = 127.56
+radius = 14.0
+height = 60.0
+
+[sub_resource type="Animation" id="Animation_reset"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [52]
+}
+
+[sub_resource type="Animation" id="Animation_idle_down"]
+resource_name = "idle_down"
+length = 0.15
+loop_mode = 1
+step = 0.15
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [52]
+}
+
+[sub_resource type="Animation" id="Animation_idle_left"]
+resource_name = "idle_left"
+length = 0.15
+loop_mode = 1
+step = 0.15
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [64]
+}
+
+[sub_resource type="Animation" id="Animation_idle_right"]
+resource_name = "idle_right"
+length = 0.15
+loop_mode = 1
+step = 0.15
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [76]
+}
+
+[sub_resource type="Animation" id="Animation_idle_up"]
+resource_name = "idle_up"
+length = 0.15
+loop_mode = 1
+step = 0.15
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [88]
+}
+
+[sub_resource type="Animation" id="Animation_walk_down"]
+resource_name = "walk_down"
+length = 0.6
+loop_mode = 1
+step = 0.15
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.15, 0.3, 0.45),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [51, 52, 53, 52]
+}
+
+[sub_resource type="Animation" id="Animation_walk_left"]
+resource_name = "walk_left"
+length = 0.6
+loop_mode = 1
+step = 0.15
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.15, 0.3, 0.45),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [63, 64, 65, 64]
+}
+
+[sub_resource type="Animation" id="Animation_walk_right"]
+resource_name = "walk_right"
+length = 0.6
+loop_mode = 1
+step = 0.15
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.15, 0.3, 0.45),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [75, 76, 77, 76]
+}
+
+[sub_resource type="Animation" id="Animation_walk_up"]
+resource_name = "walk_up"
+length = 0.6
+loop_mode = 1
+step = 0.15
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.15, 0.3, 0.45),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [87, 88, 89, 88]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_player"]
+_data = {
+&"RESET": SubResource("Animation_reset"),
+&"idle_down": SubResource("Animation_idle_down"),
+&"idle_left": SubResource("Animation_idle_left"),
+&"idle_right": SubResource("Animation_idle_right"),
+&"idle_up": SubResource("Animation_idle_up"),
+&"walk_down": SubResource("Animation_walk_down"),
+&"walk_left": SubResource("Animation_walk_left"),
+&"walk_right": SubResource("Animation_walk_right"),
+&"walk_up": SubResource("Animation_walk_up")
+}
 
 [node name="Player" type="CharacterBody2D" unique_id=476416376]
-position = Vector2(300, 270)
+position = Vector2(304, 359)
 script = ExtResource("1_gmlin")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=246524643]
-material = SubResource("ShaderMaterial_p57ef")
-scale = Vector2(0.37403598, 0.3693182)
-texture = ExtResource("3_p47bc")
-region_enabled = true
-region_rect = Rect2(316.628, 1183.6975, 389.66315, 528.69775)
+texture_filter = 1
+scale = Vector2(3, 3)
+texture = ExtResource("2_sheet")
+offset = Vector2(0, -36)
+hframes = 12
+vframes = 8
+frame = 52
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=753372928]
-position = Vector2(4, 75)
+position = Vector2(0, -14)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_gmlin")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1580241937]
+root_node = NodePath("../Sprite2D")
+libraries/ = SubResource("AnimationLibrary_player")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=171419408]
 limit_left = -10000

@@ -84,7 +84,8 @@ func teleport_player() -> void:
 	# Ha a külső világban vagyunk (vagyis a world.tscn-ben)
 	if get_tree().current_scene.name == "World":
 		# Elmentjük, hol áll az ajtó. Amikor visszajövünk, picit ezelé rakjuk a játékost!
-		GameManager.world_spawn_position = global_position + Vector2(0, 32) # 32 pixellel lejjebb, az ajtó elé
+		# A hős origója a lábánál van: az ajtó ütközési doboza (alja +138) alá rakjuk, hogy ne ragadjon bele
+		GameManager.world_spawn_position = global_position + Vector2(0, 170)
 		GameManager.coming_back_from_interior = true
 
 	
