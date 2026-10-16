@@ -131,9 +131,9 @@ The map edge has no boundary colliders, so the player can walk out into the empt
 
 ### 14. Visual polish issues (Confirmed)
 
-- The player sprite has a white halo from the white-to-transparent shader (see Code quality).
+- ~~The player sprite has a white halo from the white-to-transparent shader (see Code quality).~~ Fixed: the player uses a sprite sheet with real transparency and no shader.
 - The fox is very small next to the player.
-- The NPC uses the Godot icon as a placeholder sprite, and the player walks through it.
+- ~~The NPC uses the Godot icon as a placeholder sprite, and the player walks through it.~~ Fixed: the NPC has a sprite sheet and a collision shape at its feet.
 
 ### 15. Opacity zones with an empty entrance (Confirmed)
 `scenes/world/world.tscn`
@@ -147,14 +147,21 @@ When you tap a wall, the spot marker is drawn on the wall itself. The companion 
 
 **Fix:** when the companion is sent, snap the destination to the nearest reachable point next to where the user tapped. Use the end of the companion's navigation path to the tap (`map_get_path` on its own level). Don't use `map_get_closest_point`: it ignores the level, and with two overlapping navmeshes it can pick a point on the other level. Then store that point as `click_target_pos`, so the marker and the arrival check both use it. If there is no navmesh (no path), keep the tap position.
 
+### 17. Companion can't avoid moving NPCs (Code review)
+`scripts/navigation/collision_nav_region.gd:39`, `scenes/companion/companion.gd`
+
+The navmesh is baked only from static colliders (`PARSED_GEOMETRY_STATIC_COLLIDERS`), so NPCs, which are `CharacterBody2D`, are not cut out of it. The companion plans its path straight through an NPC and relies on `move_and_slide()` to slide around its collision shape. This works today because the only NPC stands still: the companion follows the player past it without getting stuck. Once NPCs move, the companion can't steer around them, and it can get pushed or stuck when an NPC walks into its path.
+
+**Fix:** when NPCs start moving, use navigation avoidance: a `NavigationAgent2D` with `avoidance_enabled` on the companion, and a `NavigationObstacle2D` (or an agent of their own) on the NPCs. Don't rebake the navmesh around moving NPCs.
+
 ---
 
 ## Code quality
 
 - **Name checks:** `body.name == "Player"` / `"Companion"` is used in 6 files. It breaks when a node is renamed or a second instance is added. Use groups (`is_in_group("player")`) or the physics layers instead.
 - **Duplicated layer-switching code:** `clim_zone.gd` and `opacity_polygon_zone.gd:set_character_to_underground` both switch layers by setting collision masks and z-index by hand. Move this into one shared helper. `ClimZone` also flips state on every enter, so stepping in and back out leaves the character on the wrong layer. It isn't placed in any scene yet.
-- **White-to-transparent shader:** `game.gdshader` makes near-white pixels transparent, and it's applied to the player and companion. White highlights and eyes in those sprites become see-through. Export the source images as PNGs with real transparency instead.
-- **NPC has no collision shape:** the NPC body has no `CollisionShape2D` (only its `InteractionArea` does). The player walks through it, and Godot shows a configuration warning.
+- **White-to-transparent shader:** `game.gdshader` makes near-white pixels transparent, and it's still applied to the companion (no longer to the player). White highlights and eyes in those sprites become see-through. Export the source images as PNGs with real transparency instead.
+- ~~**NPC has no collision shape:** the NPC body has no `CollisionShape2D` (only its `InteractionArea` does). The player walks through it, and Godot shows a configuration warning.~~ Fixed: the NPC has a capsule at its feet.
 - **Player collision layer differs between scenes:** layer 4 in `world.tscn`, layer 1 (the default) in `House1Interior.tscn`.
 
 ## Cleanup
