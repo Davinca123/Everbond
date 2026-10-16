@@ -14,6 +14,7 @@ script = ExtResource("1_4jjnt")
 [node name="Doors" type="Node2D" parent="." unique_id=1298723081]
 
 [node name="ExitDoor" parent="Doors" unique_id=1863234116 instance=ExtResource("1_7l1wv")]
+position = Vector2(0, 144)
 target_scene_path = "uid://c5lc3kwm41j6l"
 door_texture = ExtResource("3_w2buc")
 
