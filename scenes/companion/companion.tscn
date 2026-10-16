@@ -161,10 +161,11 @@ _data = {
 }
 
 [node name="Companion" type="CharacterBody2D" unique_id=1321202551]
-position = Vector2(180, 260)
+position = Vector2(180, 340)
 script = ExtResource("1_10l3g")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=2126555834]
+position = Vector2(0, -80)
 material = SubResource("ShaderMaterial_0tnpc")
 scale = Vector2(5, 5)
 texture = ExtResource("3_10l3g")
@@ -173,7 +174,7 @@ vframes = 7
 region_rect = Rect2(335.6311, 916.006, 525.423, 541.7666)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1925061364]
-position = Vector2(4, 43)
+position = Vector2(4, -37)
 shape = SubResource("CircleShape2D_5qq27")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1127006173]
