@@ -21,14 +21,14 @@ const CROSSING_APPROACH: float = 32.0
 # A várakozás visszaszámlálása: vékony szürke csík a lény feje fölött, ami fogy
 const STAY_BAR_WIDTH: float = 40.0
 const STAY_BAR_THICKNESS: float = 4.0
-const STAY_BAR_OFFSET: Vector2 = Vector2(0, -5) # a csík közepe a lény origójához képest (épp a fül fölött)
+const STAY_BAR_OFFSET: Vector2 = Vector2(0, -85) # a csík közepe a lény origójához (a talpához) képest (épp a fül fölött)
 const STAY_BAR_COLOR: Color = Color(0.75, 0.75, 0.75, 0.9)
 const STAY_BAR_BACKGROUND_COLOR: Color = Color(0.2, 0.2, 0.2, 0.4)
 # A koppintott cél jelölése a földön, amíg a lény oda nem ér
 const TARGET_MARKER_TEXTURE: Texture2D = preload("res://scenes/companion/companion_spot_marker.png")
 const TARGET_MARKER_SCALE: Vector2 = Vector2(5, 5) # mint a lény sprite-ja, hogy a pixelméret egyezzen
 # A jelölő a YSort_Entities alatt van, és ennyivel feljebb rendezzük, mint ahol látszik:
-# így a rajta/mellette álló karakterek (lábuk max. ~75 px-re van az origójuktól) fölé kerülnek
+# így a rajta/mellette álló karakterek fölé kerülnek (az origójuk a talpuknál van, legfeljebb ~40 px-rel a cél alatt)
 const TARGET_MARKER_SORT_LIFT: float = 100.0
 # Ha a célpont felé ennyi ideig nem jut előre (fal mögötti cél), feladja (mp)
 const GOTO_STUCK_TIME: float = 1.0
