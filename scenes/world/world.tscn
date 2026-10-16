@@ -778,21 +778,6 @@ scale = Vector2(5, 5)
 tile_map_data = PackedByteArray("AAAHAAAAAQANAAUAAAAMAAcAAQANAAUAAAANAAcAAQAOAAUAAAAIAAMAAQAFAAkAAAAIAAAAAQAOAAUAAAAIAP//AQAOAAUAAAAIAP7/AQAOAAUAAAAHAP7/AQANAAUAAAAHAP//AQANAAUAAAAHAP3/AQANAAUAAAAIAP3/AQAOAAUAAAAQAAUAAAANAAQAAAAQAAQAAAANAAQAAAAQAAMAAAANAAQAAAAQAAIAAAANAAQAAAANAAYAAQAOAAUAAAANAAUAAQAOAAUAAAAMAAMAAQANAAUAAAAMAAQAAQANAAUAAAAMAAUAAQANAAUAAAAMAAYAAQANAAUAAAANAAIAAAAHAAIAAAAMAAIAAAAGAAIAAAAOAAIAAAACAAQAAAAPAAIAAAACAAQAAAAOAAUAAAACAAQAAAAPAAUAAAACAAQAAAADAAUAAQANAAIAAAAEAAUAAQAOAAIAAAATAP3/AQAEAAwAAAAJAAAAAAAFAAoAAAALAPr/AAAFAAEAAAALAPv/AAAFAAIAAAAMAPr/AAAGAAEAAAAMAPv/AAAGAAIAAAANAPr/AAAHAAEAAAANAPv/AAAHAAIAAAAOAPr/AAAGAAEAAAAOAPv/AAAGAAIAAAAPAPr/AAAHAAEAAAAPAPv/AAAHAAIAAAAQAPr/AAAEAAYAAAAQAPz/AAAKAAIAAAAQAPv/AAAEAAcAAAAQAPn/AAAKAAIAAAAQAPj/AAAKAAIAAAAJAPr/AQAEAAEAAAAJAPv/AQAEAAIAAAAJAPz/AQAEAAMAAAAKAPr/AQAFAAEAAAAKAPv/AQAFAAIAAAAKAPz/AQAFAAMAAAA=")
 tile_set = SubResource("TileSet_2lyp8")
 
-[node name="Doors_Lower" type="Node2D" parent="MAP_LAYERS" unique_id=1781745805]
-z_index = 1
-
-[node name="Door1" parent="MAP_LAYERS/Doors_Lower" unique_id=1863234116 instance=ExtResource("5_gb53w")]
-position = Vector2(160, 0)
-target_scene_path = "uid://c26rmcpxyas7m"
-
-[node name="DoorClosed" parent="MAP_LAYERS/Doors_Lower" unique_id=718917756 instance=ExtResource("5_gb53w")]
-position = Vector2(640, 779)
-is_locked = true
-required_key_name = "Kulcs"
-
-[node name="DoorThrough" parent="MAP_LAYERS/Doors_Lower" unique_id=134896759 instance=ExtResource("5_gb53w")]
-position = Vector2(188, 742)
-
 [node name="Walls_TileMapLayer2" type="TileMapLayer" parent="MAP_LAYERS" unique_id=1561954731]
 light_mask = 2
 z_index = 1
@@ -824,6 +809,23 @@ z_index = 1
 collision_layer = 8
 
 [node name="Npc" parent="YSort_Entities" unique_id=82338993 instance=ExtResource("5_v5dby")]
+z_index = 1
+
+[node name="Doors_Lower" type="Node2D" parent="YSort_Entities" unique_id=1781745805]
+z_index = 1
+y_sort_enabled = true
+
+[node name="Door1" parent="YSort_Entities/Doors_Lower" unique_id=1863234116 instance=ExtResource("5_gb53w")]
+position = Vector2(160, 144)
+target_scene_path = "uid://c26rmcpxyas7m"
+
+[node name="DoorClosed" parent="YSort_Entities/Doors_Lower" unique_id=718917756 instance=ExtResource("5_gb53w")]
+position = Vector2(640, 923)
+is_locked = true
+required_key_name = "Kulcs"
+
+[node name="DoorThrough" parent="YSort_Entities/Doors_Lower" unique_id=134896759 instance=ExtResource("5_gb53w")]
+position = Vector2(188, 886)
 
 [node name="ScreenUI" parent="." unique_id=17775954 instance=ExtResource("4_6m72w")]
 
