@@ -140,6 +140,13 @@ The map edge has no boundary colliders, so the player can walk out into the empt
 
 `EnterZone2` has no polygon points in `OpacityPolygonZone` and `OpacityPolygonZone3`, so those zones have only one working entrance. Delete the empty nodes or draw the polygons.
 
+### 16. Companion's spot marker appears on walls (Reported)
+`scenes/companion/companion.gd:207`, `scenes/companion/companion.gd:333`
+
+When you tap a wall, the spot marker is drawn on the wall itself. The companion can't stand there, so it walks to the nearest point it can reach while the marker stays on the wall. `send_to_position` stores the raw tap position, and the marker is drawn at that position.
+
+**Fix:** when the companion is sent, snap the destination to the nearest reachable point next to where the user tapped. Use the end of the companion's navigation path to the tap (`map_get_path` on its own level). Don't use `map_get_closest_point`: it ignores the level, and with two overlapping navmeshes it can pick a point on the other level. Then store that point as `click_target_pos`, so the marker and the arrival check both use it. If there is no navmesh (no path), keep the tap position.
+
 ---
 
 ## Code quality
