@@ -2,10 +2,12 @@ extends CharacterBody2D
 
 @export var speed: float = 200.0
 
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
 
 var input_direction: Vector2 = Vector2.ZERO
 var control_enabled: bool = true
+# Merre néz a hős: "down", "left", "right" vagy "up" (az animációk nevének vége)
+var facing: String = "down"
 
 func _ready() -> void:
 	# Feliratkozunk a joystick mozgására
@@ -18,6 +20,7 @@ func _ready() -> void:
 func _physics_process(_delta: float) -> void:
 	if not control_enabled:
 		velocity = Vector2.ZERO
+		play_animation("idle")
 		move_and_slide()
 		return
 
@@ -28,15 +31,23 @@ func _physics_process(_delta: float) -> void:
 	
 	if current_input != Vector2.ZERO:
 		velocity = current_input * speed
-		# Sprite forgatása irány szerint
-		if current_input.x > 0:
-			sprite.scale.x = abs(sprite.scale.x)
-		elif current_input.x < 0:
-			sprite.scale.x = -abs(sprite.scale.x)
+		# Arra fordul, amerre a mozgás nagyobb része mutat
+		if abs(current_input.x) > abs(current_input.y):
+			facing = "right" if current_input.x > 0 else "left"
+		else:
+			facing = "down" if current_input.y > 0 else "up"
+		play_animation("walk")
 	else:
 		velocity = velocity.move_toward(Vector2.ZERO, speed)
+		play_animation("idle")
 
 	move_and_slide()
+
+# A "walk" vagy "idle" animációt játssza le az aktuális irányba (pl. "walk_left")
+func play_animation(action: String) -> void:
+	var anim_name := action + "_" + facing
+	if animation_player.current_animation != anim_name:
+		animation_player.play(anim_name)
 
 # --- SZIGNÁL KEZELŐK ---
 

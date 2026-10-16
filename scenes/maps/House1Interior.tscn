@@ -29,7 +29,7 @@ y_sort_enabled = true
 [node name="Player" parent="YSort_Entities" unique_id=476416376 instance=ExtResource("1_mysaq")]
 
 [node name="SpawnPoint" type="Marker2D" parent="YSort_Entities" unique_id=1252692801]
-position = Vector2(605, 191)
+position = Vector2(609, 280)
 
 [node name="ScreenUI" parent="." unique_id=17775954 instance=ExtResource("2_7l1wv")]
 

@@ -160,7 +160,7 @@ func run() -> void:
 
 	# 7. Az interakció gomb megnyomása nem küldi el a lényt, és a dialógus alatti koppintások sem
 	var npc = world.get_node("YSort_Entities/Npc")
-	player.global_position = npc.global_position + Vector2(-120, -60)
+	player.global_position = npc.global_position + Vector2(-116, 29)
 	await seconds(0.5)
 	var button = world.get_node("ScreenUI/InteractionButtonAnchor/InteractionButton")
 	var button_center: Vector2 = button.get_global_transform_with_canvas() * (button.texture_normal.get_size() / 2.0)
