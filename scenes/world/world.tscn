@@ -148,10 +148,10 @@ position = Vector2(2200, -800)
 additional_layers = [NodePath("../../MAP_LAYERS/Walls_TileMapLayer2"), NodePath("../../MAP_LAYERS/Ground_Upper_TileMapLayer2")]
 
 [node name="ShaderZone" parent="TRANSPARENCY_ZONES/OpacityPolygonZone3" index="0" unique_id=218426760]
-polygon = PackedVector2Array(-440, 200, 480, 200, 480, -150, -440, -150)
+polygon = PackedVector2Array(-440, 300, 480, 300, 480, -150, -440, -150)
 
 [node name="EnterZone1" parent="TRANSPARENCY_ZONES/OpacityPolygonZone3" index="1" unique_id=1983808705]
-polygon = PackedVector2Array(-440, 200, 480, 200, 480, 210, -440, 210)
+polygon = PackedVector2Array(-440, 300, 480, 300, 480, 310, -440, 310)
 
 [editable path="TRANSPARENCY_ZONES/OpacityPolygonZone"]
 [editable path="TRANSPARENCY_ZONES/OpacityPolygonZone2"]
