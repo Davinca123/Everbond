@@ -156,12 +156,12 @@ The navmesh is baked only from static colliders (`PARSED_GEOMETRY_STATIC_COLLIDE
 
 **Fix:** when NPCs start moving, use navigation avoidance: a `NavigationAgent2D` with `avoidance_enabled` on the companion, and a `NavigationObstacle2D` (or an agent of their own) on the NPCs. Don't rebake the navmesh around moving NPCs.
 
-### 18. Player's head is drawn over the roof edge (Confirmed)
+### 18. ~~Player's head is drawn over the roof edge~~ (Fixed)
 `scenes/world/world.tscn` (`OpacityPolygonZone3`)
 
 The plateau on top of the mountain has a "roof" zone that fades when the player or companion goes under it. Walking north toward it, the player stays on level 1 until their feet reach the entry strip at y −600 (they switch at y −578). Before that (feet at y −531 and −558) the player is drawn after the roof's tile layer, so their head covers the plateau's edge as if they were on the same level. The head should go under the roof.
 
-**Fix:** move the zone's entrance 80 px south: the bottom edge of `ShaderZone` from y 200 to 280, and `EnterZone1` from y 200..210 to 280..290. Tested in memory: the player then switches at y −531 and their head goes under the faded roof. Fine-tune by about ±20 px from screenshots. Change only this zone; at the tunnel and courtyard arches the head is drawn in the opening, which looks right. Branch: `fix/roof-zone-entrance`.
+Fixed: the zone's entrance moved 100 px south (`ShaderZone` bottom edge y 300, `EnterZone1` y 300..310). The player now switches to level 2 at feet y −500 and back to level 1 at −469 on the way out; screenshots show the head just below the edge before the switch and under the faded roof after it.
 
 ### 19. ~~Companion stops at a zone's edge when sent out of it~~ (Fixed)
 `scenes/companion/companion.gd` (`handle_goto_logic`, `track_level_changes`)
