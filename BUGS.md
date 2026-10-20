@@ -163,7 +163,7 @@ The plateau on top of the mountain has a "roof" zone that fades when the player 
 
 **Fix:** move the zone's entrance 80 px south: the bottom edge of `ShaderZone` from y 200 to 280, and `EnterZone1` from y 200..210 to 280..290. Tested in memory: the player then switches at y −531 and their head goes under the faded roof. Fine-tune by about ±20 px from screenshots. Change only this zone; at the tunnel and courtyard arches the head is drawn in the opening, which looks right. Branch: `fix/roof-zone-entrance`.
 
-### 19. Companion stops at a zone's edge when sent out of it (Confirmed)
+### 19. ~~Companion stops at a zone's edge when sent out of it~~ (Fixed)
 `scenes/companion/companion.gd` (`handle_goto_logic`, `track_level_changes`)
 
 Both stand under the roof (bug 18) and the player taps the ground in front of the tunnel. The companion leaves the zone, walks about 150 px and stops at (2039, −514) as if it had arrived. The same happens whenever the player stands in a zone and sends the companion out of it.
@@ -172,7 +172,7 @@ Both stand under the roof (bug 18) and the player taps the ground in front of th
 - Once it crosses to level 1, the real path (round by the stairs) is 2606 px.
 - The stuck check measures progress against the best remaining length so far (`goto_best_distance`, still 1310 from level 2). Nothing beats it, so after `GOTO_STUCK_TIME` (1 s) the companion gives up.
 
-**Fix:** in `track_level_changes()`, when the level changes, also reset `goto_best_distance = INF` and `goto_stuck_timer = 0.0`. Tested: the companion walked the whole route and arrived at (1276, 301). Branch: `fix/companion-tap-across-levels`.
+Fixed: `track_level_changes()` now restarts the stuck check (`goto_best_distance`, `goto_stuck_timer`) when the companion changes level. Test: `SCENARIO=roof_tap` in `test/drive.gd`.
 
 **Note:** a tap target on another level is only reachable when the current level's path happens to cross an entry strip. The companion plans across levels only when following the player, not for a tap. That's a separate feature.
 
