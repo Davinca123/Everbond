@@ -18,7 +18,9 @@ Each bug is marked:
 All three `OpacityPolygonZone`s in `world.tscn` use the same two materials: `Walls_TileMapLayer2` and `Ground_Upper_TileMapLayer2`. The shader holds only one polygon, so the last zone to update replaces the polygon and opacity for all of them. Each update also starts a new tween without stopping the previous one, so tweens fight over the same property.
 
 - **Example:** the player is in zone 2 when the companion leaves zone 1. Zone 1 sets opacity back to 1.0 and restores its own polygon, so the area around the player becomes opaque again.
+- **Reproduced in play:** both stand in the courtyard and the companion is tapped into the tunnel. The courtyard still records the player inside, but the shader switches to the tunnel's polygon, so the courtyard goes opaque around the player.
 - **Fix:** keep one manager that tracks every active zone and sends all their polygons to the shader, or give each zone its own material. Stop the previous tween before starting a new one. Clamp `point_count` to 8, the size of the shader's polygon array.
+- **Planned fix:** the shader (`opacity_polygon.gdshader`) holds up to 4 zones × 8 points: `polygon_points[32]`, `point_counts[4]`, `opacities[4]`. Each pixel fades by the opacity of the zone it falls in. Each zone gets a slot from its order under `TRANSPARENCY_ZONES`, writes its points once in `_ready`, and tweens only `opacities[slot]` (`tween_method`), stopping its previous tween first. Warn when a zone has more than 8 points or there are more than 4 zones. Branch: `fix/opacity-zones-overlap`.
 
 ### 2. Joystick reacts to every finger (Confirmed)
 `scenes/ui/joystick.gd:28-58`
@@ -153,6 +155,26 @@ When you tap a wall, the spot marker is drawn on the wall itself. The companion 
 The navmesh is baked only from static colliders (`PARSED_GEOMETRY_STATIC_COLLIDERS`), so NPCs, which are `CharacterBody2D`, are not cut out of it. The companion plans its path straight through an NPC and relies on `move_and_slide()` to slide around its collision shape. This works today because the only NPC stands still: the companion follows the player past it without getting stuck. Once NPCs move, the companion can't steer around them, and it can get pushed or stuck when an NPC walks into its path.
 
 **Fix:** when NPCs start moving, use navigation avoidance: a `NavigationAgent2D` with `avoidance_enabled` on the companion, and a `NavigationObstacle2D` (or an agent of their own) on the NPCs. Don't rebake the navmesh around moving NPCs.
+
+### 18. Player's head is drawn over the roof edge (Confirmed)
+`scenes/world/world.tscn` (`OpacityPolygonZone3`)
+
+The plateau on top of the mountain has a "roof" zone that fades when the player or companion goes under it. Walking north toward it, the player stays on level 1 until their feet reach the entry strip at y −600 (they switch at y −578). Before that (feet at y −531 and −558) the player is drawn after the roof's tile layer, so their head covers the plateau's edge as if they were on the same level. The head should go under the roof.
+
+**Fix:** move the zone's entrance 80 px south: the bottom edge of `ShaderZone` from y 200 to 280, and `EnterZone1` from y 200..210 to 280..290. Tested in memory: the player then switches at y −531 and their head goes under the faded roof. Fine-tune by about ±20 px from screenshots. Change only this zone; at the tunnel and courtyard arches the head is drawn in the opening, which looks right. Branch: `fix/roof-zone-entrance`.
+
+### 19. Companion stops at a zone's edge when sent out of it (Confirmed)
+`scenes/companion/companion.gd` (`handle_goto_logic`, `track_level_changes`)
+
+Both stand under the roof (bug 18) and the player taps the ground in front of the tunnel. The companion leaves the zone, walks about 150 px and stops at (2039, −514) as if it had arrived. The same happens whenever the player stands in a zone and sends the companion out of it.
+
+- The tap starts the companion on level 2, where the path is 1310 px long.
+- Once it crosses to level 1, the real path (round by the stairs) is 2606 px.
+- The stuck check measures progress against the best remaining length so far (`goto_best_distance`, still 1310 from level 2). Nothing beats it, so after `GOTO_STUCK_TIME` (1 s) the companion gives up.
+
+**Fix:** in `track_level_changes()`, when the level changes, also reset `goto_best_distance = INF` and `goto_stuck_timer = 0.0`. Tested: the companion walked the whole route and arrived at (1276, 301). Branch: `fix/companion-tap-across-levels`.
+
+**Note:** a tap target on another level is only reachable when the current level's path happens to cross an entry strip. The companion plans across levels only when following the player, not for a tap. That's a separate feature.
 
 ---
 
