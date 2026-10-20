@@ -12,15 +12,15 @@ Each bug is marked:
 
 ## Bugs
 
-### 1. Opacity zones overwrite each other (Confirmed)
+### 1. ~~Opacity zones overwrite each other~~ (Fixed)
 `scenes/objects/OpacityZones/opacity_polygon_zone.gd:125-136`
 
 All three `OpacityPolygonZone`s in `world.tscn` use the same two materials: `Walls_TileMapLayer2` and `Ground_Upper_TileMapLayer2`. The shader holds only one polygon, so the last zone to update replaces the polygon and opacity for all of them. Each update also starts a new tween without stopping the previous one, so tweens fight over the same property.
 
 - **Example:** the player is in zone 2 when the companion leaves zone 1. Zone 1 sets opacity back to 1.0 and restores its own polygon, so the area around the player becomes opaque again.
 - **Reproduced in play:** both stand in the courtyard and the companion is tapped into the tunnel. The courtyard still records the player inside, but the shader switches to the tunnel's polygon, so the courtyard goes opaque around the player.
-- **Fix:** keep one manager that tracks every active zone and sends all their polygons to the shader, or give each zone its own material. Stop the previous tween before starting a new one. Clamp `point_count` to 8, the size of the shader's polygon array.
-- **Planned fix:** the shader (`opacity_polygon.gdshader`) holds up to 4 zones × 8 points: `polygon_points[32]`, `point_counts[4]`, `opacities[4]`. Each pixel fades by the opacity of the zone it falls in. Each zone gets a slot from its order under `TRANSPARENCY_ZONES`, writes its points once in `_ready`, and tweens only `opacities[slot]` (`tween_method`), stopping its previous tween first. Warn when a zone has more than 8 points or there are more than 4 zones. Branch: `fix/opacity-zones-overlap`.
+
+Fixed: the shader (`opacity_polygon.gdshader`) now holds 2 zones × 16 points (`polygon_points[32]`, `point_counts[2]`, `opacities[2]`), and each pixel fades by the faintest zone it falls in. Any number of zones can exist, but at most 2 are faded at once (enough for the player and the companion): a zone takes a free slot when it starts to fade, writes its points there, tweens only `opacities[slot]` (stopping its previous tween first) and gives the slot back once it is opaque again. If no slot is free, it takes one from a zone that is fading out; if none is, it warns and doesn't fade. A zone with more than 16 points warns and uses only the first 16. Test: `SCENARIO=court_tap_tunnel` in `test/drive.gd`.
 
 ### 2. Joystick reacts to every finger (Confirmed)
 `scenes/ui/joystick.gd:28-58`

@@ -6,7 +6,7 @@ extends Node
 # Futtatás (a projekt mappájából):
 #   SCENARIO=tunnel godot --path . res://test/drive.tscn
 # Környezeti változók:
-#   SCENARIO  tunnel | courtyard | inout | tapcourtyard | tapcourtyard_join | inout_deep | inout_short | court_inout_deep | roof_tap (lásd SCENARIOS)
+#   SCENARIO  tunnel | courtyard | inout | tapcourtyard | tapcourtyard_join | inout_deep | inout_short | court_inout_deep | roof_tap | court_tap_tunnel (lásd SCENARIOS)
 #   OUT       ha meg van adva, ide ment másodpercenként egy képernyőképet
 #   OVERLAY=0 kikapcsolja a navigációs háló / zónák / útvonal rajzolását
 # Videó: --write-movie kimenet.avi --fixed-fps 30
@@ -42,6 +42,12 @@ const SCENARIOS = {
 	# the tunnel (level 1): it has to walk the whole way round by the stairs, not give up at the zone edge
 	"roof_tap": [["nav", Vector2(2080, -500)], ["line", Vector2(2080, -700)], ["wait", 4.0],
 		["tap", Vector2(1280, 300)], ["near", Vector2(1280, 300), 25.0]],
+	# Both in the courtyard (zone 1), then the companion is tapped to the tunnel's mouth and into the tunnel (zone 2):
+	# both zones must stay faded, the tunnel must not take over the courtyard's fade
+	"court_tap_tunnel": [["nav", Vector2(2080, 1420)], ["line", Vector2(2080, 1150)], ["nav", Vector2(2280, 450)], ["wait", 4.0],
+		["opacity", "OpacityPolygonZone", 0.4], ["tap", Vector2(1280, 300)], ["near", Vector2(1280, 300), 25.0],
+		["tap", Vector2(1280, 60)], ["near", Vector2(1280, 60), 10.0], ["wait", 1.0],
+		["opacity", "OpacityPolygonZone", 0.4], ["opacity", "OpacityPolygonZone2", 0.4], ["opacity", "OpacityPolygonZone3", 1.0]],
 }
 var world; var player; var comp; var pfeet; var cfeet; var cam
 var steps = []; var step = 0; var leg_path = PackedVector2Array(); var leg_i = 0
@@ -79,6 +85,8 @@ func start_leg():
 		keep_target = null
 	elif s[0] == "near":
 		wait_t = s[2]
+	elif s[0] == "opacity":
+		pass
 	else:
 		wait_t = s[1]
 	print("%6.2f LEG %d %s" % [t, step, str(s)])
@@ -98,6 +106,18 @@ func _physics_process(delta):
 	var s = steps[step]
 	var dir = Vector2.ZERO
 	if s[0] in ["tap", "keep", "release"]:
+		next()
+	elif s[0] == "opacity":
+		# The opacity the shader holds for this zone, on every layer the zone fades
+		var zone = world.get_node("TRANSPARENCY_ZONES/" + s[1])
+		var ok = true; var got = []
+		for layer in zone.additional_layers:
+			# A zone without a shader slot isn't faded
+			var o = 1.0 if zone.slot < 0 else layer.material.get_shader_parameter("opacities")[zone.slot]
+			got.append("%.2f" % o)
+			if abs(o - s[2]) > 0.01: ok = false
+		print("%6.2f CHECK %s opacity %s: %s -> %s" % [t, s[1], s[2], ", ".join(got), "PASS" if ok else "FAIL"])
+		if not ok: failed_checks += 1
 		next()
 	elif s[0] == "near":
 		# Wait until the companion's feet reach the point (e.g. a tap target it was sent to)
@@ -147,7 +167,7 @@ func next():
 func finish():
 	var ok = failed_checks == 0
 	# Scenarios that end with a companion check leave it away from the player on purpose
-	if steps[-1][0] != "near":
+	if not steps[-1][0] in ["near", "opacity"]:
 		ok = ok and lvl(player) == lvl(comp) and pfeet.global_position.distance_to(cfeet.global_position) < 200
 	print("RESULT %s: player L%d comp L%d dist %.0f -> %s" % [name_, lvl(player), lvl(comp),
 		pfeet.global_position.distance_to(cfeet.global_position), "PASS" if ok else "FAIL"])
