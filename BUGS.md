@@ -174,7 +174,17 @@ Both stand under the roof (bug 18) and the player taps the ground in front of th
 
 Fixed: `track_level_changes()` now restarts the stuck check (`goto_best_distance`, `goto_stuck_timer`) when the companion changes level. Test: `SCENARIO=roof_tap` in `test/drive.gd`.
 
-**Note:** a tap target on another level is only reachable when the current level's path happens to cross an entry strip. The companion plans across levels only when following the player, not for a tap. That's a separate feature.
+**Note:** a tap target on another level used to be reachable only when the current level's path happened to cross an entry strip. Taps now plan across levels (bug 20).
+
+### 20. ~~Companion goes round the mountain instead of through the tunnel~~ (Fixed)
+`scenes/companion/companion.gd` (`send_to_position`, `handle_goto_logic`)
+
+The companion stands south of the tunnel and the player taps the ground north of it. The companion walks west round the whole mountain instead of through the tunnel, and after its wait it comes back round the mountain too.
+
+- Both ends are on level 1, and the tunnel is level 2. Each level has its own navigation mesh, so the companion only sees the level-1 route.
+- Follow mode crosses levels through the player's breadcrumbs, but a tap had nothing like it.
+
+Fixed: on a tap, `plan_crossings()` searches for the shortest route across levels (Dijkstra). The nodes are the companion, the target and both sides of every zone entry strip (`portals` in `opacity_polygon_zone.gd`), and the costs come from the navigation mesh of each level. The companion then walks those crossings in order (`goto_crossings`), the same way follow mode walks the player's. When its wait ends with no breadcrumbs left, it plans the route back to the player the same way. If the target is on the companion's level, it stays the target level as before; if not, the route may end on another level. A plan takes under 1 ms. Test: `SCENARIO=tap_through_tunnel` in `test/drive.gd`.
 
 ---
 

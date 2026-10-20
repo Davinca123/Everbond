@@ -34,6 +34,8 @@ const TARGET_MARKER_SORT_LIFT: float = 100.0
 const GOTO_STUCK_TIME: float = 1.0
 # Ennyivel kell csökkennie a hátralévő útnak, hogy előrehaladásnak számítson
 const GOTO_PROGRESS_DISTANCE: float = 10.0
+# Egy pont akkor van egy szint hálóján, ha a háló legközelebbi pontja ennyin belül van
+const NAV_REACH: float = 40.0
 
 # Hivatkozás a főhősre
 @onready var player = $"../Player"
@@ -79,6 +81,8 @@ var stay_bar_shown: bool = false
 var target_marker: Node2D
 var goto_stuck_timer: float = 0.0
 var goto_best_distance: float = INF
+# Koppintásnál a szintváltó kapuk, amiken át a legrövidebb út vezet a célhoz (lásd plan_crossings)
+var goto_crossings: Array[Dictionary] = []
 
 func _ready() -> void:
 	# BIZTONSÁGI CSERE: Leválasztjuk a régit (ha volt), és tisztán kódból kötjük össze
@@ -107,6 +111,10 @@ func _physics_process(delta):
 			wait_timer -= delta
 			if wait_timer <= 0.0:
 				current_state = State.FOLLOW
+				# Ha a hős szintjén vagyunk, de a hozzá vezető legrövidebb út más szinten át
+				# visz (pl. az alagúton jöttünk ide), azon megyünk vissza
+				if level_crossings.is_empty():
+					level_crossings = plan_crossings(player_feet.global_position, get_level(player))
 			
 	# IRÁNYBA FORDULÁS:
 	# Ha a sebesség x tengelye negatív, balra megy -> tükrözzük a képet
@@ -158,22 +166,10 @@ func _physics_process(delta):
 func handle_follow_logic():
 	# Ha a hős másik szintre ment, előbb az ő nyomában a szintváltó ponthoz megyünk
 	if not level_crossings.is_empty():
-		var crossing: Dictionary = level_crossings[0]
-		# Odaértünk, de a zóna nem váltott szintet -> feladjuk, ne ragadjunk itt örökre
-		if feet.global_position.distance_to(crossing.position) < WAYPOINT_REACHED_DISTANCE:
+		if walk_crossing(level_crossings[0]):
 			level_crossings.pop_front()
 			repath_timer = 0.0
 		else:
-			if feet.global_position.distance_to(crossing.approach) < WAYPOINT_REACHED_DISTANCE:
-				crossing.approached = true
-			# A zóna előtti pontról már egyenesen megyünk át: az újratervezés ne küldjön
-			# vissza oda, mert a kis kapszulájú hős átlépési pontja a zónán belül lehet,
-			# és a lény sosem jutna ki belőle
-			if crossing.approached:
-				velocity = feet.global_position.direction_to(crossing.position) * follow_speed
-			else:
-				update_path(crossing.approach, true, crossing.position)
-				velocity = path_direction() * follow_speed
 			return
 
 	# A navigációs hálón keresünk utat a hős lábához, így a falakat is megkerüli
@@ -187,28 +183,52 @@ func handle_follow_logic():
 
 # 2. LOGIKA: Séta a kattintott pontra
 func handle_goto_logic(delta: float):
+	# Ha a cél felé vezető legrövidebb út más szinten át visz (pl. az alagúton),
+	# előbb sorban átmegyünk a kapukon
+	if not goto_crossings.is_empty():
+		var crossing: Dictionary = goto_crossings[0]
+		if walk_crossing(crossing):
+			goto_crossings.pop_front()
+			repath_timer = 0.0
+			goto_best_distance = INF
+			goto_stuck_timer = 0.0
+			return
+		var to_crossing: float = feet.global_position.distance_to(crossing.position) if crossing.approached else remaining_path_length()
+		if is_goto_stuck(to_crossing, delta):
+			arrive()
+		return
+
 	update_path(click_target_pos)
 
 	# Ha nem jutunk előre (pl. a cél fal mögött van, és nincs navigációs háló), feladjuk.
 	# A hátralévő út hosszát figyeljük, nem a sebességet, mert a fal mentén csúszva is mozog.
 	var remaining: float = remaining_path_length()
+	var stuck: bool = is_goto_stuck(remaining, delta)
+
+	# Ha még nem értük el a pontot
+	if remaining > target_margin and not stuck:
+		velocity = path_direction() * follow_speed
+	else:
+		arrive()
+
+# Igaz, ha a hátralévő út GOTO_STUCK_TIME óta nem rövidült
+func is_goto_stuck(remaining: float, delta: float) -> bool:
 	if remaining < goto_best_distance - GOTO_PROGRESS_DISTANCE:
 		goto_best_distance = remaining
 		goto_stuck_timer = 0.0
 	else:
 		goto_stuck_timer += delta
+	return goto_stuck_timer >= GOTO_STUCK_TIME
 
-	# Ha még nem értük el a pontot
-	if remaining > target_margin and goto_stuck_timer < GOTO_STUCK_TIME:
-		velocity = path_direction() * follow_speed
-	else:
-		# Megérkeztünk! Átváltunk IDLE (várakozó) állapotba, majd stay_duration
-		# után visszaszalad a hőshöz (időzítő változóval, így egy új koppintás
-		# nem rövidíti le a következő várakozást)
-		velocity = Vector2.ZERO
-		current_state = State.IDLE
-		wait_timer = stay_duration
-		print("Lény: Megérkeztem a célhoz!")
+# Megérkeztünk! Átváltunk IDLE (várakozó) állapotba, majd stay_duration
+# után visszaszalad a hőshöz (időzítő változóval, így egy új koppintás
+# nem rövidíti le a következő várakozást)
+func arrive() -> void:
+	velocity = Vector2.ZERO
+	goto_crossings.clear()
+	current_state = State.IDLE
+	wait_timer = stay_duration
+	print("Lény: Megérkeztem a célhoz!")
 
 # Ezt a függvényt a fő Game kód fogja meghívni, ha a játékos kattintott
 func send_to_position(target_pos: Vector2):
@@ -217,6 +237,7 @@ func send_to_position(target_pos: Vector2):
 	goto_stuck_timer = 0.0
 	goto_best_distance = INF
 	repath_timer = 0.0 # Azonnal új utat számolunk az új célhoz
+	goto_crossings = plan_crossings(target_pos)
 	print("Lény: Indulok a koordinátára: ", target_pos)
 
 # --- ÚTKERESÉS ---
@@ -275,6 +296,9 @@ func track_level_changes() -> void:
 		# elakadásfigyelés elölről kezdi, különben a régi, rövidebb úthoz mérve feladná
 		goto_best_distance = INF
 		goto_stuck_timer = 0.0
+		# A koppintott úton következő kapun átjutottunk
+		if not goto_crossings.is_empty() and goto_crossings[0].level == level:
+			goto_crossings.pop_front()
 
 	# Ha már azon a szinten vagyunk, ahová a soron következő pont vezet, átléptük:
 	# jöhet a következő pont, vagy ha nincs több, közvetlenül a hős
@@ -307,6 +331,125 @@ func make_crossing(at: Vector2, direction: Vector2, level: int) -> Dictionary:
 		"level": level,
 		"approached": false, # elérte-e már a lény a zóna előtti pontot
 	}
+
+# Átvezet egy szintváltó ponton: előbb a régi szint hálóján a zóna elé, onnan egyenesen át.
+# Igazat ad, ha a zóna mögé értünk, de nem váltott szintet: ekkor a pontot el kell dobni,
+# hogy ne ragadjunk itt örökre.
+func walk_crossing(crossing: Dictionary) -> bool:
+	if feet.global_position.distance_to(crossing.position) < WAYPOINT_REACHED_DISTANCE:
+		return true
+	if feet.global_position.distance_to(crossing.approach) < WAYPOINT_REACHED_DISTANCE:
+		crossing.approached = true
+	# A zóna előtti pontról már egyenesen megyünk át: az újratervezés ne küldjön
+	# vissza oda, mert a kis kapszulájú hős átlépési pontja a zónán belül lehet,
+	# és a lény sosem jutna ki belőle
+	if crossing.approached:
+		velocity = feet.global_position.direction_to(crossing.position) * follow_speed
+	else:
+		update_path(crossing.approach, true, crossing.position)
+		velocity = path_direction() * follow_speed
+	return false
+
+# --- ÚTVONALTERVEZÉS SZINTEKEN ÁT (koppintásnál és a hőshöz visszatérésnél) ---
+
+# A navigációs háló szintenként külön van, ezért a szinten belüli út néha nagy kerülő
+# (pl. az alagút helyett a hegy körül). A szintváltó kapukon (az átlátszósági zónák
+# EnterZone sávjain) át keressük a legrövidebb utat a célig (Dijkstra), és visszaadjuk
+# a kapukon átvezető szintváltó pontokat, sorrendben. Üres, ha a szinten maradó út a legrövidebb.
+# target_level: a cél szintje; ha nincs megadva, a háló alapján döntjük el (get_target_levels)
+func plan_crossings(target: Vector2, target_level: int = 0) -> Array[Dictionary]:
+	var start_level: int = get_level(self)
+	# Csomópontok: a lény, a cél (minden szinten, ahol lehet), és minden kapu két oldala
+	var nodes: Array[Dictionary] = [{ "position": feet.global_position, "level": start_level, "target": false }]
+	var levels: Array[int] = [start_level]
+	# Kapun át: csomópont -> [a kapu túloldala, a hozzá tartozó szintváltó pont]
+	var links: Dictionary = {}
+	for zone in get_tree().get_nodes_in_group("opacity_zones"):
+		for portal in zone.portals:
+			var outside: int = nodes.size()
+			var inside: int = outside + 1
+			nodes.append({ "position": portal.center - portal.inward * CROSSING_APPROACH, "level": portal.outside_level, "target": false })
+			nodes.append({ "position": portal.center + portal.inward * CROSSING_APPROACH, "level": portal.inside_level, "target": false })
+			links[outside] = [inside, make_crossing(portal.center, portal.inward, portal.inside_level)]
+			links[inside] = [outside, make_crossing(portal.center, -portal.inward, portal.outside_level)]
+			for level in [portal.outside_level, portal.inside_level]:
+				if not levels.has(level):
+					levels.append(level)
+	if links.is_empty():
+		return []
+	for level in [target_level] if target_level != 0 else get_target_levels(target, start_level, levels):
+		nodes.append({ "position": target, "level": level, "target": true })
+
+	var distance: Array[float] = []
+	distance.resize(nodes.size())
+	distance.fill(INF)
+	distance[0] = 0.0
+	var previous: Array[int] = []
+	previous.resize(nodes.size())
+	previous.fill(-1)
+	var done: Array[bool] = []
+	done.resize(nodes.size())
+	done.fill(false)
+	var reached: int = -1
+	while true:
+		var current: int = -1
+		for i in nodes.size():
+			if not done[i] and distance[i] < INF and (current < 0 or distance[i] < distance[current]):
+				current = i
+		if current < 0:
+			break
+		if nodes[current].target:
+			reached = current
+			break
+		done[current] = true
+		# Ugyanazon a szinten a háló menti út hossza
+		for i in nodes.size():
+			if not done[i] and nodes[i].level == nodes[current].level:
+				var length: float = distance[current] + nav_path_length(nodes[current].position, nodes[i].position, nodes[current].level)
+				if length < distance[i]:
+					distance[i] = length
+					previous[i] = current
+		# Át a kapun a másik szintre
+		if links.has(current):
+			var other: int = links[current][0]
+			var length: float = distance[current] + CROSSING_APPROACH * 2.0
+			if not done[other] and length < distance[other]:
+				distance[other] = length
+				previous[other] = current
+
+	var crossings: Array[Dictionary] = []
+	var node: int = reached
+	while node > 0:
+		var from: int = previous[node]
+		if links.has(from) and links[from][0] == node and nodes[from].level != nodes[node].level:
+			crossings.push_front(links[from][1].duplicate())
+		node = from
+	return crossings
+
+# Melyik szinten lehet a cél: ha a lény szintjén is rajta van a hálón, ott (mint eddig),
+# különben azokon a szinteken, ahol rajta van. Ha sehol, a lény szintjén.
+func get_target_levels(target: Vector2, start_level: int, levels: Array[int]) -> Array[int]:
+	if is_on_level(target, start_level):
+		return [start_level]
+	var on_levels: Array[int] = []
+	for level in levels:
+		if level != start_level and is_on_level(target, level):
+			on_levels.append(level)
+	return on_levels if not on_levels.is_empty() else [start_level]
+
+func is_on_level(point: Vector2, level: int) -> bool:
+	var path_on_level: PackedVector2Array = NavigationServer2D.map_get_path(get_world_2d().navigation_map, point, point, true, level)
+	return not path_on_level.is_empty() and path_on_level[0].distance_to(point) < NAV_REACH
+
+# Az út hossza egy szint hálóján; INF, ha a két pont nincs összekötve
+func nav_path_length(from: Vector2, to: Vector2, level: int) -> float:
+	var nav_path: PackedVector2Array = NavigationServer2D.map_get_path(get_world_2d().navigation_map, from, to, true, level)
+	if nav_path.is_empty() or nav_path[0].distance_to(from) > NAV_REACH or nav_path[nav_path.size() - 1].distance_to(to) > NAV_REACH:
+		return INF
+	var length: float = 0.0
+	for i in nav_path.size() - 1:
+		length += nav_path[i].distance_to(nav_path[i + 1])
+	return length
 
 # Irány a következő útpont felé (az elért útpontokat átlépjük)
 func path_direction() -> Vector2:
