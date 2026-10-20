@@ -51,7 +51,7 @@ var repath_timer: float = 0.0
 # Szintváltó pontok, sorrendben: ezeken át jut el a lény a hős szintjére, mert a
 # navigációs háló szintenként külön van. A hős szintváltásai a sor végére kerülnek,
 # a lény saját (pl. koppintásra történt) szintváltásai a sor elejére, visszaútként.
-# Elemei: { "at": Vector2, "approach": Vector2, "position": Vector2, "level": int }
+# Elemei: { "at": Vector2, "approach": Vector2, "position": Vector2, "level": int, "approached": bool }
 # at: ahol a váltás történt, approach: a zóna előtt (régi szint), position: a zóna
 # mögött, level: a váltás utáni szint.
 var level_crossings: Array[Dictionary] = []
@@ -164,8 +164,16 @@ func handle_follow_logic():
 			level_crossings.pop_front()
 			repath_timer = 0.0
 		else:
-			update_path(crossing.approach, true, crossing.position)
-			velocity = path_direction() * follow_speed
+			if feet.global_position.distance_to(crossing.approach) < WAYPOINT_REACHED_DISTANCE:
+				crossing.approached = true
+			# A zóna előtti pontról már egyenesen megyünk át: az újratervezés ne küldjön
+			# vissza oda, mert a kis kapszulájú hős átlépési pontja a zónán belül lehet,
+			# és a lény sosem jutna ki belőle
+			if crossing.approached:
+				velocity = feet.global_position.direction_to(crossing.position) * follow_speed
+			else:
+				update_path(crossing.approach, true, crossing.position)
+				velocity = path_direction() * follow_speed
 			return
 
 	# A navigációs hálón keresünk utat a hős lábához, így a falakat is megkerüli
@@ -293,6 +301,7 @@ func make_crossing(at: Vector2, direction: Vector2, level: int) -> Dictionary:
 		"approach": at - direction * CROSSING_APPROACH,
 		"position": at + direction * CROSSING_OVERSHOOT,
 		"level": level,
+		"approached": false, # elérte-e már a lény a zóna előtti pontot
 	}
 
 # Irány a következő útpont felé (az elért útpontokat átlépjük)
