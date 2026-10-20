@@ -12,8 +12,20 @@ var companion_in: bool = false
 var player_in_shader_zone: bool = false
 var companion_in_shader_zone: bool = false
 
+# A shader egyszerre ennyi halványított zónát és zónánként ennyi pontot tud tárolni (opacity_polygon.gdshader)
+const MAX_ACTIVE: int = 2
+const MAX_POINTS: int = 16
+
+# Az épp halványított zónák, helyenként (slot) egy. Minden zóna osztozik rajta.
+static var slots: Array = [null, null]
+
 # A shaderhez szükséges pontok a nagy takaró zónához
 var global_points: PackedVector2Array = []
+# A zóna helye a shader tömbjeiben, amíg halványítva van; -1, ha nincs helye
+var slot: int = -1
+var current_opacity: float = 1.0
+var fading_out: bool = false
+var fade_tween: Tween
 
 func _ready() -> void:
 	# A részletes "shape" szignálokat kötjük be
@@ -25,6 +37,79 @@ func _ready() -> void:
 	if shader_poly is CollisionPolygon2D:
 		for vertex in shader_poly.polygon:
 			global_points.append(shader_poly.to_global(vertex))
+
+	if global_points.size() > MAX_POINTS:
+		push_warning("%s: a ShaderZone-nak %d pontja van, a shader csak az első %d-at használja." % [name, global_points.size(), MAX_POINTS])
+		global_points.resize(MAX_POINTS)
+
+# Ha a pálya kicserélődik, a helyet is felszabadítjuk
+func _exit_tree() -> void:
+	release_slot()
+
+# Szabad helyet keresünk; ha nincs, egy éppen visszaálló zónától vesszük el
+func acquire_slot() -> bool:
+	var free := -1
+	for i in MAX_ACTIVE:
+		if slots[i] == null or not is_instance_valid(slots[i]):
+			free = i
+			break
+	if free < 0:
+		for i in MAX_ACTIVE:
+			if slots[i].fading_out:
+				free = i
+				if slots[i].fade_tween:
+					slots[i].fade_tween.kill()
+				slots[i].release_slot()
+				break
+	if free < 0:
+		push_warning("%s: egyszerre legfeljebb %d zóna lehet halványítva, ez nem halványul." % [name, MAX_ACTIVE])
+		return false
+
+	slots[free] = self
+	slot = free
+	current_opacity = 1.0
+	write_points()
+	return true
+
+# A zóna kikerül a shaderből: a helyén nem marad sokszög
+func release_slot() -> void:
+	if slot < 0:
+		return
+	for mat in get_materials():
+		var counts = mat.get_shader_parameter("point_counts")
+		if counts is PackedInt32Array and counts.size() > slot:
+			counts[slot] = 0
+			mat.set_shader_parameter("point_counts", counts)
+	if slots[slot] == self:
+		slots[slot] = null
+	slot = -1
+	current_opacity = 1.0
+
+# A zóna pontjait a saját helyére írjuk be minden anyagba
+func write_points() -> void:
+	for mat in get_materials():
+		var points = mat.get_shader_parameter("polygon_points")
+		if not points is PackedVector2Array:
+			points = PackedVector2Array()
+		points.resize(MAX_ACTIVE * MAX_POINTS)
+		for i in global_points.size():
+			points[slot * MAX_POINTS + i] = global_points[i]
+		mat.set_shader_parameter("polygon_points", points)
+
+		var counts = mat.get_shader_parameter("point_counts")
+		if not counts is PackedInt32Array:
+			counts = PackedInt32Array()
+		counts.resize(MAX_ACTIVE)
+		counts[slot] = global_points.size()
+		mat.set_shader_parameter("point_counts", counts)
+	set_opacity(current_opacity)
+
+func get_materials() -> Array[ShaderMaterial]:
+	var materials: Array[ShaderMaterial] = []
+	for layer in additional_layers:
+		if layer and layer.material is ShaderMaterial and not materials.has(layer.material):
+			materials.append(layer.material)
+	return materials
 
 # --- BELÉPÉS ---
 func _on_body_shape_entered(body_rid: RID, body: Node2D, _body_shape_index: int, local_shape_index: int) -> void:
@@ -123,14 +208,29 @@ func update_zone_state() -> void:
 
 
 func set_zone_state(opa: float) -> void:
-	# Set target layers opacity
-	for layer in additional_layers:
-		if layer and layer.material is ShaderMaterial:
-			var mat: ShaderMaterial = layer.material
-			
-			# Átadjuk a globális pontokat a shader tömbjének
-			mat.set_shader_parameter("point_count", global_points.size())
-			mat.set_shader_parameter("polygon_points", global_points)
-			
-			var tween = create_tween()
-			tween.tween_property(mat, "shader_parameter/opacity", opa, fade_duration)
+	fading_out = opa >= 1.0
+	if slot < 0:
+		# Ami nincs halványítva, azt nem kell visszaállítani
+		if fading_out or not acquire_slot():
+			return
+	# Az előző áttűnést leállítjuk, különben a kettő egymással harcolna
+	if fade_tween:
+		fade_tween.kill()
+	fade_tween = create_tween()
+	fade_tween.tween_method(set_opacity, current_opacity, opa, fade_duration)
+	# Ha teljesen visszaállt, a helyét átadhatja egy másik zónának
+	if fading_out:
+		fade_tween.tween_callback(release_slot)
+
+# Csak a saját helyünket írjuk át az opacities tömbben, a többi zónáét nem
+func set_opacity(opa: float) -> void:
+	if slot < 0:
+		return
+	current_opacity = opa
+	for mat in get_materials():
+		var opacities = mat.get_shader_parameter("opacities")
+		if not opacities is PackedFloat32Array:
+			opacities = PackedFloat32Array()
+		opacities.resize(MAX_ACTIVE)
+		opacities[slot] = opa
+		mat.set_shader_parameter("opacities", opacities)
