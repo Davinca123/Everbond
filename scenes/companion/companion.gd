@@ -271,6 +271,10 @@ func track_level_changes() -> void:
 			level_crossings.push_front(make_crossing(feet.global_position, -velocity.normalized(), last_level))
 		last_level = level
 		repath_timer = 0.0 # Új szint, új navigációs háló -> azonnal új út
+		# Az új szinten az út hossza más (pl. a lépcsőn kerülve hosszabb), ezért az
+		# elakadásfigyelés elölről kezdi, különben a régi, rövidebb úthoz mérve feladná
+		goto_best_distance = INF
+		goto_stuck_timer = 0.0
 
 	# Ha már azon a szinten vagyunk, ahová a soron következő pont vezet, átléptük:
 	# jöhet a következő pont, vagy ha nincs több, közvetlenül a hős

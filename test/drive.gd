@@ -6,7 +6,7 @@ extends Node
 # Futtatás (a projekt mappájából):
 #   SCENARIO=tunnel godot --path . res://test/drive.tscn
 # Környezeti változók:
-#   SCENARIO  tunnel | courtyard | inout | tapcourtyard | tapcourtyard_join | inout_deep | inout_short | court_inout_deep (lásd SCENARIOS)
+#   SCENARIO  tunnel | courtyard | inout | tapcourtyard | tapcourtyard_join | inout_deep | inout_short | court_inout_deep | roof_tap (lásd SCENARIOS)
 #   OUT       ha meg van adva, ide ment másodpercenként egy képernyőképet
 #   OVERLAY=0 kikapcsolja a navigációs háló / zónák / útvonal rajzolását
 # Videó: --write-movie kimenet.avi --fixed-fps 30
@@ -38,11 +38,15 @@ const SCENARIOS = {
 	# Same as inout_deep, through the courtyard's south arch
 	"court_inout_deep": [["nav", Vector2(2080, 1420)], ["line", Vector2(2080, 1000)], ["wait", 4.0],
 		["line", Vector2(2080, 1420)], ["wait", 8.0]],
+	# Both under the roof (level 2), then the companion is tapped out to the ground in front of
+	# the tunnel (level 1): it has to walk the whole way round by the stairs, not give up at the zone edge
+	"roof_tap": [["nav", Vector2(2080, -500)], ["line", Vector2(2080, -700)], ["wait", 4.0],
+		["tap", Vector2(1280, 300)], ["near", Vector2(1280, 300), 25.0]],
 }
 var world; var player; var comp; var pfeet; var cfeet; var cam
 var steps = []; var step = 0; var leg_path = PackedVector2Array(); var leg_i = 0
 var wait_t = 0.0; var t = 0.0; var log_t = 0.0; var shot_t = 0.0; var shot_n = 0
-var keep_target = null; var started = false; var stuck_t = 0.0; var last_pos = Vector2.ZERO; var leg_t = 0.0
+var failed_checks = 0; var keep_target = null; var started = false; var stuck_t = 0.0; var last_pos = Vector2.ZERO; var leg_t = 0.0
 var out = OS.get_environment("OUT"); var name_ = OS.get_environment("SCENARIO")
 
 func _ready():
@@ -73,6 +77,8 @@ func start_leg():
 		keep_target = s[1]
 	elif s[0] == "release":
 		keep_target = null
+	elif s[0] == "near":
+		wait_t = s[2]
 	else:
 		wait_t = s[1]
 	print("%6.2f LEG %d %s" % [t, step, str(s)])
@@ -93,6 +99,14 @@ func _physics_process(delta):
 	var dir = Vector2.ZERO
 	if s[0] in ["tap", "keep", "release"]:
 		next()
+	elif s[0] == "near":
+		# Wait until the companion's feet reach the point (e.g. a tap target it was sent to)
+		wait_t -= delta
+		var d = cfeet.global_position.distance_to(s[1])
+		if d < 30.0 or wait_t <= 0.0:
+			print("%6.2f CHECK companion near %s: dist %.0f -> %s" % [t, s[1], d, "PASS" if d < 30.0 else "FAIL"])
+			if d >= 30.0: failed_checks += 1
+			next()
 	elif s[0] == "wait":
 		wait_t -= delta
 		if wait_t <= 0.0: next()
@@ -131,7 +145,10 @@ func next():
 	if step < steps.size(): start_leg()
 
 func finish():
-	var ok = lvl(player) == lvl(comp) and pfeet.global_position.distance_to(cfeet.global_position) < 200
+	var ok = failed_checks == 0
+	# Scenarios that end with a companion check leave it away from the player on purpose
+	if steps[-1][0] != "near":
+		ok = ok and lvl(player) == lvl(comp) and pfeet.global_position.distance_to(cfeet.global_position) < 200
 	print("RESULT %s: player L%d comp L%d dist %.0f -> %s" % [name_, lvl(player), lvl(comp),
 		pfeet.global_position.distance_to(cfeet.global_position), "PASS" if ok else "FAIL"])
 	get_tree().quit()
