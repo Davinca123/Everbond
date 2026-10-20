@@ -26,8 +26,13 @@ var slot: int = -1
 var current_opacity: float = 1.0
 var fading_out: bool = false
 var fade_tween: Tween
+# Szintváltó kapuk (EnterZone sávok) a lény útvonaltervezéséhez (companion.gd).
+# Elemei: { "center": a sáv közepe, "inward": a ShaderZone felé mutató egységvektor,
+#           "outside_level": szint kint, "inside_level": szint bent }
+var portals: Array[Dictionary] = []
 
 func _ready() -> void:
+	add_to_group("opacity_zones")
 	# A részletes "shape" szignálokat kötjük be
 	body_shape_entered.connect(_on_body_shape_entered)
 	body_shape_exited.connect(_on_body_shape_exited)
@@ -41,6 +46,29 @@ func _ready() -> void:
 	if global_points.size() > MAX_POINTS:
 		push_warning("%s: a ShaderZone-nak %d pontja van, a shader csak az első %d-at használja." % [name, global_points.size(), MAX_POINTS])
 		global_points.resize(MAX_POINTS)
+	find_portals()
+
+# Az EnterZone sávok vékony téglalapok: a legrövidebb oldaluk iránya a sávon át mutat,
+# és amerre a ShaderZone van, arra van "bent"
+func find_portals() -> void:
+	for child in get_children():
+		if not child is CollisionPolygon2D or not child.name.begins_with("EnterZone") or child.polygon.size() < 3:
+			continue
+		var points: PackedVector2Array = []
+		var center := Vector2.ZERO
+		for vertex in child.polygon:
+			points.append(child.to_global(vertex))
+			center += points[-1]
+		center /= points.size()
+		var across := Vector2.ZERO
+		for i in points.size():
+			var edge: Vector2 = points[(i + 1) % points.size()] - points[i]
+			if across == Vector2.ZERO or edge.length() < across.length():
+				across = edge
+		var inward := across.normalized()
+		if not Geometry2D.is_point_in_polygon(center + inward * 20.0, global_points):
+			inward = -inward
+		portals.append({ "center": center, "inward": inward, "outside_level": 1, "inside_level": 2 })
 
 # Ha a pálya kicserélődik, a helyet is felszabadítjuk
 func _exit_tree() -> void:

@@ -6,7 +6,7 @@ extends Node
 # Futtatás (a projekt mappájából):
 #   SCENARIO=tunnel godot --path . res://test/drive.tscn
 # Környezeti változók:
-#   SCENARIO  tunnel | courtyard | inout | tapcourtyard | tapcourtyard_join | inout_deep | inout_short | court_inout_deep | roof_tap | court_tap_tunnel (lásd SCENARIOS)
+#   SCENARIO  tunnel | courtyard | inout | tapcourtyard | tapcourtyard_join | inout_deep | inout_short | court_inout_deep | roof_tap | court_tap_tunnel | tap_through_tunnel (lásd SCENARIOS)
 #   OUT       ha meg van adva, ide ment másodpercenként egy képernyőképet
 #   OVERLAY=0 kikapcsolja a navigációs háló / zónák / útvonal rajzolását
 # Videó: --write-movie kimenet.avi --fixed-fps 30
@@ -48,6 +48,10 @@ const SCENARIOS = {
 		["opacity", "OpacityPolygonZone", 0.4], ["tap", Vector2(1280, 300)], ["near", Vector2(1280, 300), 25.0],
 		["tap", Vector2(1280, 60)], ["near", Vector2(1280, 60), 10.0], ["wait", 1.0],
 		["opacity", "OpacityPolygonZone", 0.4], ["opacity", "OpacityPolygonZone2", 0.4], ["opacity", "OpacityPolygonZone3", 1.0]],
+	# Both south of the tunnel (level 1), the companion is tapped to the ground north of it (also level 1):
+	# the short way is through the tunnel (level 2), not round the mountain, and back the same way
+	"tap_through_tunnel": [["nav", Vector2(1280, 380)], ["wait", 2.0],
+		["tap", Vector2(1280, -650)], ["near", Vector2(1280, -650), 10.0], ["wait", 10.0]],
 }
 var world; var player; var comp; var pfeet; var cfeet; var cam
 var steps = []; var step = 0; var leg_path = PackedVector2Array(); var leg_i = 0
