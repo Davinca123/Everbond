@@ -6,7 +6,7 @@ extends Node
 # Futtatás (a projekt mappájából):
 #   SCENARIO=tunnel godot --path . res://test/drive.tscn
 # Környezeti változók:
-#   SCENARIO  tunnel | courtyard | inout | tapcourtyard | tapcourtyard_join (lásd SCENARIOS)
+#   SCENARIO  tunnel | courtyard | inout | tapcourtyard | tapcourtyard_join | inout_deep | inout_short | court_inout_deep (lásd SCENARIOS)
 #   OUT       ha meg van adva, ide ment másodpercenként egy képernyőképet
 #   OVERLAY=0 kikapcsolja a navigációs háló / zónák / útvonal rajzolását
 # Videó: --write-movie kimenet.avi --fixed-fps 30
@@ -29,6 +29,15 @@ const SCENARIOS = {
 		["release"], ["nav", Vector2(2280, 450)], ["wait", 6.0]],
 	# In and straight back out the same arch before the companion arrives
 	"inout": [["nav", Vector2(1280, 380)], ["line", Vector2(1280, 60)], ["line", Vector2(1280, 380)], ["wait", 6.0]],
+	# In through the south arch, wait until the companion is inside too, then back out the same arch
+	"inout_deep": [["nav", Vector2(1280, 380)], ["line", Vector2(1280, -200)], ["wait", 4.0],
+		["line", Vector2(1280, 380)], ["wait", 8.0]],
+	# Same, but only a short way in, turning back right as the companion enters
+	"inout_short": [["nav", Vector2(1280, 380)], ["line", Vector2(1280, 0)], ["wait", 1.0],
+		["line", Vector2(1280, 380)], ["wait", 8.0]],
+	# Same as inout_deep, through the courtyard's south arch
+	"court_inout_deep": [["nav", Vector2(2080, 1420)], ["line", Vector2(2080, 1000)], ["wait", 4.0],
+		["line", Vector2(2080, 1420)], ["wait", 8.0]],
 }
 var world; var player; var comp; var pfeet; var cfeet; var cam
 var steps = []; var step = 0; var leg_path = PackedVector2Array(); var leg_i = 0
