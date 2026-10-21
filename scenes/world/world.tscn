@@ -7,18 +7,27 @@
 [ext_resource type="Shader" uid="uid://dvnu7oa6ul780" path="res://scenes/objects/OpacityZones/opacity_polygon.gdshader" id="6_umvgx"]
 [ext_resource type="PackedScene" uid="uid://cr2dqwf614ji1" path="res://scenes/objects/OpacityZones/OpacityPolygonZone.tscn" id="13_srmg5"]
 [ext_resource type="Script" uid="uid://bb37un1bcc8e5" path="res://scripts/navigation/collision_nav_region.gd" id="14_navrg"]
-[ext_resource type="TileSet" uid="uid://o7q0s4j8d01o7" path="res://resources/tilesets/outdoor_ground.tres" id="20_tsground"]
-[ext_resource type="TileSet" uid="uid://kxnawt30436g4" path="res://resources/tilesets/outdoor_walls_upper_level.tres" id="21_tswallsup"]
-[ext_resource type="TileSet" uid="uid://m21qqvdgojj71" path="res://resources/tilesets/outdoor_walls_lower_level.tres" id="22_tswallslo"]
+[ext_resource type="TileSet" uid="uid://dmje1xshofffw" path="res://resources/tilesets/outdoor_ground.tres" id="20_tsground"]
+[ext_resource type="TileSet" uid="uid://c7tjqqai0pfxl" path="res://resources/tilesets/outdoor_walls_upper_level.tres" id="21_tswallsup"]
+[ext_resource type="TileSet" uid="uid://bhs4yploywwxq" path="res://resources/tilesets/outdoor_walls_lower_level.tres" id="22_tswallslo"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_srmg5"]
 shader = ExtResource("6_umvgx")
+shader_parameter/polygon_points = PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/point_counts = PackedInt32Array(0, 0)
+shader_parameter/opacities = PackedFloat32Array(0, 0)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_umvgx"]
 shader = ExtResource("6_umvgx")
+shader_parameter/polygon_points = PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/point_counts = PackedInt32Array(0, 0)
+shader_parameter/opacities = PackedFloat32Array(0, 0)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mxkvs"]
 shader = ExtResource("6_umvgx")
+shader_parameter/polygon_points = PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/point_counts = PackedInt32Array(0, 0)
+shader_parameter/opacities = PackedFloat32Array(0, 0)
 
 [node name="World" type="Node2D" unique_id=1611066378]
 script = ExtResource("1_0tnpc")
