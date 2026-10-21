@@ -5,6 +5,8 @@ extends Node
 
 ## Ezzel a pályával indul a játék
 @export_file("*.tscn") var start_map: String = "res://scenes/world/world.tscn"
+## A kezdő pálya érkezési pontja (a Spawns alatt)
+@export var start_spawn: StringName = &"default"
 
 @onready var map_container: Node2D = $MapContainer
 @onready var player: CharacterBody2D = $Player
@@ -16,7 +18,7 @@ func _ready() -> void:
 	SignalBus.screen_tapped.connect(_on_screen_tapped)
 
 	SceneManager.register_main(self)
-	SceneManager.change_map(start_map, false)
+	SceneManager.change_map(start_map, start_spawn, false)
 
 # A képernyő pontot a kamera alapján világ koordinátává alakítjuk
 func _on_screen_tapped(screen_position: Vector2) -> void:

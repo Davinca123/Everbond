@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/maps/_base/base_map.tscn" id="1_base"]
+[ext_resource type="TileSet" path="res://resources/tilesets/interior_stone_ground.tres" id="2_floor"]
+[ext_resource type="TileSet" uid="uid://bhs4yploywwxq" path="res://resources/tilesets/outdoor_walls_lower_level.tres" id="3_walls"]
+
+[node name="BaseInteriorStone" instance=ExtResource("1_base")]
+
+[node name="Ground_TileMapLayer" type="TileMapLayer" parent="MAP_LAYERS"]
+scale = Vector2(5, 5)
+tile_set = ExtResource("2_floor")
+
+[node name="Walls_TileMapLayer" type="TileMapLayer" parent="MAP_LAYERS"]
+z_index = 1
+scale = Vector2(5, 5)
+tile_set = ExtResource("3_walls")

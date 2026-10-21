@@ -7,10 +7,12 @@ extends Node
 const FADE_DURATION: float = 0.25
 # A lény ennyivel a hős mellé érkezik, hogy ne a pálya másik végéről induljon
 const COMPANION_SPAWN_OFFSET: Vector2 = Vector2(-60, 0)
+# Kamerahatár, ha a pályán nincs egy csempe sem (a Camera2D alapértéke)
+const NO_CAMERA_LIMIT: int = 10000000
 
 var main: Node
 # Az épp betöltött pálya (a MapContainer egyetlen gyereke)
-var current_map: Node2D
+var current_map: GameMap
 var changing: bool = false
 
 # A karakterek kezdő szintje (ütközési maszk és z_index). A szintváltó zónák ezt
@@ -22,8 +24,9 @@ func register_main(main_node: Node) -> void:
 	for character in [main.player, main.companion]:
 		start_levels[character] = { "mask": character.collision_mask, "z_index": character.z_index }
 
-# A pálya lecserélése. A régi pálya minden állapota elveszik (lásd a terv 7. pontját).
-func change_map(map_path: String, fade: bool = true) -> void:
+# A pálya lecserélése; a karakterek a spawn_id nevű érkezési pontra kerülnek (a pálya
+# Spawns csomópontja alatt). A régi pálya minden állapota elveszik (lásd a terv 7. pontját).
+func change_map(map_path: String, spawn_id: StringName = &"default", fade: bool = true) -> void:
 	if changing:
 		return
 	changing = true
@@ -47,29 +50,36 @@ func change_map(map_path: String, fade: bool = true) -> void:
 	main.map_container.add_child(current_map)
 
 	# 3. Beköltöznek az új pálya YSort_Entities-ébe, a kezdőpontra
-	var entities: Node = current_map.get_node("YSort_Entities")
-	player.reparent(entities, false)
-	companion.reparent(entities, false)
-	var spawn: Vector2 = _get_spawn_position(current_map)
+	player.reparent(current_map.entities, false)
+	companion.reparent(current_map.entities, false)
+	var spawn_point: Marker2D = current_map.get_spawn(spawn_id)
+	var spawn: Vector2 = spawn_point.global_position if spawn_point else Vector2.ZERO
 	player.global_position = spawn
 	companion.global_position = spawn + COMPANION_SPAWN_OFFSET
 	for character in start_levels:
 		character.collision_mask = start_levels[character].mask
 		character.z_index = start_levels[character].z_index
 	companion.on_map_entered()
-	player.get_node("Camera2D").reset_smoothing()
+	_set_camera_limits(player.get_node("Camera2D"), current_map.get_camera_rect())
 
 	if fade:
 		await _fade(0.0)
 	main.player.control_enabled = true
 	changing = false
 
-# Ha a pálya maga dönti el, hová érkezünk (pl. a World az ajtó elé), azt használjuk,
-# különben a kézzel lerakott SpawnPoint-ot
-func _get_spawn_position(map: Node) -> Vector2:
-	if map.has_method("get_spawn_position"):
-		return map.get_spawn_position()
-	return map.get_node("YSort_Entities/SpawnPoint").global_position
+# A kamera nem mutat a pálya csempéin túl; csempék nélkül (pl. üres belső tér) nincs határ
+func _set_camera_limits(camera: Camera2D, rect: Rect2) -> void:
+	if rect.has_area():
+		camera.limit_left = floori(rect.position.x)
+		camera.limit_top = floori(rect.position.y)
+		camera.limit_right = ceili(rect.end.x)
+		camera.limit_bottom = ceili(rect.end.y)
+	else:
+		camera.limit_left = -NO_CAMERA_LIMIT
+		camera.limit_top = -NO_CAMERA_LIMIT
+		camera.limit_right = NO_CAMERA_LIMIT
+		camera.limit_bottom = NO_CAMERA_LIMIT
+	camera.reset_smoothing()
 
 func _fade(to_alpha: float) -> void:
 	var fade_rect: ColorRect = main.fade_rect

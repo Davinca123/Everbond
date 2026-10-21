@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/game_map.gd" id="1_map"]
+[ext_resource type="Script" uid="uid://bb37un1bcc8e5" path="res://scripts/navigation/collision_nav_region.gd" id="2_navrg"]
+
+[node name="BaseMap" type="Node2D"]
+script = ExtResource("1_map")
+
+[node name="MAP_LAYERS" type="Node2D" parent="."]
+
+[node name="YSort_Entities" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Doors" type="Node2D" parent="YSort_Entities"]
+z_index = 1
+y_sort_enabled = true
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="NAVIGATION" type="Node2D" parent="."]
+
+[node name="Navigation_Layer1" type="NavigationRegion2D" parent="NAVIGATION"]
+script = ExtResource("2_navrg")
