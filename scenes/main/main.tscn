@@ -1,29 +1,29 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://fcy0iyfh56hp"]
 
-[ext_resource type="Script" path="res://scenes/main/main.gd" id="1_main"]
+[ext_resource type="Script" uid="uid://bnwhsbfitqxp6" path="res://scenes/main/main.gd" id="1_main"]
 [ext_resource type="PackedScene" uid="uid://dxesken2bk8s" path="res://scenes/player/player.tscn" id="2_player"]
 [ext_resource type="PackedScene" uid="uid://gyyw12df1337" path="res://scenes/companion/companion.tscn" id="3_companion"]
 [ext_resource type="PackedScene" uid="uid://dwudlhw4kt30x" path="res://scenes/ui/screen_ui.tscn" id="4_ui"]
 
-[node name="Main" type="Node"]
+[node name="Main" type="Node" unique_id=418458649]
 script = ExtResource("1_main")
 
-[node name="MapContainer" type="Node2D" parent="."]
+[node name="MapContainer" type="Node2D" parent="." unique_id=994684555]
 
-[node name="Player" parent="." instance=ExtResource("2_player")]
+[node name="Player" parent="." unique_id=23632583 instance=ExtResource("2_player")]
 z_index = 1
 collision_layer = 4
 
-[node name="Companion" parent="." instance=ExtResource("3_companion")]
+[node name="Companion" parent="." unique_id=1584405563 instance=ExtResource("3_companion")]
 z_index = 1
 collision_layer = 8
 
-[node name="ScreenUI" parent="." instance=ExtResource("4_ui")]
+[node name="ScreenUI" parent="." unique_id=123641616 instance=ExtResource("4_ui")]
 
-[node name="Transition" type="CanvasLayer" parent="."]
+[node name="Transition" type="CanvasLayer" parent="." unique_id=1882901116]
 layer = 100
 
-[node name="FadeRect" type="ColorRect" parent="Transition"]
+[node name="FadeRect" type="ColorRect" parent="Transition" unique_id=1465612495]
 modulate = Color(1, 1, 1, 0)
 anchors_preset = 15
 anchor_right = 1.0
