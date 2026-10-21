@@ -1,16 +1,16 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://c6x5fbnsd8lha"]
 
 [ext_resource type="PackedScene" path="res://scenes/maps/_base/base_map.tscn" id="1_base"]
-[ext_resource type="TileSet" path="res://resources/tilesets/interior_stone_ground.tres" id="2_floor"]
+[ext_resource type="TileSet" uid="uid://bimwyjsy3jqm2" path="res://resources/tilesets/interior_stone_ground.tres" id="2_floor"]
 [ext_resource type="TileSet" uid="uid://bhs4yploywwxq" path="res://resources/tilesets/outdoor_walls_lower_level.tres" id="3_walls"]
 
-[node name="BaseInteriorStone" instance=ExtResource("1_base")]
+[node name="BaseInteriorStone" unique_id=522599980 instance=ExtResource("1_base")]
 
-[node name="Ground_TileMapLayer" type="TileMapLayer" parent="MAP_LAYERS"]
+[node name="Ground_TileMapLayer" type="TileMapLayer" parent="MAP_LAYERS" index="0" unique_id=684348893]
 scale = Vector2(5, 5)
 tile_set = ExtResource("2_floor")
 
-[node name="Walls_TileMapLayer" type="TileMapLayer" parent="MAP_LAYERS"]
+[node name="Walls_TileMapLayer" type="TileMapLayer" parent="MAP_LAYERS" index="1" unique_id=1681908416]
 z_index = 1
 scale = Vector2(5, 5)
 tile_set = ExtResource("3_walls")
