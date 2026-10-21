@@ -82,12 +82,12 @@ func check_player_has_key() -> bool:
 func teleport_player() -> void:
 	#print("Door: Teleporting player to: ", target_scene_path)
 	# Ha a külső világban vagyunk (vagyis a world.tscn-ben)
-	if get_tree().current_scene.name == "World":
+	if SceneManager.current_map.name == "World":
 		# Elmentjük, hol áll az ajtó. Amikor visszajövünk, picit ezelé rakjuk a játékost!
 		# Az ajtó és a hős origója is a talpuknál van: az ajtó ütközési doboza (alja -6) alá rakjuk, hogy ne ragadjon bele
 		GameManager.world_spawn_position = global_position + Vector2(0, 26)
 		GameManager.coming_back_from_interior = true
 
 	
-	# A Godot beépített jelenetváltó függvénye:
-	get_tree().change_scene_to_file(target_scene_path)
+	# Csak a pálya cserélődik, a Player és a Companion vele költözik
+	SceneManager.change_map(target_scene_path)

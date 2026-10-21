@@ -1,14 +1,9 @@
 [gd_scene format=3 uid="uid://c26rmcpxyas7m"]
 
-[ext_resource type="Script" uid="uid://ldr7l887aiqy" path="res://scenes/maps/house_1_interior.gd" id="1_4jjnt"]
 [ext_resource type="PackedScene" uid="uid://brltg8tefhlph" path="res://scenes/objects/door.tscn" id="1_7l1wv"]
-[ext_resource type="PackedScene" uid="uid://dxesken2bk8s" path="res://scenes/player/player.tscn" id="1_mysaq"]
-[ext_resource type="PackedScene" uid="uid://dwudlhw4kt30x" path="res://scenes/ui/screen_ui.tscn" id="2_7l1wv"]
 [ext_resource type="Texture2D" uid="uid://bi7t4p8mb5rsw" path="res://icon.svg" id="3_w2buc"]
-[ext_resource type="PackedScene" uid="uid://gyyw12df1337" path="res://scenes/companion/companion.tscn" id="4_comp"]
 
 [node name="House1Interior" type="Node2D" unique_id=1321779917]
-script = ExtResource("1_4jjnt")
 
 [node name="Ground_TileMapLayer" type="TileMapLayer" parent="." unique_id=1229902948]
 
@@ -28,15 +23,7 @@ region_filter_clip_enabled = true
 [node name="YSort_Entities" type="Node2D" parent="." unique_id=72282758]
 y_sort_enabled = true
 
-[node name="Player" parent="YSort_Entities" unique_id=476416376 instance=ExtResource("1_mysaq")]
-collision_layer = 4
-
-[node name="Companion" parent="YSort_Entities" unique_id=1321202551 instance=ExtResource("4_comp")]
-collision_layer = 8
-
 [node name="SpawnPoint" type="Marker2D" parent="YSort_Entities" unique_id=1252692801]
 position = Vector2(609, 280)
-
-[node name="ScreenUI" parent="." unique_id=17775954 instance=ExtResource("2_7l1wv")]
 
 [editable path="Doors/ExitDoor"]

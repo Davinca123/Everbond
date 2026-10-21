@@ -88,7 +88,7 @@ func _ready() -> void:
 	# BIZTONSÁGI CSERE: Leválasztjuk a régit (ha volt), és tisztán kódból kötjük össze
 	animation_player.animation_finished.connect(_on_animation_finished)
 	target_marker = create_target_marker()
-	get_parent().add_child.call_deferred(target_marker)
+	place_target_marker.call_deferred()
 	last_player_level = get_level(player)
 	last_level = get_level(self)
 			
@@ -229,6 +229,22 @@ func arrive() -> void:
 	current_state = State.IDLE
 	wait_timer = stay_duration
 	print("Lény: Megérkeztem a célhoz!")
+
+# Pályaváltás után (SceneManager): a régi pálya útjai, szintváltó pontjai és célja már
+# nem érvényesek, ezért a hős mellől, követő állapotból indulunk újra
+func on_map_entered() -> void:
+	place_target_marker()
+	current_state = State.FOLLOW
+	velocity = Vector2.ZERO
+	path.clear()
+	path_index = 0
+	repath_timer = 0.0
+	level_crossings.clear()
+	goto_crossings.clear()
+	wait_timer = 0.0
+	last_player_level = get_level(player)
+	last_level = get_level(self)
+	queue_redraw()
 
 # Ezt a függvényt a fő Game kód fogja meghívni, ha a játékos kattintott
 func send_to_position(target_pos: Vector2):
@@ -481,6 +497,16 @@ func create_target_marker() -> Node2D:
 	sprite.position = Vector2(0, TARGET_MARKER_SORT_LIFT)
 	marker.add_child(sprite)
 	return marker
+
+# A jelölő a lény mellé kerül (a pálya YSort_Entities-ébe), és pályaváltáskor vele költözik,
+# különben a régi pályával együtt felszabadulna
+func place_target_marker() -> void:
+	if target_marker.get_parent() == get_parent():
+		return
+	if target_marker.get_parent():
+		target_marker.reparent(get_parent(), false)
+	else:
+		get_parent().add_child(target_marker)
 
 # Csak amíg a koppintott cél felé tart; a z_index a lényét követi (alagútban a híd eltakarja)
 func update_target_marker() -> void:

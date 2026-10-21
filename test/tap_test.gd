@@ -8,14 +8,15 @@ extends Node
 # Kijelző nélkül: xvfb-run -a ... --rendering-method gl_compatibility --rendering-driver opengl3
 # OUT=<mappa>: minden eset végén képernyőkép
 
-var world; var player; var comp; var pfeet; var cfeet
+var main; var world; var player; var comp; var pfeet; var cfeet
 var taps: int = 0
 var failures: int = 0
 var out = OS.get_environment("OUT")
 
 func _ready():
-	world = load("res://scenes/world/world.tscn").instantiate()
-	add_child(world)
+	main = load("res://scenes/main/main.tscn").instantiate()
+	add_child(main)
+	world = SceneManager.current_map
 	if out != "":
 		var ov = preload("res://test/overlay.gd").new(); ov.world = world; ov.z_index = 100
 		world.add_child(ov)
@@ -162,7 +163,7 @@ func run() -> void:
 	var npc = world.get_node("YSort_Entities/Npc")
 	player.global_position = npc.global_position + Vector2(-116, 29)
 	await seconds(0.5)
-	var button = world.get_node("ScreenUI/InteractionButtonAnchor/InteractionButton")
+	var button = main.get_node("ScreenUI/InteractionButtonAnchor/InteractionButton")
 	var button_center: Vector2 = button.get_global_transform_with_canvas() * (button.texture_normal.get_size() / 2.0)
 	taps = 0
 	var dialogue := { "started": false, "finished": false }

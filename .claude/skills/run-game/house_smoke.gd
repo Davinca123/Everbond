@@ -1,5 +1,5 @@
 extends SceneTree
-# Smoke test: World -> Door1 -> House1Interior (companion present, follows, tap-to-send) -> exit -> World.
+# Smoke test (via scenes/main/main.tscn): World -> Door1 -> House1Interior (companion present, follows, tap-to-send) -> exit -> World.
 # Run it as described in SKILL.md. Exit code 0 = every CHECK passed. OUT=<dir> saves screenshots.
 
 var out := OS.get_environment("OUT")
@@ -14,11 +14,12 @@ var tap_checked := false
 var back_logged := false
 
 func _initialize():
-	change_scene_to_file("res://scenes/world/world.tscn")
+	change_scene_to_file("res://scenes/main/main.tscn")
 
-func scene(): return current_scene
-func P(): return current_scene.get_node_or_null("YSort_Entities/Player")
-func C(): return current_scene.get_node_or_null("YSort_Entities/Companion")
+# The map loaded inside Main (Main itself is current_scene and never changes)
+func scene(): return root.get_node("SceneManager").current_map
+func P(): return scene().get_node_or_null("YSort_Entities/Player") if scene() else null
+func C(): return scene().get_node_or_null("YSort_Entities/Companion") if scene() else null
 func bus(): return root.get_node("SignalBus")
 
 func set_phase(p):
@@ -34,24 +35,24 @@ func check(name, ok, info := ""):
 
 func log_state():
 	var p = P(); var c = C()
-	print("%6.2f [%s] P%s C%s dist=%s state=%s" % [t, current_scene.name, p.global_position.round() if p else "-",
+	print("%6.2f [%s] P%s C%s dist=%s state=%s" % [t, scene().name, p.global_position.round() if p else "-",
 		c.global_position.round() if c else "-", str(round(p.global_position.distance_to(c.global_position))) if p and c else "-",
 		str(c.current_state) if c else "-"])
 
 func _process(delta):
 	t += delta; phase_t += delta
-	if current_scene == null: return false
+	if scene() == null: return false
 	if int(t * 2) != int((t - delta) * 2): log_state()
 	match phase:
 		"boot":
-			if phase_t > 1.0 and current_scene.name == "World":
-				var door = current_scene.get_node("YSort_Entities/Doors_Lower/Door1")
+			if phase_t > 1.0 and scene().name == "World":
+				var door = scene().get_node("YSort_Entities/Doors_Lower/Door1")
 				P().global_position = door.global_position + Vector2(0, 30)
 				set_phase("enter")
 		"enter":
 			bus().joystick_moved.emit(Vector2.ZERO)
 			if phase_t > 0.3: bus().interaction_pressed.emit()
-			if current_scene.name == "House1Interior": set_phase("inside")
+			if scene().name == "House1Interior": set_phase("inside")
 			elif phase_t > 3.0: check("entered house", false); return finish()
 		"inside":
 			if phase_t > 0.5:
@@ -101,14 +102,14 @@ func _process(delta):
 			if c.current_state == c.State.FOLLOW and d < 150 and c.velocity == Vector2.ZERO:
 				check("companion came back to player", true, "dist=%.0f after %.1fs" % [d, phase_t])
 				shot("back_with_player")
-				var door = current_scene.get_node("Doors/ExitDoor")
+				var door = scene().get_node("Doors/ExitDoor")
 				P().global_position = door.global_position + Vector2(0, 30)
 				set_phase("exit")
 			elif phase_t > 10.0: check("companion came back to player", false, "timeout"); return finish()
 		"exit":
 			bus().joystick_moved.emit(Vector2.ZERO)
 			if phase_t > 0.3: bus().interaction_pressed.emit()
-			if current_scene.name == "World": set_phase("back")
+			if scene().name == "World": set_phase("back")
 			elif phase_t > 3.0: check("left house", false); return finish()
 		"back":
 			if phase_t > 0.5 and not back_logged:
