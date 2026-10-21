@@ -2,9 +2,6 @@
 
 [ext_resource type="Script" uid="uid://dg7e2nan2j8nd" path="res://scenes/world/world.gd" id="1_0tnpc"]
 [ext_resource type="Texture2D" uid="uid://cwlcvwfv24bfs" path="res://scenes/world/Scene Overview.png" id="2_t5ptc"]
-[ext_resource type="PackedScene" uid="uid://dxesken2bk8s" path="res://scenes/player/player.tscn" id="2_u5sy4"]
-[ext_resource type="PackedScene" uid="uid://gyyw12df1337" path="res://scenes/companion/companion.tscn" id="3_gee14"]
-[ext_resource type="PackedScene" uid="uid://dwudlhw4kt30x" path="res://scenes/ui/screen_ui.tscn" id="4_6m72w"]
 [ext_resource type="PackedScene" uid="uid://brltg8tefhlph" path="res://scenes/objects/door.tscn" id="5_gb53w"]
 [ext_resource type="PackedScene" uid="uid://4lqc8dw283u7" path="res://scenes/npc/npc.tscn" id="5_v5dby"]
 [ext_resource type="Shader" uid="uid://dvnu7oa6ul780" path="res://scenes/objects/OpacityZones/opacity_polygon.gdshader" id="6_umvgx"]
@@ -70,13 +67,8 @@ texture = ExtResource("2_t5ptc")
 [node name="YSort_Entities" type="Node2D" parent="." unique_id=1697897300]
 y_sort_enabled = true
 
-[node name="Player" parent="YSort_Entities" unique_id=476416376 instance=ExtResource("2_u5sy4")]
-z_index = 1
-collision_layer = 4
-
-[node name="Companion" parent="YSort_Entities" unique_id=1321202551 instance=ExtResource("3_gee14")]
-z_index = 1
-collision_layer = 8
+[node name="SpawnPoint" type="Marker2D" parent="YSort_Entities" unique_id=1940257318]
+position = Vector2(304, 359)
 
 [node name="Npc" parent="YSort_Entities" unique_id=82338993 instance=ExtResource("5_v5dby")]
 z_index = 1
@@ -96,8 +88,6 @@ required_key_name = "Kulcs"
 
 [node name="DoorThrough" parent="YSort_Entities/Doors_Lower" unique_id=134896759 instance=ExtResource("5_gb53w")]
 position = Vector2(188, 886)
-
-[node name="ScreenUI" parent="." unique_id=17775954 instance=ExtResource("4_6m72w")]
 
 [node name="NAVIGATION" type="Node2D" parent="." unique_id=1838205517]
 

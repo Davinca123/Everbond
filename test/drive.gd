@@ -53,15 +53,16 @@ const SCENARIOS = {
 	"tap_through_tunnel": [["nav", Vector2(1280, 380)], ["wait", 2.0],
 		["tap", Vector2(1280, -650)], ["near", Vector2(1280, -650), 10.0], ["wait", 10.0]],
 }
-var world; var player; var comp; var pfeet; var cfeet; var cam
+var main; var world; var player; var comp; var pfeet; var cfeet; var cam
 var steps = []; var step = 0; var leg_path = PackedVector2Array(); var leg_i = 0
 var wait_t = 0.0; var t = 0.0; var log_t = 0.0; var shot_t = 0.0; var shot_n = 0
 var failed_checks = 0; var keep_target = null; var started = false; var stuck_t = 0.0; var last_pos = Vector2.ZERO; var leg_t = 0.0
 var out = OS.get_environment("OUT"); var name_ = OS.get_environment("SCENARIO")
 
 func _ready():
-	world = load("res://scenes/world/world.tscn").instantiate()
-	add_child(world)
+	main = load("res://scenes/main/main.tscn").instantiate()
+	add_child(main)
+	world = SceneManager.current_map
 	if OS.get_environment("OVERLAY") != "0":
 		var ov = preload("res://test/overlay.gd").new(); ov.world = world; ov.z_index = 100
 		world.add_child(ov)

@@ -51,17 +51,19 @@ The game is controlled through the `SignalBus` autoload, the same way the touch 
 
 | What | How |
 |---|---|
-| Start a map | `change_scene_to_file("res://scenes/world/world.tscn")` in `_initialize()` |
+| Start the game | `change_scene_to_file("res://scenes/main/main.tscn")` in `_initialize()` (Main loads World) |
 | Move the player | `SignalBus.joystick_moved.emit(direction)` every frame; `Vector2.ZERO` to stop |
 | Interact (doors) | Put the player just below the door (`door.global_position + Vector2(0, 30)`), wait ~0.3 s, then `SignalBus.interaction_pressed.emit()` |
 | Send the companion | `SignalBus.screen_tapped.emit(screen_position)` (screen, not world, coordinates) |
-| Find the entities | `current_scene.get_node("YSort_Entities/Player")`, `.../Companion` |
+| Find the map | `root.get_node("SceneManager").current_map` (`current_scene` is always Main) |
+| Find the entities | `<map>.get_node("YSort_Entities/Player")`, `.../Companion` |
 | Screenshot | `root.get_viewport().get_texture().get_image().save_png(path)` |
 
 Notes:
 
 - Wait ~0.5–1 s after a map loads before acting: the navigation meshes bake in `_ready`.
-- Door changes swap the whole scene, so look up Player/Companion again after each one.
+- Door changes swap only the map: the Player and Companion nodes survive and move into the new
+  map's `YSort_Entities`. The change fades out and in (~0.5 s), so wait for `current_map.name`.
 - Companion states: `current_state` is `0` FOLLOW, `1` GO_TO_TARGET, `2` IDLE. After a tap it
   waits `stay_duration` (2 s) before walking back, so give "back with the player" checks time.
 - Compare positions using the feet (`$CollisionShape2D`), not the sprite: the companion's
