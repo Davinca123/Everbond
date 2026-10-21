@@ -76,7 +76,7 @@ If a finger is on the joystick when a dialogue opens, the joystick is hidden and
 
 **Fix:** reset `joystick_active` and hide the joystick sprites in the `dialogue_started` handler.
 
-### 9. Return spawn point only barely works (Confirmed, works today)
+### 9. ~~Return spawn point only barely works~~ (Fixed)
 `scenes/objects/door.gd:85`
 
 The return spawn point is `door + (0, 32)`, which is inside the door's collision box (165×212 centred at `(0.5, 32)`). The player isn't stuck, because their collision shape sits lower (offset `(4, 75)`) and clears the box by about 0.3 px. Any change to either shape will trap the player.
@@ -84,6 +84,8 @@ The return spawn point is `door + (0, 32)`, which is inside the door's collision
 The companion is not moved on return. It ends up near the player only because Door1 is near the companion's start position.
 
 **Fix:** give each door a `Marker2D` for the return spawn point. Move the companion next to the player on return.
+
+Fixed: doors name a `target_map` and a `target_spawn`, a `Marker2D` under the target map's `Spawns` node. World's `from_house_1` is at `(160, 170)`, the same spot as before, so it clears the door box by the same margin. `SceneManager` puts the companion 60 px left of the player on every map change.
 
 ---
 

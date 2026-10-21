@@ -12,8 +12,10 @@ var FRAME_OPEN: int = 1
 
 # --- EDITORTÓL FÜGGŐ EGYEDI TULAJDONSÁGOK ---
 @export_group("Teleportáció")
-## Bejárható belső tér jelenetének elérési útja (pl. res://scenes/maps/house_1.tscn)
-@export_file("*.tscn") var target_scene_path: String = ""
+## A pálya, ahová az ajtó vezet (pl. res://scenes/maps/House1Interior.tscn)
+@export_file("*.tscn") var target_map: String = ""
+## Az érkezési pont neve a célpálya Spawns csomópontja alatt (pl. &"from_world")
+@export var target_spawn: StringName = &"default"
 
 @export_group("Zár Mechanika")
 ## Megadja, hogy az ajtó alapból zárva van-e
@@ -68,8 +70,8 @@ func open_door() -> void:
 	sprite_2d.frame = FRAME_OPEN
 	
 	# 2. Ha az ajtó egy belső térbe vezet, elindítjuk a jelenetváltást egy kis szünet után
-	if target_scene_path != "":
-		# Várunk 0.3 másodpercet, míg lefut a nyitási vizualizáció
+	if target_map != "":
+		# Várunk 0.1 másodpercet, míg lefut a nyitási vizualizáció
 		await get_tree().create_timer(0.1).timeout
 		teleport_player()
 
@@ -80,14 +82,5 @@ func check_player_has_key() -> bool:
 	return false # Alapértelmezetten most még hamisat ad vissza, amíg nincs inventory
 
 func teleport_player() -> void:
-	#print("Door: Teleporting player to: ", target_scene_path)
-	# Ha a külső világban vagyunk (vagyis a world.tscn-ben)
-	if SceneManager.current_map.name == "World":
-		# Elmentjük, hol áll az ajtó. Amikor visszajövünk, picit ezelé rakjuk a játékost!
-		# Az ajtó és a hős origója is a talpuknál van: az ajtó ütközési doboza (alja -6) alá rakjuk, hogy ne ragadjon bele
-		GameManager.world_spawn_position = global_position + Vector2(0, 26)
-		GameManager.coming_back_from_interior = true
-
-	
-	# Csak a pálya cserélődik, a Player és a Companion vele költözik
-	SceneManager.change_map(target_scene_path)
+	# Csak a pálya cserélődik, a Player és a Companion vele költözik a célpálya érkezési pontjára
+	SceneManager.change_map(target_map, target_spawn)

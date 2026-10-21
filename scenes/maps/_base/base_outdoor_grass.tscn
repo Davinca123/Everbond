@@ -1,0 +1,50 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/maps/_base/base_map.tscn" id="1_base"]
+[ext_resource type="Shader" uid="uid://dvnu7oa6ul780" path="res://scenes/objects/OpacityZones/opacity_polygon.gdshader" id="2_opacity"]
+[ext_resource type="TileSet" uid="uid://dmje1xshofffw" path="res://resources/tilesets/outdoor_ground.tres" id="3_ground"]
+[ext_resource type="TileSet" uid="uid://c7tjqqai0pfxl" path="res://resources/tilesets/outdoor_walls_upper_level.tres" id="4_walls_up"]
+[ext_resource type="TileSet" uid="uid://bhs4yploywwxq" path="res://resources/tilesets/outdoor_walls_lower_level.tres" id="5_walls_lo"]
+[ext_resource type="Script" uid="uid://bb37un1bcc8e5" path="res://scripts/navigation/collision_nav_region.gd" id="6_navrg"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ground_upper"]
+resource_local_to_scene = true
+shader = ExtResource("2_opacity")
+shader_parameter/polygon_points = PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/point_counts = PackedInt32Array(0, 0)
+shader_parameter/opacities = PackedFloat32Array(0, 0)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_walls"]
+resource_local_to_scene = true
+shader = ExtResource("2_opacity")
+shader_parameter/polygon_points = PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/point_counts = PackedInt32Array(0, 0)
+shader_parameter/opacities = PackedFloat32Array(0, 0)
+
+[node name="BaseOutdoorGrass" instance=ExtResource("1_base")]
+
+[node name="Ground_TileMapLayer" type="TileMapLayer" parent="MAP_LAYERS"]
+scale = Vector2(5, 5)
+tile_set = ExtResource("3_ground")
+
+[node name="Ground_Upper_TileMapLayer2" type="TileMapLayer" parent="MAP_LAYERS"]
+z_index = 1
+material = SubResource("ShaderMaterial_ground_upper")
+scale = Vector2(5, 5)
+tile_set = ExtResource("3_ground")
+
+[node name="Walls_Under_TileMapLayer" type="TileMapLayer" parent="MAP_LAYERS"]
+scale = Vector2(5, 5)
+tile_set = ExtResource("4_walls_up")
+
+[node name="Walls_TileMapLayer2" type="TileMapLayer" parent="MAP_LAYERS"]
+light_mask = 2
+z_index = 1
+material = SubResource("ShaderMaterial_walls")
+scale = Vector2(5, 5)
+tile_set = ExtResource("5_walls_lo")
+
+[node name="Navigation_Layer2" type="NavigationRegion2D" parent="NAVIGATION"]
+navigation_layers = 2
+script = ExtResource("6_navrg")
+source_collision_mask = 2

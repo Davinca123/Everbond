@@ -46,7 +46,7 @@ func _process(delta):
 	match phase:
 		"boot":
 			if phase_t > 1.0 and scene().name == "World":
-				var door = scene().get_node("YSort_Entities/Doors_Lower/Door1")
+				var door = scene().get_node("YSort_Entities/Doors/Door1")
 				P().global_position = door.global_position + Vector2(0, 30)
 				set_phase("enter")
 		"enter":
@@ -102,7 +102,7 @@ func _process(delta):
 			if c.current_state == c.State.FOLLOW and d < 150 and c.velocity == Vector2.ZERO:
 				check("companion came back to player", true, "dist=%.0f after %.1fs" % [d, phase_t])
 				shot("back_with_player")
-				var door = scene().get_node("Doors/ExitDoor")
+				var door = scene().get_node("YSort_Entities/Doors/ExitDoor")
 				P().global_position = door.global_position + Vector2(0, 30)
 				set_phase("exit")
 			elif phase_t > 10.0: check("companion came back to player", false, "timeout"); return finish()

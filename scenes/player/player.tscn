@@ -202,9 +202,5 @@ root_node = NodePath("../Sprite2D")
 libraries/ = SubResource("AnimationLibrary_player")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=171419408]
-limit_left = -10000
-limit_top = -10000
-limit_right = 10000
-limit_bottom = 10000
 limit_smoothed = true
 position_smoothing_enabled = true

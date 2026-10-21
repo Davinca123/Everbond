@@ -1,9 +1,6 @@
 # game_manager.gd
 extends Node
 
-# Ez a változó fogja megjegyezni, hogy a külső világban hol álltunk,
-# mielőtt bementünk egy házba.
-var world_spawn_position: Vector2 = Vector2.ZERO
-
-# Ez jelzi, hogy épp egy házból jövünk-e vissza
-var coming_back_from_interior: bool = false
+# Ide kerül majd a játék globális állapota (pl. a pályák mentett állapota, lásd
+# docs/map-structure-plan.md 7. pont). Az érkezési pontot már az ajtók adják meg
+# (target_map + target_spawn), ezért a régi world_spawn_position kerülő megoldás megszűnt.
