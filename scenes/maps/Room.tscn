@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://du8glmdu81at6"]
+
+[ext_resource type="Script" uid="uid://d5j4owabixgeh" path="res://scenes/maps/room.gd" id="1_room"]
+[ext_resource type="PackedScene" uid="uid://dxesken2bk8s" path="res://scenes/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://gyyw12df1337" path="res://scenes/companion/companion.tscn" id="3_companion"]
+[ext_resource type="PackedScene" uid="uid://brltg8tefhlph" path="res://scenes/objects/door.tscn" id="4_door"]
+[ext_resource type="PackedScene" uid="uid://dwudlhw4kt30x" path="res://scenes/ui/screen_ui.tscn" id="5_ui"]
+[ext_resource type="Script" uid="uid://bb37un1bcc8e5" path="res://scripts/navigation/collision_nav_region.gd" id="6_navrg"]
+
+[sub_resource type="TileSet" id="TileSet_ground"]
+tile_size = Vector2i(32, 32)
+
+[sub_resource type="TileSet" id="TileSet_walls"]
+tile_size = Vector2i(32, 32)
+physics_layer_0/collision_layer = 1
+
+[node name="Room" type="Node2D"]
+script = ExtResource("1_room")
+
+[node name="MAP_LAYERS" type="Node2D" parent="."]
+
+[node name="Ground_TileMapLayer" type="TileMapLayer" parent="MAP_LAYERS"]
+tile_set = SubResource("TileSet_ground")
+
+[node name="Walls_TileMapLayer" type="TileMapLayer" parent="MAP_LAYERS"]
+tile_set = SubResource("TileSet_walls")
+
+[node name="YSort_Entities" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Player" parent="YSort_Entities" instance=ExtResource("2_player")]
+z_index = 1
+collision_layer = 4
+
+[node name="Companion" parent="YSort_Entities" instance=ExtResource("3_companion")]
+z_index = 1
+collision_layer = 8
+
+[node name="SpawnPoint" type="Marker2D" parent="YSort_Entities"]
+position = Vector2(0, 0)
+
+[node name="Doors" type="Node2D" parent="YSort_Entities"]
+z_index = 1
+y_sort_enabled = true
+
+[node name="ExitDoor" parent="YSort_Entities/Doors" instance=ExtResource("4_door")]
+position = Vector2(0, 288)
+target_scene_path = "uid://c5lc3kwm41j6l"
+
+[node name="ScreenUI" parent="." instance=ExtResource("5_ui")]
+
+[node name="NAVIGATION" type="Node2D" parent="."]
+
+[node name="Navigation_Layer1" type="NavigationRegion2D" parent="NAVIGATION"]
+script = ExtResource("6_navrg")
