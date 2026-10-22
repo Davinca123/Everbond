@@ -188,6 +188,33 @@ The companion stands south of the tunnel and the player taps the ground north of
 
 Fixed: on a tap, `plan_crossings()` searches for the shortest route across levels (Dijkstra). The nodes are the companion, the target and both sides of every zone entry strip (`portals` in `opacity_polygon_zone.gd`), and the costs come from the navigation mesh of each level. The companion then walks those crossings in order (`goto_crossings`), the same way follow mode walks the player's. When its wait ends with no breadcrumbs left, it plans the route back to the player the same way. If the target is on the companion's level, it stays the target level as before; if not, the route may end on another level. A plan takes under 1 ms. Test: `SCENARIO=tap_through_tunnel` in `test/drive.gd`.
 
+### 21. Open door shows the wall or grass behind it (Reported, cosmetic)
+`scenes/objects/door.gd` (`open_door`), `scenes/objects/door.tscn`
+
+When the player enters or leaves the house, the door switches to its open frame for a moment before the map changes. The doorway in that frame is transparent, so it shows whatever is drawn behind the door, such as the wall or the grass ground. It should look like an opening into the other side.
+
+**Fix:** draw a dark backdrop behind the open doorway, either black or a hint of the other side (interior floor seen from outside, grass seen from inside). For example, add a black sprite or `Polygon2D` under the door sprite, shaped like the doorway and shown only while `is_open` is true.
+
+### 22. Collision shapes in the room are too big (Reported, cosmetic)
+`resources/tilesets/interior.tres`, `scenes/maps/House1Interior.tscn`
+
+The player stops too far from the plant, the floor lamp and the walls, so she can't walk up to them. Their collision is larger than the part that touches the floor.
+
+**Fix:** shrink the collision polygons to the footprint: the pot and the lamp's base, and the foot of the wall.
+
+### 23. Player is drawn behind the table and the bed when standing beside them (Reported, cosmetic)
+`resources/tilesets/interior.tres` (`y_sort_origin` of the furniture tiles)
+
+When the player stands next to the table or the bed, she is drawn behind the furniture, as if she were smaller than it and partly under it. The furniture tiles Y-sort from the bottom edge of their footprint, so the player stays behind them until her feet pass that edge. That is right for tall furniture (the bookshelf, the chair's backrest), but the table and the bed are lower than an adult woman, so the player should be drawn in front of them.
+
+**Fix:** move the `y_sort_origin` of low furniture (table, bed) up to the back edge of its top surface. Leave tall furniture as it is. Together with bug 24, the player can't stand behind these pieces, so she is always drawn in front of them.
+
+### 24. Player can hide behind the table and the chairs (Reported, cosmetic)
+`resources/tilesets/interior.tres` (table and chair collision)
+
+- **Table:** the collision doesn't reach the table's back edge, so the player can walk behind its top and disappear under it. The collision's upper edge should reach the table's back edge, so she stops at the edge or at most a few pixels below it.
+- **Chairs:** standing just above a chair, the backrest covers the player up to her head, so the chair looks as tall as she is. Extend the chair's collision upward so she stops further from the backrest.
+
 ---
 
 ## Code quality
