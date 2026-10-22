@@ -5,9 +5,66 @@ class_name GameMap extends Node2D
 
 ## A pálya kulcsa a mentett állapothoz (pl. &"village_house_01")
 @export var map_id: StringName
+## Láthatatlan fal a talaj széle körül, hogy a hős és a lény ne menjen le a pályáról
+## (a kültéri pályákon; a belső terekben a falcsempék zárnak)
+@export var block_map_edges: bool = false
+
+# A pályaszéli fal mindkét szinten (Lenti_Szint, Fenti_Szint) ütközik
+const EDGE_COLLISION_LAYERS: int = 1 | 2
 
 @onready var entities: Node2D = $YSort_Entities
 @onready var spawns: Node2D = $Spawns
+
+# Már belépéskor építjük, a gyerekek _ready-je előtt: így a navigációs háló sütésekor
+# (CollisionNavRegion._ready) a fal is akadály, és a háló nem lóg ki a talaj szélén túlra
+func _enter_tree() -> void:
+	if block_map_edges and not has_node("EdgeWalls"):
+		add_child(build_edge_walls())
+
+# A talaj (a MAP_LAYERS alatti, a Ground_TileMapLayer rácsán lévő csempék) körüli üres
+# cellák ütköznek, az átlósan szomszédosak is, hogy a sarkoknál ne legyen rés. A pálya
+# szabálytalan alakú is lehet; a soronként összefüggő cellák egy téglalapot kapnak.
+func build_edge_walls() -> StaticBody2D:
+	var walls := StaticBody2D.new()
+	walls.name = "EdgeWalls"
+	walls.collision_layer = EDGE_COLLISION_LAYERS
+	walls.collision_mask = 0
+	var ground := get_node_or_null("MAP_LAYERS/Ground_TileMapLayer") as TileMapLayer
+	if ground == null or ground.tile_set == null:
+		push_warning("%s: nincs Ground_TileMapLayer, nem építünk pályaszéli falat." % name)
+		return walls
+
+	var floor_cells: Dictionary = {}
+	for layer in get_node("MAP_LAYERS").find_children("*", "TileMapLayer", true, false):
+		if layer.tile_set != null and layer.tile_set.tile_size == ground.tile_set.tile_size and layer.transform == ground.transform:
+			for cell in layer.get_used_cells():
+				floor_cells[cell] = true
+	var blocked: Dictionary = {}
+	for cell in floor_cells:
+		for dy in range(-1, 2):
+			for dx in range(-1, 2):
+				var neighbour: Vector2i = cell + Vector2i(dx, dy)
+				if not floor_cells.has(neighbour):
+					blocked[neighbour] = true
+
+	var cells: Array = blocked.keys()
+	cells.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return a.y < b.y or (a.y == b.y and a.x < b.x))
+	var cell_size: Vector2 = Vector2(ground.tile_set.tile_size) * ground.global_transform.get_scale()
+	var i: int = 0
+	while i < cells.size():
+		var first: Vector2i = cells[i]
+		var count: int = 1
+		while i + count < cells.size() and cells[i + count] == first + Vector2i(count, 0):
+			count += 1
+		var shape := RectangleShape2D.new()
+		shape.size = Vector2(cell_size.x * count, cell_size.y)
+		var collision := CollisionShape2D.new()
+		collision.shape = shape
+		var top_left: Vector2 = ground.to_global(Vector2(first * ground.tile_set.tile_size))
+		collision.position = to_local(top_left + shape.size / 2.0)
+		walls.add_child(collision)
+		i += count
+	return walls
 
 # Az érkezési pont a Spawns alatt, azon a néven, ahonnan érkezünk (pl. &"from_world").
 # Ha nincs ilyen, az első pontot adjuk vissza; null, ha egy sincs.
