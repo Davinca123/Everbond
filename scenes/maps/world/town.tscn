@@ -45,6 +45,6 @@ position = Vector2(280, 320)
 
 [node name="ToWorld" parent="EXITS" instance=ExtResource("3_exit")]
 position = Vector2(40, 320)
-target_map = "res://scenes/world/world.tscn"
+target_map = "res://scenes/maps/world/world.tscn"
 target_spawn = &"from_town"
 size = Vector2(80, 2560)

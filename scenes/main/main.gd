@@ -4,7 +4,7 @@ extends Node
 # a Player, a Companion és a ScreenUI végig életben marad.
 
 ## Ezzel a pályával indul a játék
-@export_file("*.tscn") var start_map: String = "res://scenes/world/world.tscn"
+@export_file("*.tscn") var start_map: String = "res://scenes/maps/world/world.tscn"
 ## A kezdő pálya érkezési pontja (a Spawns alatt)
 @export var start_spawn: StringName = &"default"
 

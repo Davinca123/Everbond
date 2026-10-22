@@ -13,7 +13,7 @@ Each bug is marked:
 ## Bugs
 
 ### 1. ~~Opacity zones overwrite each other~~ (Fixed)
-`scenes/objects/OpacityZones/opacity_polygon_zone.gd:125-136`
+`scenes/objects/opacity_zones/opacity_polygon_zone.gd:125-136`
 
 All three `OpacityPolygonZone`s in `world.tscn` use the same two materials: `Walls_TileMapLayer2` and `Ground_Upper_TileMapLayer2`. The shader holds only one polygon, so the last zone to update replaces the polygon and opacity for all of them. Each update also starts a new tween without stopping the previous one, so tweens fight over the same property.
 
@@ -104,7 +104,7 @@ The game was run with real rendering: Xvfb plus Mesa's software Vulkan (lavapipe
 **Not tested:** performance (software rendering isn't representative of phones), audio (no audio device was available), and real touch hardware.
 
 ### 10. ~~Player can walk off the map~~ (Fixed)
-`scenes/world/world.tscn`, `scenes/player/player.tscn`
+`scenes/maps/world/world.tscn`, `scenes/player/player.tscn`
 
 The map edge has no boundary colliders, so the player can walk out into the empty grey area (reached x = -1190). The camera limits are ±10000, so a grey strip already shows on the left edge of the starting view.
 
@@ -113,7 +113,7 @@ The map edge has no boundary colliders, so the player can walk out into the empt
 Fixed: the camera limits already come from the map's tile bounds (`GameMap.get_camera_rect()`). For the boundary, `GameMap` has a `block_map_edges` export, switched on in `base_outdoor_grass.tscn` (World and Town). When the map enters the tree, `build_edge_walls()` adds an `EdgeWalls` `StaticBody2D` on both levels: every empty cell next to a ground cell (diagonals too) on the `Ground_TileMapLayer` grid collides, with each row's adjacent cells merged into one rectangle (72 shapes in World). This follows World's irregular outline, not just its bounding box. Because it is built before the navigation mesh bakes, the mesh also stops at the edge, so a tap outside the map sends the companion to the nearest ground. Edge exits still work: their strips lie on ground cells. Interiors are closed by their wall tiles and leave the export off.
 
 ### 11. House interior is a placeholder (Partly fixed)
-`scenes/maps/House1Interior.tscn`
+`scenes/maps/interiors/house_1_interior.tscn`
 
 - ~~`Ground_TileMapLayer` and `Walls_TileMapLayer` have no tileset or tiles. The interior renders as an empty grey screen, and nothing blocks the player.~~ Fixed: a furnished 20×13 room built from `resources/tilesets/interior.tres` (wood floor, wallpaper, bed, shelves, table), with wall and furniture collision and a navigation mesh.
 - ~~The `ExitDoor` sprite override (`region_rect = Rect2(96, 0, 32, 128)`) shows a chest instead of a door.~~ Fixed: the override is removed; the exit door uses the default door sprite.
@@ -142,7 +142,7 @@ Fixed: the camera limits already come from the map's tile bounds (`GameMap.get_c
 - ~~The NPC uses the Godot icon as a placeholder sprite, and the player walks through it.~~ Fixed: the NPC has a sprite sheet and a collision shape at its feet.
 
 ### 15. Opacity zones with an empty entrance (Confirmed)
-`scenes/world/world.tscn`
+`scenes/maps/world/world.tscn`
 
 `EnterZone2` has no polygon points in `OpacityPolygonZone` and `OpacityPolygonZone3`, so those zones have only one working entrance. Delete the empty nodes or draw the polygons.
 
@@ -165,7 +165,7 @@ The navmesh is baked only from static colliders (`PARSED_GEOMETRY_STATIC_COLLIDE
 **Fix:** when NPCs start moving, use navigation avoidance: a `NavigationAgent2D` with `avoidance_enabled` on the companion, and a `NavigationObstacle2D` (or an agent of their own) on the NPCs. Don't rebake the navmesh around moving NPCs.
 
 ### 18. ~~Player's head is drawn over the roof edge~~ (Fixed)
-`scenes/world/world.tscn` (`OpacityPolygonZone3`)
+`scenes/maps/world/world.tscn` (`OpacityPolygonZone3`)
 
 The plateau on top of the mountain has a "roof" zone that fades when the player or companion goes under it. Walking north toward it, the player stays on level 1 until their feet reach the entry strip at y −600 (they switch at y −578). Before that (feet at y −531 and −558) the player is drawn after the roof's tile layer, so their head covers the plateau's edge as if they were on the same level. The head should go under the roof.
 
@@ -202,7 +202,7 @@ When the player enters or leaves the house, the door switches to its open frame 
 **Fix:** draw a dark backdrop behind the open doorway, either black or a hint of the other side (interior floor seen from outside, grass seen from inside). For example, add a black sprite or `Polygon2D` under the door sprite, shaped like the doorway and shown only while `is_open` is true.
 
 ### 22. ~~Collision shapes in the room are too big~~ (Fixed)
-`resources/tilesets/interior.tres`, `scenes/maps/House1Interior.tscn`
+`resources/tilesets/interior.tres`, `scenes/maps/interiors/house_1_interior.tscn`
 
 The player stops too far from the plant, the floor lamp and the walls, so she can't walk up to them. Their collision is larger than the part that touches the floor.
 
@@ -231,18 +231,18 @@ Fixed: the table's collision reaches its back edge, so she stops just behind it 
 - **Duplicated layer-switching code:** `clim_zone.gd` and `opacity_polygon_zone.gd:set_character_to_underground` both switch layers by setting collision masks and z-index by hand. Move this into one shared helper. `ClimZone` also flips state on every enter, so stepping in and back out leaves the character on the wrong layer. It isn't placed in any scene yet.
 - **White-to-transparent shader:** `game.gdshader` makes near-white pixels transparent, and it's still applied to the companion (no longer to the player). White highlights and eyes in those sprites become see-through. Export the source images as PNGs with real transparency instead.
 - ~~**NPC has no collision shape:** the NPC body has no `CollisionShape2D` (only its `InteractionArea` does). The player walks through it, and Godot shows a configuration warning.~~ Fixed: the NPC has a capsule at its feet.
-- **Player collision layer differs between scenes:** layer 4 in `world.tscn`, layer 1 (the default) in `House1Interior.tscn`.
+- **Player collision layer differs between scenes:** layer 4 in `world.tscn`, layer 1 (the default) in `house_1_interior.tscn`.
 
 ## Cleanup
 
 - **Unused files:**
-  - `scenes/world/TransparentLayer.gdshader`
-  - `OpacitySquareZone.tscn` and `opacity_square_zone.gd`. The square zone also ignores the shape's position and scale when it computes its bounds.
-  - `ClimZone.tscn`
+  - ~~`scenes/world/TransparentLayer.gdshader`~~ Deleted.
+  - ~~`OpacitySquareZone.tscn` and `opacity_square_zone.gd`. The square zone also ignores the shape's position and scale when it computes its bounds.~~ Deleted.
+  - `clim_zone.tscn`: kept, since it's the start of the climbing zone (see the layer-switching entry above), not a leftover.
 - **Leftover debug output:** `print("npc")` in `npc.gd:28`, `print("gomb")` in `interaction_button.gd:18`, and the `print` calls in `companion.gd`.
 - **Repo contents:**
   - A 1.4 MB `.unitypackage` is committed; Godot doesn't use it.
-  - `Scene Overview.png` (820 KB) is committed twice.
+  - ~~`Scene Overview.png` (820 KB) is committed twice.~~ Fixed: `world.tscn` uses the copy in `assets/Pixel Art Top Down - Basic v1.2.3/`.
   - Binary assets aren't stored with Git LFS.
 - **Small mismatches:**
   - `door.gd:70`: the comment says the wait is 0.3 s, but the code waits 0.1 s.

@@ -8,11 +8,11 @@ How to structure the world map, its areas and the room interiors so that:
 
 ## Where things stand
 
-Updated 2026-10-22. Steps 1–4 of the [order of work](#order-of-work) are done; steps 5–7 aren't started.
+Updated 2026-10-22. Steps 1–4 and 7 of the [order of work](#order-of-work) are done; steps 5 and 6 aren't started.
 
 - **Done:** the tile sets are shared `.tres` files. `main.tscn` stays loaded and `SceneManager` swaps the maps inside it, so the Player, Companion and UI survive a map change. Every map inherits from a base scene with the `GameMap` script and named spawn points, and doors use `target_map` + `target_spawn`. Camera limits come from the map's tiles. Edge exits (`map_exit.tscn`) connect World and the new Town area. Outdoor maps are closed off by invisible edge walls (`GameMap.block_map_edges`).
-- **Maps:** `world.tscn` (the first outdoor area, still in `scenes/world/`), `scenes/maps/world/town.tscn` (east of World, built from the city pack) and `House1Interior.tscn`, a furnished room on `base_interior_wood.tscn`.
-- **Not done:** multi-room interiors (step 5), saved map state (step 6; `map_id` is exported but nothing reads it yet), and the folder moves and renames from [Project folders](#8-project-folders) (step 7): `world.tscn` is still in `scenes/world/`, and `House1Interior.tscn`, `ClimZone.tscn` and `OpacityZones/` aren't snake_case yet.
+- **Maps:** `scenes/maps/world/world.tscn` (the first outdoor area), `scenes/maps/world/town.tscn` (east of World, built from the city pack) and `scenes/maps/interiors/house_1_interior.tscn`, a furnished room on `base_interior_wood.tscn`. The project follows the layout in [Project folders](#8-project-folders).
+- **Not done:** multi-room interiors (step 5), saved map state (step 6; `map_id` is exported but nothing reads it yet).
 - **Example names:** `village`, `forest_01`, `inn` and `village_house_01` in the sections below are illustrations of the layout, not maps that exist. The real maps are listed above.
 - **Before this plan:** every map had its own Player, Companion and UI and was loaded with `change_scene_to_file()`. Going back out of a house used the `world_spawn_position` workaround. The tile sets lived inside `world.tscn`, and the camera limits were hard-coded.
 
@@ -152,25 +152,24 @@ scripts/
 └── tools/                      editor-time generators (build_outdoor_props_tileset)
 ```
 
-File names use snake_case (Godot's convention): `House1Interior.tscn` becomes `house_1_interior.tscn`.
+File names use snake_case (Godot's convention), such as `house_1_interior.tscn`. Node names stay PascalCase: the root of `house_1_interior.tscn` is still `House1Interior`.
 
-The moves still to do:
+Done in step 7:
 
 | From | To |
 |---|---|
 | `scenes/world/world.tscn` | `scenes/maps/world/world.tscn` |
-| `scenes/world/Scene Overview.png` | `scenes/maps/world/world_overview.png` (the hidden reference `Sprite2D` in `world.tscn` uses it) |
 | `scenes/maps/House1Interior.tscn` | `scenes/maps/interiors/house_1_interior.tscn` |
 | `scenes/objects/ClimZone.tscn` | `scenes/objects/clim_zone.tscn` |
-| `scenes/objects/OpacityZones/` | `scenes/objects/opacity_zones/` (`OpacityPolygonZone.tscn` → `opacity_polygon_zone.tscn`, `OpacitySquareZone.tscn` → `opacity_square_zone.tscn`) |
+| `scenes/objects/OpacityZones/` | `scenes/objects/opacity_zones/` (`OpacityPolygonZone.tscn` → `opacity_polygon_zone.tscn`) |
+| `scenes/world/Scene Overview.png` | deleted: the same image is in `assets/Pixel Art Top Down - Basic v1.2.3/`, and World's hidden reference sprite now uses that copy |
+| `scenes/world/TransparentLayer.gdshader`, `OpacitySquareZone.tscn` + `opacity_square_zone.gd` | deleted: nothing used them |
 
-`BUGS.md` → Cleanup lists `TransparentLayer.gdshader`, `ClimZone.tscn` and the square opacity zone as unused. Check that with `grep` first; a file nothing uses is deleted instead of moved. `scenes/world/` is removed once it's empty.
-
-Sprite sheets next to their scenes (`scenes/player/character.png` and the like) stay where they are, and so do the third-party pack folders' own names under `assets/`.
+`clim_zone.tscn` isn't placed anywhere yet but stays: it's the start of the climbing zone. Sprite sheets next to their scenes (`scenes/player/character.png` and the like) stay where they are, and so do the third-party pack folders' own names under `assets/`.
 
 ### Moving files without the editor
 
-The moves are done here in the container with git and the headless Godot from the `run-game` skill, not in the Godot editor:
+Files are moved here in the container with git and the headless Godot from the `run-game` skill, not in the Godot editor:
 
 1. `git mv` each file together with its `.uid` and `.import` sidecar, so the file keeps its UID.
 2. Rewrite every `res://` path to the moved files in `*.tscn`, `*.tres`, `*.gd`, `project.godot`, `test/`, `.claude/skills/run-game/` and the docs (`grep -rn` the old path first). Scenes reference by `uid://` too, but the path in each `ext_resource` must still be right, or Godot warns and falls back to the UID.
@@ -193,4 +192,5 @@ One branch per step:
    Later (`fix/map-edge-bounds`): `GameMap.block_map_edges` builds invisible walls around the ground tiles of outdoor maps (see [section 3](#3-base-map-scenes-built-in-layers)).
 5. **`feat/multi-room-interiors`**: room camera bounds and internal teleport doors (see the `target_spawn` default in [section 6](#6-interiors-with-several-rooms)).
 6. **`feat/map-state`**: per-map saved state.
-7. **`refactor/project-folders`**: the folder moves and snake_case renames from [Project folders](#8-project-folders), done in the container as described in [Moving files without the editor](#moving-files-without-the-editor). It touches no behaviour, so it can be done at any time, best before step 5 so the new interiors are made in `scenes/maps/interiors/` from the start.
+7. ✅ **`refactor/project-folders`**: the folder moves and snake_case renames from [Project folders](#8-project-folders), done in the container as described in [Moving files without the editor](#moving-files-without-the-editor). Done before step 5, so new interiors go in `scenes/maps/interiors/` from the start.
+   As built: one commit per move. After a fresh headless import (no errors), `exit_smoke.gd`, `house_smoke.gd` and all 11 `drive.gd` scenarios pass, the same as before the moves.
