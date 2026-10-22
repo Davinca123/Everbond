@@ -8,11 +8,11 @@ How to structure the world map, its areas and the room interiors so that:
 
 ## Where things stand
 
-Updated 2026-10-22. Steps 1–3 of the [order of work](#order-of-work) are merged into `dev`; steps 4–6 aren't started.
+Updated 2026-10-22. Steps 1–4 of the [order of work](#order-of-work) are done; steps 5 and 6 aren't started.
 
-- **Done:** the tile sets are shared `.tres` files. `main.tscn` stays loaded and `SceneManager` swaps the maps inside it, so the Player, Companion and UI survive a map change. Every map inherits from a base scene with the `GameMap` script and named spawn points, and doors use `target_map` + `target_spawn`. Camera limits come from the map's tiles.
-- **Maps:** `world.tscn` (one outdoor area, still in `scenes/world/`) and `House1Interior.tscn`, a furnished room on `base_interior_wood.tscn`.
-- **Not done:** edge exits and the split of World into areas (step 4), multi-room interiors (step 5), saved map state (step 6), and the folder moves and snake_case renames from [Project folders](#8-project-folders).
+- **Done:** the tile sets are shared `.tres` files. `main.tscn` stays loaded and `SceneManager` swaps the maps inside it, so the Player, Companion and UI survive a map change. Every map inherits from a base scene with the `GameMap` script and named spawn points, and doors use `target_map` + `target_spawn`. Camera limits come from the map's tiles. Edge exits (`map_exit.tscn`) connect World and the new Town area.
+- **Maps:** `world.tscn` (the first outdoor area, still in `scenes/world/`), `scenes/maps/world/town.tscn` (east of World, built from the city pack) and `House1Interior.tscn`, a furnished room on `base_interior_wood.tscn`.
+- **Not done:** multi-room interiors (step 5), saved map state (step 6), and the folder moves and snake_case renames from [Project folders](#8-project-folders).
 - **Before this plan:** every map had its own Player, Companion and UI and was loaded with `change_scene_to_file()`. Going back out of a house used the `world_spawn_position` workaround. The tile sets lived inside `world.tscn`, and the camera limits were hard-coded.
 
 ## 1. A root scene that stays loaded
@@ -157,6 +157,7 @@ One branch per step:
 2. ✅ **`refactor/persistent-main-scene`**: add `main.tscn` and `SceneManager`; move Player, Companion, ScreenUI and the tap-to-send handler into Main. The biggest step.
 3. ✅ **`refactor/game-map-base`**: add `GameMap`, the base scenes and spawn points. Switch the door to `target_map` + `target_spawn` and remove the `world_spawn_position` workaround. The uncommitted `Room.tscn` from `feat/room-scene` becomes `base_interior_wood.tscn` here.
    As built: the interior base is `base_interior_wood.tscn` with one tile set, `interior.tres`, made from `assets/InteriorTilesLITE.png` (floors, wallpapers, wall-top outlines and every furniture sprite as a multi-cell tile with a footprint collision). It adds a `Rugs_TileMapLayer` and a Y-sorted `Furniture_TileMapLayer` inside `YSort_Entities`, so the characters walk behind and in front of furniture. Maps smaller than the screen are centred by the camera. `Doors` sits inside `YSort_Entities` so doors Y-sort with the characters, and `base_map` keeps `MAP_LAYERS` empty: each base adds its layers in draw order. The `music` export waits until there is audio. Camera limits come from `GameMap.get_camera_rect()`; a map with no tiles has no limits.
-4. **`feat/map-exit`**: edge exits between areas, then split World into areas.
+4. ✅ **`feat/map-exit`**: edge exits between areas, then split World into areas.
+   As built: World is too small to split, so a second area, `town.tscn`, was added east of it instead. `map_exit.tscn` is an `Area2D` strip (exports `target_map`, `target_spawn`, `size`) that changes the map when the player walks in; World's east edge and Town's west edge are joined this way, with the arrival spawns 200 px inside the edges. Town is built on `base_outdoor_grass.tscn`: grass and a cobblestone road from the ground tile set, and the city pack's buildings and street objects placed as `prop.tscn` instances. A prop is a `StaticBody2D` whose origin is the image's bottom edge, so it Y-sorts with the characters, with a collision footprint at its base on `Lenti_Szint`, so the navigation mesh avoids it. The buildings have no interiors yet.
 5. **`feat/multi-room-interiors`**: room camera bounds and internal teleport doors.
 6. **`feat/map-state`**: per-map saved state.

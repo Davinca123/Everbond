@@ -49,6 +49,7 @@ grep -E "CHECK|RESULT|ERROR|SCRIPT ERROR" .claude/tmp/run.log
 Start from `house_smoke.gd` in this folder. It enters House1Interior through World's
 Door1, checks that the companion is there, follows the player and goes to a tapped
 point, then leaves the house again. Exit code 0 means every check passed.
+`exit_smoke.gd` does the same for the edge exits: World → Town → World.
 
 The game is controlled through the `SignalBus` autoload, the same way the touch UI does it:
 
