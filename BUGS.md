@@ -155,6 +155,8 @@ When you tap a wall, the spot marker is drawn on the wall itself. The companion 
 
 Fixed: `send_to_position()` plans the crossings first, then `get_reachable_point()` takes the end of the navigation path to the tap on the level where the route ends: from the companion on its own level, or from the last crossing's far side on that crossing's level. That point becomes `click_target_pos`, so the marker, the path and the arrival check all use it. Tapping the bakery wall in Town puts the target on the road in front of it (tap y 60 → 196), and a tap on open ground is unchanged. All `test/drive.gd` scenarios still pass.
 
+Follow-up: outdoors the marker still stayed on walls and stair sides, and the companion walked off towards a tunnel or courtyard entrance. The level-2 navmesh is baked over the whole map with only level-2 walls as obstacles, so it leaks out through the zone entrances and covers the walls outside. A wall tap missed the level-1 mesh but hit the level-2 one, so `plan_crossings()` routed into a zone and kept the tap as a level-2 target. Now `is_level_allowed()` admits a zone's inside level only within that zone's `ShaderZone` polygon (the outside level is allowed everywhere). If the tap is on no allowed level's mesh, the target node is the nearest point of an allowed level's mesh (`closest_point_on_level()`). Taps on World's building, courtyard and tunnel walls and on the solid sides of the stairs now stay on level 1, and the companion walks to the nearest ground. Taps inside the tunnel or courtyard still route into them.
+
 ### 17. Companion can't avoid moving NPCs (Code review)
 `scripts/navigation/collision_nav_region.gd:39`, `scenes/companion/companion.gd`
 
