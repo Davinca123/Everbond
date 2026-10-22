@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://4lqc8dw283u7" path="res://scenes/npc/npc.tscn" id="5_v5dby"]
 [ext_resource type="Shader" uid="uid://dvnu7oa6ul780" path="res://scenes/objects/OpacityZones/opacity_polygon.gdshader" id="6_umvgx"]
 [ext_resource type="PackedScene" uid="uid://cr2dqwf614ji1" path="res://scenes/objects/OpacityZones/OpacityPolygonZone.tscn" id="13_srmg5"]
+[ext_resource type="PackedScene" path="res://scenes/objects/map_exit.tscn" id="14_exit"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_t5ptc"]
 resource_local_to_scene = true
@@ -71,6 +72,9 @@ position = Vector2(304, 359)
 [node name="from_house_1" type="Marker2D" parent="Spawns" index="1" unique_id=1124649912]
 position = Vector2(160, 170)
 
+[node name="from_town" type="Marker2D" parent="Spawns" index="2"]
+position = Vector2(5160, 320)
+
 [node name="DirectionalLight2D" type="DirectionalLight2D" parent="." index="4" unique_id=1545937378]
 enabled = false
 
@@ -114,6 +118,14 @@ polygon = PackedVector2Array(-440, 300, 480, 300, 480, -150, -440, -150)
 
 [node name="EnterZone1" parent="TRANSPARENCY_ZONES/OpacityPolygonZone3" index="1" unique_id=1983808705]
 polygon = PackedVector2Array(-440, 300, 480, 300, 480, 310, -440, 310)
+
+[node name="EXITS" type="Node2D" parent="."]
+
+[node name="ToTown" parent="EXITS" instance=ExtResource("14_exit")]
+position = Vector2(5400, 320)
+target_map = "res://scenes/maps/world/town.tscn"
+target_spawn = &"from_world"
+size = Vector2(80, 1280)
 
 [editable path="TRANSPARENCY_ZONES/OpacityPolygonZone"]
 [editable path="TRANSPARENCY_ZONES/OpacityPolygonZone2"]
