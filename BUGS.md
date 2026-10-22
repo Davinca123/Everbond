@@ -195,25 +195,27 @@ When the player enters or leaves the house, the door switches to its open frame 
 
 **Fix:** draw a dark backdrop behind the open doorway, either black or a hint of the other side (interior floor seen from outside, grass seen from inside). For example, add a black sprite or `Polygon2D` under the door sprite, shaped like the doorway and shown only while `is_open` is true.
 
-### 22. Collision shapes in the room are too big (Reported, cosmetic)
+### 22. ~~Collision shapes in the room are too big~~ (Fixed)
 `resources/tilesets/interior.tres`, `scenes/maps/House1Interior.tscn`
 
 The player stops too far from the plant, the floor lamp and the walls, so she can't walk up to them. Their collision is larger than the part that touches the floor.
 
-**Fix:** shrink the collision polygons to the footprint: the pot and the lamp's base, and the foot of the wall.
+Fixed: the side walls collide only on their 4 px outline, the bottom wall on its 5 px edge (the corners are L-shaped), the lamp on its base and the plant on the lower half of its pot. The player now walks up to the drawn wall edge.
 
-### 23. Player is drawn behind the table and the bed when standing beside them (Reported, cosmetic)
+### 23. ~~Player is drawn behind the table and the bed when standing beside them~~ (Fixed)
 `resources/tilesets/interior.tres` (`y_sort_origin` of the furniture tiles)
 
 When the player stands next to the table or the bed, she is drawn behind the furniture, as if she were smaller than it and partly under it. The furniture tiles Y-sort from the bottom edge of their footprint, so the player stays behind them until her feet pass that edge. That is right for tall furniture (the bookshelf, the chair's backrest), but the table and the bed are lower than an adult woman, so the player should be drawn in front of them.
 
-**Fix:** move the `y_sort_origin` of low furniture (table, bed) up to the back edge of its top surface. Leave tall furniture as it is. Together with bug 24, the player can't stand behind these pieces, so she is always drawn in front of them.
+Fixed: the table and the bed sort from the back edge of their top (`y_sort_origin` −27 and −26). Tall furniture still sorts from its bottom edge. Together with bug 24, the player can't stand behind these pieces, so she is always drawn in front of them. The other table and bed tiles in `interior.tres` (not placed in any map yet) still sort from their bottom edge.
 
-### 24. Player can hide behind the table and the chairs (Reported, cosmetic)
+### 24. ~~Player can hide behind the table and the chairs~~ (Fixed)
 `resources/tilesets/interior.tres` (table and chair collision)
 
 - **Table:** the collision doesn't reach the table's back edge, so the player can walk behind its top and disappear under it. The collision's upper edge should reach the table's back edge, so she stops at the edge or at most a few pixels below it.
 - **Chairs:** standing just above a chair, the backrest covers the player up to her head, so the chair looks as tall as she is. Extend the chair's collision upward so she stops further from the backrest.
+
+Fixed: the table's collision reaches 3 px below its back edge, and the chairs' collision starts at the top of the seat. Standing behind a chair, the backrest now covers only her legs.
 
 ---
 
