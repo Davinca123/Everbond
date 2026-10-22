@@ -242,7 +242,7 @@ Fixed: the table's collision reaches its back edge, so she stops just behind it 
 - **Leftover debug output:** `print("npc")` in `npc.gd:28`, `print("gomb")` in `interaction_button.gd:18`, and the `print` calls in `companion.gd`.
 - **Repo contents:**
   - A 1.4 MB `.unitypackage` is committed; Godot doesn't use it.
-  - `Scene Overview.png` (820 KB) is committed twice.
+  - ~~`Scene Overview.png` (820 KB) is committed twice.~~ Fixed: `world.tscn` uses the copy in `assets/Pixel Art Top Down - Basic v1.2.3/`.
   - Binary assets aren't stored with Git LFS.
 - **Small mismatches:**
   - `door.gd:70`: the comment says the wait is 0.3 s, but the code waits 0.1 s.

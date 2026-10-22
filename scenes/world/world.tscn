@@ -1,7 +1,7 @@
 [gd_scene format=4 uid="uid://c5lc3kwm41j6l"]
 
 [ext_resource type="PackedScene" path="res://scenes/maps/_base/base_outdoor_grass.tscn" id="1_base"]
-[ext_resource type="Texture2D" uid="uid://cwlcvwfv24bfs" path="res://scenes/world/Scene Overview.png" id="2_t5ptc"]
+[ext_resource type="Texture2D" uid="uid://bqufng5q3r70m" path="res://assets/Pixel Art Top Down - Basic v1.2.3/Scene Overview.png" id="2_t5ptc"]
 [ext_resource type="PackedScene" uid="uid://brltg8tefhlph" path="res://scenes/objects/door.tscn" id="5_gb53w"]
 [ext_resource type="PackedScene" uid="uid://4lqc8dw283u7" path="res://scenes/npc/npc.tscn" id="5_v5dby"]
 [ext_resource type="Shader" uid="uid://dvnu7oa6ul780" path="res://scenes/objects/OpacityZones/opacity_polygon.gdshader" id="6_umvgx"]
