@@ -248,13 +248,29 @@ func on_map_entered() -> void:
 
 # Ezt a függvényt a fő Game kód fogja meghívni, ha a játékos kattintott
 func send_to_position(target_pos: Vector2):
-	click_target_pos = target_pos
 	current_state = State.GO_TO_TARGET
 	goto_stuck_timer = 0.0
 	goto_best_distance = INF
 	repath_timer = 0.0 # Azonnal új utat számolunk az új célhoz
 	goto_crossings = plan_crossings(target_pos)
-	print("Lény: Indulok a koordinátára: ", target_pos)
+	# Falra/akadályra koppintva a legközelebbi elérhető pont lesz a cél (a jelölő is oda kerül)
+	click_target_pos = get_reachable_point(target_pos)
+	print("Lény: Indulok a koordinátára: ", click_target_pos)
+
+# A célhoz legközelebbi pont, ahová a lény eljut: az út vége azon a szinten, ahol a
+# koppintott út véget ér (az utolsó kapu után). A map_get_closest_point nem jó, mert nem
+# nézi a szintet, és egymást fedő hálóknál a másik szintre is tehetné a pontot.
+# Ha nincs navigációs háló, marad a koppintott pont.
+func get_reachable_point(target: Vector2) -> Vector2:
+	var from: Vector2 = feet.global_position
+	var level: int = get_level(self)
+	if not goto_crossings.is_empty():
+		from = goto_crossings.back().position
+		level = goto_crossings.back().level
+	var nav_path: PackedVector2Array = NavigationServer2D.map_get_path(get_world_2d().navigation_map, from, target, true, level)
+	if nav_path.is_empty():
+		return target
+	return nav_path[nav_path.size() - 1]
 
 # --- ÚTKERESÉS ---
 
