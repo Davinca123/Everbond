@@ -67,9 +67,15 @@ func change_map(map_path: String, spawn_id: StringName = &"default", fade: bool 
 	main.player.control_enabled = true
 	changing = false
 
-# A kamera nem mutat a pálya csempéin túl; csempék nélkül (pl. üres belső tér) nincs határ
+# A kamera nem mutat a pálya csempéin túl; csempék nélkül (pl. üres belső tér) nincs határ.
+# A képernyőnél kisebb pályát (pl. egy szobát) középre tesszük: a határt a pálya közepe
+# körül a képernyő méretére tágítjuk, különben a kamera a bal felső sarkához tapadna.
 func _set_camera_limits(camera: Camera2D, rect: Rect2) -> void:
 	if rect.has_area():
+		var view_size: Vector2 = camera.get_viewport_rect().size / camera.zoom
+		rect = rect.grow_individual(
+			maxf(0.0, (view_size.x - rect.size.x) / 2.0), maxf(0.0, (view_size.y - rect.size.y) / 2.0),
+			maxf(0.0, (view_size.x - rect.size.x) / 2.0), maxf(0.0, (view_size.y - rect.size.y) / 2.0))
 		camera.limit_left = floori(rect.position.x)
 		camera.limit_top = floori(rect.position.y)
 		camera.limit_right = ceili(rect.end.x)

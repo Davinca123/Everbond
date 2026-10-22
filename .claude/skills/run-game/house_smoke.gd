@@ -80,8 +80,9 @@ func _process(delta):
 				check("companion followed player", c.global_position.distance_to(comp_start) > 150 and d < 150,
 					"moved=%.0f dist=%.0f" % [c.global_position.distance_to(comp_start), d])
 				shot("after_follow")
-				var screen = root.get_viewport().get_visible_rect().size * Vector2(0.3, 0.7)
-				tap_world = root.get_viewport().get_canvas_transform().affine_inverse() * screen
+				# Free floor in the bottom-left of the room, away from the furniture
+				tap_world = scene().get_node("Spawns/from_world").global_position + Vector2(-400, 370)
+				var screen = root.get_viewport().get_canvas_transform() * tap_world
 				bus().screen_tapped.emit(screen)
 				set_phase("tap")
 		"tap":
