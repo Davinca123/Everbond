@@ -1,7 +1,8 @@
 @tool
 extends StaticBody2D
 
-# Egyetlen képből álló pályaelem (épület, fa, pad, lámpa ...). A csomópont a kép alsó
+# Egyetlen képből álló nagy pályaelem (épület). Az apró tárgyak (fa, pad, lámpa ...)
+# az outdoor_props.tres csempekészletben vannak. A csomópont a kép alsó
 # szélének közepén van, így a YSort_Entities a talppontja szerint rendezi a karakterekkel.
 # Az ütközés egy, a kép aljához igazított téglalap; a navigációs háló ebből sül ki.
 
