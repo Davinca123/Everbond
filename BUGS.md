@@ -13,7 +13,7 @@ Each bug is marked:
 ## Bugs
 
 ### 1. ~~Opacity zones overwrite each other~~ (Fixed)
-`scenes/objects/OpacityZones/opacity_polygon_zone.gd:125-136`
+`scenes/objects/opacity_zones/opacity_polygon_zone.gd:125-136`
 
 All three `OpacityPolygonZone`s in `world.tscn` use the same two materials: `Walls_TileMapLayer2` and `Ground_Upper_TileMapLayer2`. The shader holds only one polygon, so the last zone to update replaces the polygon and opacity for all of them. Each update also starts a new tween without stopping the previous one, so tweens fight over the same property.
 
@@ -238,7 +238,7 @@ Fixed: the table's collision reaches its back edge, so she stops just behind it 
 - **Unused files:**
   - ~~`scenes/world/TransparentLayer.gdshader`~~ Deleted.
   - ~~`OpacitySquareZone.tscn` and `opacity_square_zone.gd`. The square zone also ignores the shape's position and scale when it computes its bounds.~~ Deleted.
-  - `ClimZone.tscn`: kept, since it's the start of the climbing zone (see the layer-switching entry above), not a leftover.
+  - `clim_zone.tscn`: kept, since it's the start of the climbing zone (see the layer-switching entry above), not a leftover.
 - **Leftover debug output:** `print("npc")` in `npc.gd:28`, `print("gomb")` in `interaction_button.gd:18`, and the `print` calls in `companion.gd`.
 - **Repo contents:**
   - A 1.4 MB `.unitypackage` is committed; Godot doesn't use it.

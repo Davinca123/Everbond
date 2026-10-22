@@ -4,8 +4,8 @@
 [ext_resource type="Texture2D" uid="uid://bqufng5q3r70m" path="res://assets/Pixel Art Top Down - Basic v1.2.3/Scene Overview.png" id="2_t5ptc"]
 [ext_resource type="PackedScene" uid="uid://brltg8tefhlph" path="res://scenes/objects/door.tscn" id="5_gb53w"]
 [ext_resource type="PackedScene" uid="uid://4lqc8dw283u7" path="res://scenes/npc/npc.tscn" id="5_v5dby"]
-[ext_resource type="Shader" uid="uid://dvnu7oa6ul780" path="res://scenes/objects/OpacityZones/opacity_polygon.gdshader" id="6_umvgx"]
-[ext_resource type="PackedScene" uid="uid://cr2dqwf614ji1" path="res://scenes/objects/OpacityZones/OpacityPolygonZone.tscn" id="13_srmg5"]
+[ext_resource type="Shader" uid="uid://dvnu7oa6ul780" path="res://scenes/objects/opacity_zones/opacity_polygon.gdshader" id="6_umvgx"]
+[ext_resource type="PackedScene" uid="uid://cr2dqwf614ji1" path="res://scenes/objects/opacity_zones/opacity_polygon_zone.tscn" id="13_srmg5"]
 [ext_resource type="PackedScene" path="res://scenes/objects/map_exit.tscn" id="14_exit"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_t5ptc"]
