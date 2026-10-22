@@ -144,12 +144,14 @@ The map edge has no boundary colliders, so the player can walk out into the empt
 
 `EnterZone2` has no polygon points in `OpacityPolygonZone` and `OpacityPolygonZone3`, so those zones have only one working entrance. Delete the empty nodes or draw the polygons.
 
-### 16. Companion's spot marker appears on walls (Reported)
+### 16. ~~Companion's spot marker appears on walls~~ (Fixed)
 `scenes/companion/companion.gd:207`, `scenes/companion/companion.gd:333`
 
 When you tap a wall, the spot marker is drawn on the wall itself. The companion can't stand there, so it walks to the nearest point it can reach while the marker stays on the wall. `send_to_position` stores the raw tap position, and the marker is drawn at that position.
 
 **Fix:** when the companion is sent, snap the destination to the nearest reachable point next to where the user tapped. Use the end of the companion's navigation path to the tap (`map_get_path` on its own level). Don't use `map_get_closest_point`: it ignores the level, and with two overlapping navmeshes it can pick a point on the other level. Then store that point as `click_target_pos`, so the marker and the arrival check both use it. If there is no navmesh (no path), keep the tap position.
+
+Fixed: `send_to_position()` plans the crossings first, then `get_reachable_point()` takes the end of the navigation path to the tap on the level where the route ends: from the companion on its own level, or from the last crossing's far side on that crossing's level. That point becomes `click_target_pos`, so the marker, the path and the arrival check all use it. Tapping the bakery wall in Town puts the target on the road in front of it (tap y 60 → 196), and a tap on open ground is unchanged. All `test/drive.gd` scenarios still pass.
 
 ### 17. Companion can't avoid moving NPCs (Code review)
 `scripts/navigation/collision_nav_region.gd:39`, `scenes/companion/companion.gd`
