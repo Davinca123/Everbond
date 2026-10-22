@@ -409,8 +409,9 @@ func plan_crossings(target: Vector2, target_level: int = 0) -> Array[Dictionary]
 					levels.append(level)
 	if links.is_empty():
 		return []
+	# A cél a szint hálójának legközelebbi pontja (falra koppintva a fal előtti pont)
 	for level in [target_level] if target_level != 0 else get_target_levels(target, start_level, levels):
-		nodes.append({ "position": target, "level": level, "target": true })
+		nodes.append({ "position": closest_point_on_level(target, level), "level": level, "target": true })
 
 	var distance: Array[float] = []
 	distance.resize(nodes.size())
@@ -459,19 +460,48 @@ func plan_crossings(target: Vector2, target_level: int = 0) -> Array[Dictionary]
 	return crossings
 
 # Melyik szinten lehet a cél: ha a lény szintjén is rajta van a hálón, ott (mint eddig),
-# különben azokon a szinteken, ahol rajta van. Ha sehol, a lény szintjén.
+# különben azokon a szinteken, ahol rajta van. Csak olyan szint jöhet szóba, ahol a pont
+# lehet (is_level_allowed). Ha egyiken sincs rajta (falra, lépcső oldalára koppintottak),
+# azokon a szinteken, ahol lehet, és a cél a háló legközelebbi pontja lesz.
 func get_target_levels(target: Vector2, start_level: int, levels: Array[int]) -> Array[int]:
-	if is_on_level(target, start_level):
+	if is_level_allowed(target, start_level) and is_on_level(target, start_level):
 		return [start_level]
 	var on_levels: Array[int] = []
+	var allowed_levels: Array[int] = []
 	for level in levels:
+		if not is_level_allowed(target, level):
+			continue
+		allowed_levels.append(level)
 		if level != start_level and is_on_level(target, level):
 			on_levels.append(level)
-	return on_levels if not on_levels.is_empty() else [start_level]
+	if not on_levels.is_empty():
+		return on_levels
+	return allowed_levels if not allowed_levels.is_empty() else [start_level]
+
+# A belső szint (a zónák "bent" szintje, pl. az alagút, az udvar) hálója a zóna bejáratain
+# át kilóg az egész pályára, de a karakterek csak a zónán belül vannak ezen a szinten.
+# Ezért egy pont csak akkor lehet a belső szinten, ha valamelyik zóna területén belül van;
+# a külső szint (valamelyik kapu "kint" szintje) mindenhol lehet.
+func is_level_allowed(point: Vector2, level: int) -> bool:
+	var inside_only: bool = false
+	for zone in get_tree().get_nodes_in_group("opacity_zones"):
+		for portal in zone.portals:
+			if portal.outside_level == level:
+				return true
+			if portal.inside_level == level:
+				inside_only = true
+				if Geometry2D.is_point_in_polygon(point, zone.global_points):
+					return true
+	return not inside_only
 
 func is_on_level(point: Vector2, level: int) -> bool:
+	return closest_point_on_level(point, level).distance_to(point) < NAV_REACH
+
+# A szint hálójának a ponthoz legközelebbi pontja (a map_get_closest_point nem nézi a szintet);
+# ha nincs háló, maga a pont
+func closest_point_on_level(point: Vector2, level: int) -> Vector2:
 	var path_on_level: PackedVector2Array = NavigationServer2D.map_get_path(get_world_2d().navigation_map, point, point, true, level)
-	return not path_on_level.is_empty() and path_on_level[0].distance_to(point) < NAV_REACH
+	return path_on_level[0] if not path_on_level.is_empty() else point
 
 # Az út hossza egy szint hálóján; INF, ha a két pont nincs összekötve
 func nav_path_length(from: Vector2, to: Vector2, level: int) -> float:
