@@ -8,3 +8,7 @@
 *.apk
 *.ap_
 *.aab
+
+# Claude Code session log and temporary files
+.claude/last-session.md
+.claude/tmp/

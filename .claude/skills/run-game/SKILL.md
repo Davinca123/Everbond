@@ -28,16 +28,19 @@ timeout 300 "$G" --headless --path . --import
 ## 3. Run a driver script
 
 ```bash
-OUT=<dir for screenshots> timeout 120 xvfb-run -a -s "-screen 0 1280x720x24" \
+mkdir -p .claude/tmp/screenshots && touch .claude/tmp/.gdignore
+OUT=.claude/tmp/screenshots timeout 120 xvfb-run -a -s "-screen 0 1280x720x24" \
   "$G" --path . --rendering-method gl_compatibility --rendering-driver opengl3 \
-  --audio-driver Dummy -s <driver.gd> > run.log 2>&1
-grep -E "CHECK|RESULT|ERROR|SCRIPT ERROR" run.log
+  --audio-driver Dummy -s <driver.gd> > .claude/tmp/run.log 2>&1
+grep -E "CHECK|RESULT|ERROR|SCRIPT ERROR" .claude/tmp/run.log
 ```
 
 - Keep `--rendering-method gl_compatibility --rendering-driver opengl3`: the default
   Vulkan renderer doesn't work under xvfb.
 - `--headless` works too if you don't need screenshots (it's faster).
-- The driver path can be outside the project (e.g. the scratchpad); it still sees `res://`.
+- Screenshots, videos, logs and throwaway drivers go in `.claude/tmp/` (see CLAUDE.md), so
+  they can be opened from the workspace. The `.gdignore` keeps Godot from importing them.
+- The driver can live in `.claude/tmp/` or outside the project; it still sees `res://`.
 - The only expected warning is `Could not set V-Sync mode`. Anything else is worth reading.
 - Look at the screenshots. A grey frame with nothing on it means the scene didn't load.
 
