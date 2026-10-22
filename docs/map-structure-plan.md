@@ -144,7 +144,8 @@ scenes/
 scripts/
 ├── global/                     signal_bus, game_manager, player_data, scene_manager (new)
 ├── maps/game_map.gd
-└── navigation/
+├── navigation/
+└── tools/                      editor-time generators (build_outdoor_props_tileset)
 ```
 
 File names use snake_case (Godot's convention): `House1Interior.tscn` becomes `house_1_interior.tscn`. Rename and move files from inside the Godot editor so it updates the references.
@@ -159,5 +160,6 @@ One branch per step:
    As built: the interior base is `base_interior_wood.tscn` with one tile set, `interior.tres`, made from `assets/InteriorTilesLITE.png` (floors, wallpapers, wall-top outlines and every furniture sprite as a multi-cell tile with a footprint collision). It adds a `Rugs_TileMapLayer` and a Y-sorted `Furniture_TileMapLayer` inside `YSort_Entities`, so the characters walk behind and in front of furniture. Maps smaller than the screen are centred by the camera. `Doors` sits inside `YSort_Entities` so doors Y-sort with the characters, and `base_map` keeps `MAP_LAYERS` empty: each base adds its layers in draw order. The `music` export waits until there is audio. Camera limits come from `GameMap.get_camera_rect()`; a map with no tiles has no limits.
 4. ✅ **`feat/map-exit`**: edge exits between areas, then split World into areas.
    As built: World is too small to split, so a second area, `town.tscn`, was added east of it instead. `map_exit.tscn` is an `Area2D` strip (exports `target_map`, `target_spawn`, `size`) that changes the map when the player walks in; World's east edge and Town's west edge are joined this way, with the arrival spawns 200 px inside the edges. Town is built on `base_outdoor_grass.tscn`: grass and a cobblestone road from the ground tile set, and the city pack's buildings and street objects placed as `prop.tscn` instances. A prop is a `StaticBody2D` whose origin is the image's bottom edge, so it Y-sorts with the characters, with a collision footprint at its base on `Lenti_Szint`, so the navigation mesh avoids it. The buildings have no interiors yet.
+   Later (`feat/outdoor-props-tileset`): the small street objects moved into a tile set, `outdoor_props.tres`, like the interior furniture. `scripts/tools/build_outdoor_props_tileset.gd` packs the pack's object images into `assets/outdoor_props.png` (16 px cells) and writes each object as a multi-cell tile, with its `y_sort_origin` at the image's bottom and its footprint collision there. `base_outdoor_grass.tscn` has a Y-sorted `Props_TileMapLayer` inside `YSort_Entities` for painting them. Only the buildings are still `prop.tscn` instances, since they are large one-off images that will get doors and interiors. To add an object, append it to the end of the script's list (the order sets the atlas coordinates), run the script and reimport.
 5. **`feat/multi-room-interiors`**: room camera bounds and internal teleport doors.
 6. **`feat/map-state`**: per-map saved state.
