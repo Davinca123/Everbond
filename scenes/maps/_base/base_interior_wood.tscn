@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://c6x5fbnsd8lha"]
+
+[ext_resource type="PackedScene" path="res://scenes/maps/_base/base_map.tscn" id="1_base"]
+[ext_resource type="TileSet" path="res://resources/tilesets/interior.tres" id="2_interior"]
+
+[node name="BaseInteriorWood" unique_id=522599980 instance=ExtResource("1_base")]
+
+[node name="Background" type="ColorRect" parent="." index="0"]
+z_index = -100
+offset_left = -5000.0
+offset_top = -5000.0
+offset_right = 5000.0
+offset_bottom = 5000.0
+mouse_filter = 2
+color = Color(0.06, 0.05, 0.05, 1)
+
+[node name="Ground_TileMapLayer" type="TileMapLayer" parent="MAP_LAYERS" index="0" unique_id=684348893]
+texture_filter = 1
+scale = Vector2(5, 5)
+tile_set = ExtResource("2_interior")
+
+[node name="Rugs_TileMapLayer" type="TileMapLayer" parent="MAP_LAYERS" index="1"]
+texture_filter = 1
+scale = Vector2(5, 5)
+tile_set = ExtResource("2_interior")
+
+[node name="Walls_TileMapLayer" type="TileMapLayer" parent="MAP_LAYERS" index="2" unique_id=1681908416]
+z_index = 1
+texture_filter = 1
+scale = Vector2(5, 5)
+tile_set = ExtResource("2_interior")
+
+[node name="Furniture_TileMapLayer" type="TileMapLayer" parent="YSort_Entities" index="1"]
+z_index = 1
+y_sort_enabled = true
+texture_filter = 1
+scale = Vector2(5, 5)
+tile_set = ExtResource("2_interior")

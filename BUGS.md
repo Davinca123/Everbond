@@ -110,11 +110,11 @@ The map edge has no boundary colliders, so the player can walk out into the empt
 
 **Fix:** add boundary collision around the map. Set the `Camera2D` limits to the map's bounds.
 
-### 11. House interior is a placeholder (Confirmed)
+### 11. House interior is a placeholder (Partly fixed)
 `scenes/maps/House1Interior.tscn`
 
-- `Ground_TileMapLayer` and `Walls_TileMapLayer` have no tileset or tiles. The interior renders as an empty grey screen, and nothing blocks the player.
-- The `ExitDoor` sprite override (`region_rect = Rect2(96, 0, 32, 128)`) shows a chest instead of a door.
+- ~~`Ground_TileMapLayer` and `Walls_TileMapLayer` have no tileset or tiles. The interior renders as an empty grey screen, and nothing blocks the player.~~ Fixed: a furnished 20×13 room built from `resources/tilesets/interior.tres` (wood floor, wallpaper, bed, shelves, table), with wall and furniture collision and a navigation mesh.
+- ~~The `ExitDoor` sprite override (`region_rect = Rect2(96, 0, 32, 128)`) shows a chest instead of a door.~~ Fixed: the override is removed; the exit door uses the default door sprite.
 - The exit door uses `interaction_type = "door_enter"`, so its button says "Belép" (Enter) instead of an exit label.
 
 ### 12. Companion's idle animations are hidden behind the player (Confirmed)
