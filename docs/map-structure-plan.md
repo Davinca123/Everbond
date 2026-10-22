@@ -8,10 +8,12 @@ How to structure the world map, its areas and the room interiors so that:
 
 ## Where things stand
 
-- Every map (`world.tscn`, `House1Interior.tscn`) has its own Player, Companion and ScreenUI. Map changes use `get_tree().change_scene_to_file()`, so the player, the companion's state and the UI are rebuilt on every change.
-- Going back from an interior uses `GameManager.world_spawn_position` / `coming_back_from_interior`. It only works for doors that start in World (`door.gd` checks `current_scene.name == "World"`).
-- The three TileSets in `world.tscn` are stored inside that scene, so no other map can reuse them.
-- The camera limits are hard-coded to ±10000 in `player.tscn`.
+Updated 2026-10-22. Steps 1–3 of the [order of work](#order-of-work) are merged into `dev`; steps 4–6 aren't started.
+
+- **Done:** the tile sets are shared `.tres` files. `main.tscn` stays loaded and `SceneManager` swaps the maps inside it, so the Player, Companion and UI survive a map change. Every map inherits from a base scene with the `GameMap` script and named spawn points, and doors use `target_map` + `target_spawn`. Camera limits come from the map's tiles.
+- **Maps:** `world.tscn` (one outdoor area, still in `scenes/world/`) and `House1Interior.tscn`, a furnished room on `base_interior_wood.tscn`.
+- **Not done:** edge exits and the split of World into areas (step 4), multi-room interiors (step 5), saved map state (step 6), and the folder moves and snake_case renames from [Project folders](#8-project-folders).
+- **Before this plan:** every map had its own Player, Companion and UI and was loaded with `change_scene_to_file()`. Going back out of a house used the `world_spawn_position` workaround. The tile sets lived inside `world.tscn`, and the camera limits were hard-coded.
 
 ## 1. A root scene that stays loaded
 
@@ -151,9 +153,9 @@ File names use snake_case (Godot's convention): `House1Interior.tscn` becomes `h
 
 One branch per step:
 
-1. **`refactor/shared-tilesets`**: save the TileSets as `.tres` files. Nothing visible changes.
-2. **`refactor/persistent-main-scene`**: add `main.tscn` and `SceneManager`; move Player, Companion, ScreenUI and the tap-to-send handler into Main. The biggest step.
-3. **`refactor/game-map-base`**: add `GameMap`, the base scenes and spawn points. Switch the door to `target_map` + `target_spawn` and remove the `world_spawn_position` workaround. The uncommitted `Room.tscn` from `feat/room-scene` becomes `base_interior_wood.tscn` here.
+1. ✅ **`refactor/shared-tilesets`**: save the TileSets as `.tres` files. Nothing visible changes.
+2. ✅ **`refactor/persistent-main-scene`**: add `main.tscn` and `SceneManager`; move Player, Companion, ScreenUI and the tap-to-send handler into Main. The biggest step.
+3. ✅ **`refactor/game-map-base`**: add `GameMap`, the base scenes and spawn points. Switch the door to `target_map` + `target_spawn` and remove the `world_spawn_position` workaround. The uncommitted `Room.tscn` from `feat/room-scene` becomes `base_interior_wood.tscn` here.
    As built: the interior base is `base_interior_wood.tscn` with one tile set, `interior.tres`, made from `assets/InteriorTilesLITE.png` (floors, wallpapers, wall-top outlines and every furniture sprite as a multi-cell tile with a footprint collision). It adds a `Rugs_TileMapLayer` and a Y-sorted `Furniture_TileMapLayer` inside `YSort_Entities`, so the characters walk behind and in front of furniture. Maps smaller than the screen are centred by the camera. `Doors` sits inside `YSort_Entities` so doors Y-sort with the characters, and `base_map` keeps `MAP_LAYERS` empty: each base adds its layers in draw order. The `music` export waits until there is audio. Camera limits come from `GameMap.get_camera_rect()`; a map with no tiles has no limits.
 4. **`feat/map-exit`**: edge exits between areas, then split World into areas.
 5. **`feat/multi-room-interiors`**: room camera bounds and internal teleport doors.
