@@ -103,12 +103,14 @@ The game was run with real rendering: Xvfb plus Mesa's software Vulkan (lavapipe
 
 **Not tested:** performance (software rendering isn't representative of phones), audio (no audio device was available), and real touch hardware.
 
-### 10. Player can walk off the map (Confirmed)
+### 10. ~~Player can walk off the map~~ (Fixed)
 `scenes/world/world.tscn`, `scenes/player/player.tscn`
 
 The map edge has no boundary colliders, so the player can walk out into the empty grey area (reached x = -1190). The camera limits are ±10000, so a grey strip already shows on the left edge of the starting view.
 
 **Fix:** add boundary collision around the map. Set the `Camera2D` limits to the map's bounds.
+
+Fixed: the camera limits already come from the map's tile bounds (`GameMap.get_camera_rect()`). For the boundary, `GameMap` has a `block_map_edges` export, switched on in `base_outdoor_grass.tscn` (World and Town). When the map enters the tree, `build_edge_walls()` adds an `EdgeWalls` `StaticBody2D` on both levels: every empty cell next to a ground cell (diagonals too) on the `Ground_TileMapLayer` grid collides, with each row's adjacent cells merged into one rectangle (72 shapes in World). This follows World's irregular outline, not just its bounding box. Because it is built before the navigation mesh bakes, the mesh also stops at the edge, so a tap outside the map sends the companion to the nearest ground. Edge exits still work: their strips lie on ground cells. Interiors are closed by their wall tiles and leave the export off.
 
 ### 11. House interior is a placeholder (Partly fixed)
 `scenes/maps/House1Interior.tscn`

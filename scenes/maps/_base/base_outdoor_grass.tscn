@@ -23,6 +23,7 @@ shader_parameter/point_counts = PackedInt32Array(0, 0)
 shader_parameter/opacities = PackedFloat32Array(0, 0)
 
 [node name="BaseOutdoorGrass" instance=ExtResource("1_base")]
+block_map_edges = true
 
 [node name="Ground_TileMapLayer" type="TileMapLayer" parent="MAP_LAYERS"]
 scale = Vector2(5, 5)
