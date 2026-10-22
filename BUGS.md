@@ -104,7 +104,7 @@ The game was run with real rendering: Xvfb plus Mesa's software Vulkan (lavapipe
 **Not tested:** performance (software rendering isn't representative of phones), audio (no audio device was available), and real touch hardware.
 
 ### 10. ~~Player can walk off the map~~ (Fixed)
-`scenes/world/world.tscn`, `scenes/player/player.tscn`
+`scenes/maps/world/world.tscn`, `scenes/player/player.tscn`
 
 The map edge has no boundary colliders, so the player can walk out into the empty grey area (reached x = -1190). The camera limits are ±10000, so a grey strip already shows on the left edge of the starting view.
 
@@ -142,7 +142,7 @@ Fixed: the camera limits already come from the map's tile bounds (`GameMap.get_c
 - ~~The NPC uses the Godot icon as a placeholder sprite, and the player walks through it.~~ Fixed: the NPC has a sprite sheet and a collision shape at its feet.
 
 ### 15. Opacity zones with an empty entrance (Confirmed)
-`scenes/world/world.tscn`
+`scenes/maps/world/world.tscn`
 
 `EnterZone2` has no polygon points in `OpacityPolygonZone` and `OpacityPolygonZone3`, so those zones have only one working entrance. Delete the empty nodes or draw the polygons.
 
@@ -165,7 +165,7 @@ The navmesh is baked only from static colliders (`PARSED_GEOMETRY_STATIC_COLLIDE
 **Fix:** when NPCs start moving, use navigation avoidance: a `NavigationAgent2D` with `avoidance_enabled` on the companion, and a `NavigationObstacle2D` (or an agent of their own) on the NPCs. Don't rebake the navmesh around moving NPCs.
 
 ### 18. ~~Player's head is drawn over the roof edge~~ (Fixed)
-`scenes/world/world.tscn` (`OpacityPolygonZone3`)
+`scenes/maps/world/world.tscn` (`OpacityPolygonZone3`)
 
 The plateau on top of the mountain has a "roof" zone that fades when the player or companion goes under it. Walking north toward it, the player stays on level 1 until their feet reach the entry strip at y −600 (they switch at y −578). Before that (feet at y −531 and −558) the player is drawn after the roof's tile layer, so their head covers the plateau's edge as if they were on the same level. The head should go under the roof.
 
