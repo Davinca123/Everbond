@@ -12,7 +12,7 @@ var FRAME_OPEN: int = 1
 
 # --- EDITORTÓL FÜGGŐ EGYEDI TULAJDONSÁGOK ---
 @export_group("Teleportáció")
-## A pálya, ahová az ajtó vezet (pl. res://scenes/maps/House1Interior.tscn)
+## A pálya, ahová az ajtó vezet (pl. res://scenes/maps/interiors/house_1_interior.tscn)
 @export_file("*.tscn") var target_map: String = ""
 ## Az érkezési pont neve a célpálya Spawns csomópontja alatt (pl. &"from_world")
 @export var target_spawn: StringName = &"default"

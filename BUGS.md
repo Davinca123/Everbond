@@ -113,7 +113,7 @@ The map edge has no boundary colliders, so the player can walk out into the empt
 Fixed: the camera limits already come from the map's tile bounds (`GameMap.get_camera_rect()`). For the boundary, `GameMap` has a `block_map_edges` export, switched on in `base_outdoor_grass.tscn` (World and Town). When the map enters the tree, `build_edge_walls()` adds an `EdgeWalls` `StaticBody2D` on both levels: every empty cell next to a ground cell (diagonals too) on the `Ground_TileMapLayer` grid collides, with each row's adjacent cells merged into one rectangle (72 shapes in World). This follows World's irregular outline, not just its bounding box. Because it is built before the navigation mesh bakes, the mesh also stops at the edge, so a tap outside the map sends the companion to the nearest ground. Edge exits still work: their strips lie on ground cells. Interiors are closed by their wall tiles and leave the export off.
 
 ### 11. House interior is a placeholder (Partly fixed)
-`scenes/maps/House1Interior.tscn`
+`scenes/maps/interiors/house_1_interior.tscn`
 
 - ~~`Ground_TileMapLayer` and `Walls_TileMapLayer` have no tileset or tiles. The interior renders as an empty grey screen, and nothing blocks the player.~~ Fixed: a furnished 20×13 room built from `resources/tilesets/interior.tres` (wood floor, wallpaper, bed, shelves, table), with wall and furniture collision and a navigation mesh.
 - ~~The `ExitDoor` sprite override (`region_rect = Rect2(96, 0, 32, 128)`) shows a chest instead of a door.~~ Fixed: the override is removed; the exit door uses the default door sprite.
@@ -202,7 +202,7 @@ When the player enters or leaves the house, the door switches to its open frame 
 **Fix:** draw a dark backdrop behind the open doorway, either black or a hint of the other side (interior floor seen from outside, grass seen from inside). For example, add a black sprite or `Polygon2D` under the door sprite, shaped like the doorway and shown only while `is_open` is true.
 
 ### 22. ~~Collision shapes in the room are too big~~ (Fixed)
-`resources/tilesets/interior.tres`, `scenes/maps/House1Interior.tscn`
+`resources/tilesets/interior.tres`, `scenes/maps/interiors/house_1_interior.tscn`
 
 The player stops too far from the plant, the floor lamp and the walls, so she can't walk up to them. Their collision is larger than the part that touches the floor.
 
@@ -231,7 +231,7 @@ Fixed: the table's collision reaches its back edge, so she stops just behind it 
 - **Duplicated layer-switching code:** `clim_zone.gd` and `opacity_polygon_zone.gd:set_character_to_underground` both switch layers by setting collision masks and z-index by hand. Move this into one shared helper. `ClimZone` also flips state on every enter, so stepping in and back out leaves the character on the wrong layer. It isn't placed in any scene yet.
 - **White-to-transparent shader:** `game.gdshader` makes near-white pixels transparent, and it's still applied to the companion (no longer to the player). White highlights and eyes in those sprites become see-through. Export the source images as PNGs with real transparency instead.
 - ~~**NPC has no collision shape:** the NPC body has no `CollisionShape2D` (only its `InteractionArea` does). The player walks through it, and Godot shows a configuration warning.~~ Fixed: the NPC has a capsule at its feet.
-- **Player collision layer differs between scenes:** layer 4 in `world.tscn`, layer 1 (the default) in `House1Interior.tscn`.
+- **Player collision layer differs between scenes:** layer 4 in `world.tscn`, layer 1 (the default) in `house_1_interior.tscn`.
 
 ## Cleanup
 
