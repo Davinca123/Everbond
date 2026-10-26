@@ -21,6 +21,7 @@ SignalBus="*uid://cuxy8ctsom6mi"
 PlayerData="*uid://t0a1ep6vs0kc"
 GameManager="*uid://gyqio55e54d4"
 SceneManager="*res://scripts/global/scene_manager.gd"
+InteractionManager="*res://scripts/global/interaction_manager.gd"
 
 [display]
 

@@ -234,3 +234,46 @@ func run() -> void:
 			and taps == 0 and comp.current_state == comp.State.FOLLOW,
 			"started_by_key=%s finished=%s presses=%d taps=%d state=%d" % [started_by_key,
 			dialogue.finished, presses, taps, comp.current_state])
+
+	# 10. Egymást fedő tárgyak (NPC és zárt ajtó): csak a legutóbb belépett kapja a
+	# gombnyomást; a "Zárva van..." után a gomb visszajön; az egyikből kilépve a gomb
+	# a másiknak marad
+	var door = world.get_node("YSort_Entities/Doors/Door1")
+	door.is_locked = true
+	player.global_position = npc.global_position + Vector2(-116, 29)
+	await seconds(0.5)
+	InteractionManager.enter(door)
+	await frames(2)
+	var speakers: Array[String] = []
+	var on_started := func(s, _l): speakers.append(s)
+	SignalBus.dialogue_started.connect(on_started)
+	dialogue.finished = false
+	await key(KEY_E)
+	presses = 0
+	while not dialogue.finished and presses < 15:
+		await key(KEY_E)
+		await seconds(0.2)
+		presses += 1
+	await frames(2)
+	var button_after_locked: bool = button.visible
+	InteractionManager.exit(door)
+	await frames(2)
+	var npc_keeps_button: bool = button.visible and InteractionManager.current() == npc
+	SignalBus.dialogue_started.disconnect(on_started)
+	door.is_locked = false
+	await check("overlapping_interactables", speakers == ([""] as Array[String]) and button_after_locked \
+			and npc_keeps_button and SceneManager.current_map == world,
+			"speakers=%s button_after_locked=%s npc_keeps_button=%s" % [speakers, button_after_locked, npc_keeps_button])
+
+	# 11. Zárt ajtó kulccsal: a kulcs nélkül zárva marad, a kulccsal kinyílik
+	# (utolsó eset: az ajtó a házba visz)
+	door.is_locked = true; door.required_key_name = "test_key"
+	player.global_position = door.global_position + Vector2(0, 30)
+	await seconds(0.5)
+	PlayerData.inventory.append("test_key")
+	var was_current: bool = InteractionManager.current() == door
+	await key(KEY_E)
+	await frames(2)
+	await check("locked_door_opens_with_key", was_current and not door.is_locked and door.is_open,
+			"was_current=%s locked=%s open=%s" % [was_current, door.is_locked, door.is_open])
+	await seconds(1.0)

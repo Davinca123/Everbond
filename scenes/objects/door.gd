@@ -4,7 +4,6 @@ extends StaticBody2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var sprite_2d: Sprite2D = $Sprite2D
 
-var player_in_range: bool = false
 var is_open: bool = false
 var interaction_type: String = "door_enter"
 var FRAME_CLOSED: int = 0
@@ -30,30 +29,25 @@ func _ready() -> void:
 	add_to_group(GameMap.PERSISTENT_GROUP)
 	interaction_area.body_entered.connect(_on_body_entered)
 	interaction_area.body_exited.connect(_on_body_exited)
-	SignalBus.interaction_pressed.connect(_on_interaction_pressed)
 	
 	sprite_2d.frame = FRAME_CLOSED
 
+# A gombot és a gombnyomást az InteractionManager osztja ki
 func _on_body_entered(body: Node2D) -> void:
-	# A nyitott ajtón át is be lehet menni, ha pályát vált
-	if body.name == "Player" and (not is_open or target_map != ""):
-		player_in_range = true
-		SignalBus.show_interaction_button.emit(interaction_type)
+	if body.name == "Player":
+		InteractionManager.enter(self)
 
 func _on_body_exited(body: Node2D) -> void:
 	if body.name == "Player":
-		player_in_range = false
-		SignalBus.hide_interaction_button.emit()
+		InteractionManager.exit(self)
 
-func _on_interaction_pressed() -> void:
-	# Pályaváltás közben (elsötétítés) a gombnyomás még nem az új pálya ajtajának szól
-	if not player_in_range or SceneManager.changing:
-		return
+# A nyitott ajtón át is be lehet menni, ha pályát vált
+func can_interact() -> bool:
+	return not is_open or target_map != ""
+
+func interact() -> void:
 	if is_open:
-		if target_map != "":
-			player_in_range = false
-			SignalBus.hide_interaction_button.emit()
-			teleport_player()
+		teleport_player()
 		return
 
 	# 1. Ellenőrizzük, hogy zárva van-e
@@ -63,15 +57,12 @@ func _on_interaction_pressed() -> void:
 			is_locked = false # Feloldjuk a zárat véglegesen
 			open_door()
 		else:
-			SignalBus.hide_interaction_button.emit()
 			SignalBus.dialogue_started.emit("", (["Zárva van..."] as Array[String]))
 			return
 	else:
 		open_door()
 
 func open_door() -> void:
-	player_in_range = false
-	SignalBus.hide_interaction_button.emit()
 	set_open()
 
 	# 2. Ha az ajtó egy belső térbe vezet, elindítjuk a jelenetváltást egy kis szünet után
@@ -97,10 +88,7 @@ func load_state(state: Dictionary) -> void:
 		set_open()
 
 func check_player_has_key() -> bool:
-	# Ezt a függvényt később össze kell kötnöd a Player vagy a globális Inventory rendszereddel!
-	# Feltételezzük, hogy van egy globális GameManager vagy a Player-nek van kulcs-listája:
-	# return GameManager.player_inventory.has(required_key_name)
-	return false # Alapértelmezetten most még hamisat ad vissza, amíg nincs inventory
+	return required_key_name != "" and PlayerData.inventory.has(required_key_name)
 
 func teleport_player() -> void:
 	# Csak a pálya cserélődik, a Player és a Companion vele költözik a célpálya érkezési pontjára
