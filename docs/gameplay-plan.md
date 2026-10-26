@@ -189,7 +189,7 @@ Each step is its own branch from `dev`, merged back with `--no-ff`, with its own
 - Tests (`test/puzzle_test.gd`, headless): the plate and the gate with the player and with the companion; stay level 0 is too short and pushes the player back, level 1 gets through and latches; the chest opens once; the latch and the chest survive a map change; pushing out works both ways.
 
 **4. ✅ `feat/treats`**: the first item.
-- `PlayerData.treats: int`, starting at 5, with `add_treats()` and `use_treat()` and a `SignalBus.treats_changed` signal; the chest adds 5 and says so.
+- `PlayerData.treats: int`, starting at 10 (5 were exactly enough for the training, so one wasted treat left the player stuck), with `add_treats()` and `use_treat()` and a `SignalBus.treats_changed` signal; the chest adds 5 and says so.
 - **Give:** a "treat" button, with the count on it, shown when the companion is next to the player (within 120 px, `is_next_to_player()`) and there's at least one treat. Keyboard: T (a new `give_treat` input action). It emits `SignalBus.treat_given`. The companion hops twice (a placeholder until there's art).
 - Throwing treats (used by the later stay training in the training plan) isn't part of the slice.
 - Tests: the button shows only when the companion is close and there are treats; giving one lowers the count and emits the signal.

@@ -13,6 +13,8 @@
 [ext_resource type="Script" path="res://scenes/ui/treat_button.gd" id="9_treat"]
 [ext_resource type="Script" path="res://scenes/ui/debug_overlay.gd" id="10_debug"]
 [ext_resource type="Script" path="res://scenes/ui/training_toast.gd" id="11_toast"]
+[ext_resource type="Script" path="res://scenes/ui/companion_hud.gd" id="12_hud"]
+[ext_resource type="Script" path="res://scenes/ui/test_toggle_button.gd" id="13_toggle"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_ao5ua"]
 font_size = 100
@@ -31,6 +33,11 @@ corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
+
+[sub_resource type="LabelSettings" id="LabelSettings_small_button"]
+font_size = 190
+outline_size = 36
+outline_color = Color(0.15, 0.1, 0.05, 1)
 
 [sub_resource type="LabelSettings" id="LabelSettings_p7mho"]
 font_size = 48
@@ -87,31 +94,35 @@ grow_vertical = 0
 [node name="CallBackButton" type="TouchScreenButton" parent="CallBackButtonAnchor"]
 unique_name_in_owner = true
 modulate = Color(0.75, 0.9, 1, 1)
-position = Vector2(-560, -601)
-scale = Vector2(0.2, 0.2)
+position = Vector2(-175.0, -330)
+scale = Vector2(0.13, 0.13)
 texture_normal = ExtResource("4_m2ohg")
 texture_pressed = ExtResource("4_m2ohg")
 script = ExtResource("8_callback")
 
 [node name="Label" type="Label" parent="CallBackButtonAnchor/CallBackButton"]
-offset_right = 40.0
-offset_bottom = 23.0
+offset_right = 1236.0
+offset_bottom = 1235.0
+horizontal_alignment = 1
+vertical_alignment = 1
 text = "UI_CALL_BACK"
-label_settings = SubResource("LabelSettings_ao5ua")
+label_settings = SubResource("LabelSettings_small_button")
 
 [node name="TreatButton" type="TouchScreenButton" parent="CallBackButtonAnchor"]
 unique_name_in_owner = true
 modulate = Color(1, 0.85, 0.6, 1)
-position = Vector2(-820, -601)
-scale = Vector2(0.2, 0.2)
+position = Vector2(-355.0, -330)
+scale = Vector2(0.13, 0.13)
 texture_normal = ExtResource("4_m2ohg")
 texture_pressed = ExtResource("4_m2ohg")
 script = ExtResource("9_treat")
 
 [node name="Label" type="Label" parent="CallBackButtonAnchor/TreatButton"]
-offset_right = 40.0
-offset_bottom = 23.0
-label_settings = SubResource("LabelSettings_ao5ua")
+offset_right = 1236.0
+offset_bottom = 1235.0
+horizontal_alignment = 1
+vertical_alignment = 1
+label_settings = SubResource("LabelSettings_small_button")
 
 [node name="JoystickVisual" type="Control" parent="." unique_id=843325025]
 visible = false
@@ -140,13 +151,51 @@ anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -200.0
-offset_top = 30.0
+offset_top = 200.0
 offset_right = -30.0
-offset_bottom = 130.0
+offset_bottom = 300.0
 grow_horizontal = 0
 theme_override_font_sizes/font_size = 56
 text = "EN"
 script = ExtResource("7_lang")
+
+[node name="CompanionHud" type="Control" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -680.0
+offset_top = 20.0
+offset_right = -30.0
+offset_bottom = 170.0
+grow_horizontal = 0
+script = ExtResource("12_hud")
+
+[node name="StayToggle" type="Button" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -560.0
+offset_top = 200.0
+offset_right = -220.0
+offset_bottom = 300.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 44
+text = "Stay: level"
+script = ExtResource("13_toggle")
+
+[node name="RangeToggle" type="Button" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -560.0
+offset_top = 320.0
+offset_right = -220.0
+offset_bottom = 420.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 44
+text = "Range: level"
+script = ExtResource("13_toggle")
+setting = 1
 
 [node name="DebugOverlay" type="Label" parent="."]
 offset_left = 30.0
