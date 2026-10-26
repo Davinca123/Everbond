@@ -161,10 +161,10 @@ The numbers (stay time, plate-to-gate distance, number of treats) are tuned so t
 
 Each step is its own branch from `dev`, merged back with `--no-ff`, with its own tests. The order matters: each one uses the ones before.
 
-**1. `feat/companion-send-range`**: the send range from the training plan (section 1).
+**1. ✅ `feat/companion-send-range`**: the send range from the training plan (section 1).
 - The destination is clamped to the range around the player (placeholder 500 px), and follows the player while the companion walks there.
 - During the wait, the companion gives up and comes back if the player goes out of range (plus a 40 px tolerance).
-- The range comes from `PlayerData.get_companion_send_range()`, stay level 0 for now.
+- The range comes from `PlayerData.get_companion_send_range()`, range level 0 for now. Tests that check path finding to far spots set `PlayerData.companion_send_range_override`.
 - Tests in `test/tap_test.gd`: tap inside and beyond the range, the player moving while the companion walks, the player leaving the range during the wait (the cases listed in the training plan, section 11).
 
 **2. `feat/companion-send-once`**: one send, then back (training plan, section 2).

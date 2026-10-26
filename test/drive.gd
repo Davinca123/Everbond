@@ -60,6 +60,8 @@ var failed_checks = 0; var keep_target = null; var started = false; var stuck_t 
 var out = OS.get_environment("OUT"); var name_ = OS.get_environment("SCENARIO")
 
 func _ready():
+	# Az útkeresést teszteljük, nem a küldési távolságot: a lény a pálya távoli pontjaira is elmegy
+	PlayerData.companion_send_range_override = INF
 	main = load("res://scenes/main/main.tscn").instantiate()
 	add_child(main)
 	world = SceneManager.current_map

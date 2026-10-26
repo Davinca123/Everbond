@@ -246,7 +246,7 @@ Also re-run the level-following scenarios in `test/drive.tscn`.
 ## Order of work
 
 1. ✅ `fix/companion-unreachable-target`, for bug #16.
-2. `feat/companion-send-range`.
+2. ✅ `feat/companion-send-range`.
 3. `feat/companion-send-once`: one send, call back, ignored taps.
 4. `feat/companion-training`: skill data in `PlayerData`, treats, the first tasks (range and stay).
 5. `feat/skill-tree`.
