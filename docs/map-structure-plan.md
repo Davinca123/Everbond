@@ -3,16 +3,16 @@
 How to structure the world map, its areas and the room interiors so that:
 
 - the large world is split into smaller areas, with a scene change between them,
-- there can be many interiors, including buildings with several rooms,
+- there can be many interiors,
 - several tile sets are used, and many maps share the same tile set.
 
 ## Where things stand
 
-Updated 2026-10-22. Steps 1–4 and 7 of the [order of work](#order-of-work) are done; steps 5 and 6 aren't started.
+Updated 2026-10-25. Every step in the [order of work](#order-of-work) is done. Multi-room interiors were dropped from the plan.
 
-- **Done:** the tile sets are shared `.tres` files. `main.tscn` stays loaded and `SceneManager` swaps the maps inside it, so the Player, Companion and UI survive a map change. Every map inherits from a base scene with the `GameMap` script and named spawn points, and doors use `target_map` + `target_spawn`. Camera limits come from the map's tiles. Edge exits (`map_exit.tscn`) connect World and the new Town area. Outdoor maps are closed off by invisible edge walls (`GameMap.block_map_edges`).
-- **Maps:** `scenes/maps/world/world.tscn` (the first outdoor area), `scenes/maps/world/town.tscn` (east of World, built from the city pack) and `scenes/maps/interiors/house_1_interior.tscn`, a furnished room on `base_interior_wood.tscn`. The project follows the layout in [Project folders](#8-project-folders).
-- **Not done:** multi-room interiors (step 5), saved map state (step 6; `map_id` is exported but nothing reads it yet).
+- **Done:** the tile sets are shared `.tres` files. `main.tscn` stays loaded and `SceneManager` swaps the maps inside it, so the Player, Companion and UI survive a map change. Every map inherits from a base scene with the `GameMap` script and named spawn points, and doors use `target_map` + `target_spawn`. Camera limits come from the map's tiles. Edge exits (`map_exit.tscn`) connect World and the new Town area. Outdoor maps are closed off by invisible edge walls (`GameMap.block_map_edges`). Opened and unlocked doors stay that way when you come back to a map (see [Saving map state](#6-saving-map-state)).
+- **Maps:** `scenes/maps/world/world.tscn` (the first outdoor area), `scenes/maps/world/town.tscn` (east of World, built from the city pack) and `scenes/maps/interiors/house_1_interior.tscn`, a furnished room on `base_interior_wood.tscn`. The project follows the layout in [Project folders](#7-project-folders).
+- **Dropped:** interiors with several rooms in one scene (internal teleport doors, per-room camera bounds). A building with several rooms is built as one scene per room, joined by ordinary doors.
 - **Example names:** `village`, `forest_01`, `inn` and `village_house_01` in the sections below are illustrations of the layout, not maps that exist. The real maps are listed above.
 - **Before this plan:** every map had its own Player, Companion and UI and was loaded with `change_scene_to_file()`. Going back out of a house used the `world_spawn_position` workaround. The tile sets lived inside `world.tscn`, and the camera limits were hard-coded.
 
@@ -107,32 +107,25 @@ Each area is its own map, for example `village.tscn` and `forest_01.tscn`. Neigh
 - Line up the shared edges between neighbouring areas, so a road that leaves forest_01 at y=640 enters village at y=640.
 - Start with separate areas and a fade. Seamless streaming, where neighbouring areas load in the background, can be added later with `ResourceLoader.load_threaded_request` without changing this layout.
 
-## 6. Interiors with several rooms
+## 6. Saving map state
 
-One scene per building, with each room as a group of nodes inside it:
+Freed maps forget everything: opened doors, picked-up items, NPC progress. That state is kept in `GameManager.map_state`, keyed by `map_id` and then by each node's path from the map root:
 
-```
-inn.tscn (base_interior_wood)
-├── MAP_LAYERS                ← all rooms painted on one set of layers, spaced apart
-├── Rooms
-│   ├── Taproom  (Area2D + CameraBounds)
-│   ├── Kitchen
-│   └── Upstairs
-├── Spawns  (from_village, taproom_from_kitchen, kitchen_from_taproom, …)
-└── Doors   (internal doors: target_map empty → teleport to target_spawn inside the same map)
+```gdscript
+GameManager.map_state[&"world"] = {
+	"YSort_Entities/Doors/Door1": {"is_open": true, "is_locked": false},
+}
 ```
 
-- **Internal doors:** when `target_map` is empty and `target_spawn` is set, the door teleports to `target_spawn` inside the current map. The move is instant and needs no loading. A door with neither set stays a plain door that only opens: `door.gd` already treats an empty `target_map` as "open, don't change map". So `target_spawn`'s default changes from `&"default"` to `&""` here; every existing door sets it explicitly, and `GameMap.get_spawn()` already falls back to the first spawn point.
-- **Camera:** when the player enters a room's `Area2D`, the camera limits are set to that room's bounds, so the other rooms painted beside it stay hidden.
-- **Navigation:** everything is on one navigation mesh, so the companion can follow through internal doors.
+- **What gets saved:** every node in the `map_state` group (`GameMap.PERSISTENT_GROUP`) with a `save_state() -> Dictionary` and a `load_state(state: Dictionary)`. A node joins the group in its own `_ready()`. Only doors do so far; the Player and Companion aren't in the group, since they don't belong to a map.
+- **Loading:** `GameMap._ready()` runs after its children's `_ready()` and hands each node its saved state. A door that comes back open disables its collision and asks for a navigation rebake, the same way it does when it opens.
+- **Saving:** `SceneManager.change_map()` calls `GameMap.save_map_state()` before it removes the old map. It can't happen in `GameMap._exit_tree()`: Godot runs the children's exit first and drops them from their groups, so the map would find nothing to save.
+- **Keys:** a map without a `map_id` isn't saved (with a warning). Renaming or moving a saved node changes its key, so its old state is ignored.
+- **Memory only:** the state is lost when the game closes. Saving to disk can later write `GameManager.map_state` out as it is.
 
-Split a building into separate scenes only when parts of it are large or use a different tile set, such as an inn's cellar or the floors of a dungeon.
+An open door that leads to another map stays usable: pressing the button again changes the map without the open animation. Doors also ignore the button while `SceneManager` is changing maps, so a press held through the fade doesn't reach a door in the new map.
 
-## 7. Saving map state
-
-Freed maps forget everything: opened doors, picked-up items, NPC progress. That state is kept in an autoload keyed by `map_id`, for example `GameManager.map_state[&"inn"] = {"opened_doors": [...]}`. Each `GameMap` reads it when it loads and writes it back before it's freed.
-
-## 8. Project folders
+## 7. Project folders
 
 ```
 assets/                         raw third-party packs, unmodified
@@ -146,7 +139,7 @@ scenes/
 ├── objects/                    door, map_exit, clim_zone, opacity zones
 ├── player/ companion/ npc/ ui/
 scripts/
-├── global/                     signal_bus, game_manager, player_data, scene_manager (new)
+├── global/                     signal_bus, game_manager, player_data, scene_manager
 ├── maps/game_map.gd
 ├── navigation/
 └── tools/                      editor-time generators (build_outdoor_props_tileset)
@@ -154,7 +147,7 @@ scripts/
 
 File names use snake_case (Godot's convention), such as `house_1_interior.tscn`. Node names stay PascalCase: the root of `house_1_interior.tscn` is still `House1Interior`.
 
-Done in step 7:
+Done in step 5:
 
 | From | To |
 |---|---|
@@ -190,7 +183,7 @@ One branch per step:
    As built: World is too small to split, so a second area, `town.tscn`, was added east of it instead. `map_exit.tscn` is an `Area2D` strip (exports `target_map`, `target_spawn`, `size`) that changes the map when the player walks in; World's east edge and Town's west edge are joined this way, with the arrival spawns 200 px inside the edges. Town is built on `base_outdoor_grass.tscn`: grass and a cobblestone road from the ground tile set, and the city pack's buildings and street objects placed as `prop.tscn` instances. A prop is a `StaticBody2D` whose origin is the image's bottom edge, so it Y-sorts with the characters, with a collision footprint at its base on `Lenti_Szint`, so the navigation mesh avoids it. The buildings have no interiors yet.
    Later (`feat/outdoor-props-tileset`): the small street objects moved into a tile set, `outdoor_props.tres`, like the interior furniture. `scripts/tools/build_outdoor_props_tileset.gd` packs the pack's object images into `assets/outdoor_props.png` (16 px cells) and writes each object as a multi-cell tile, with its `y_sort_origin` at the image's bottom and its footprint collision there. `base_outdoor_grass.tscn` has a Y-sorted `Props_TileMapLayer` inside `YSort_Entities` for painting them. Only the buildings are still `prop.tscn` instances, since they are large one-off images that will get doors and interiors. To add an object, append it to the end of the script's list (the order sets the atlas coordinates), run the script and reimport.
    Later (`fix/map-edge-bounds`): `GameMap.block_map_edges` builds invisible walls around the ground tiles of outdoor maps (see [section 3](#3-base-map-scenes-built-in-layers)).
-5. **`feat/multi-room-interiors`**: room camera bounds and internal teleport doors (see the `target_spawn` default in [section 6](#6-interiors-with-several-rooms)).
-6. **`feat/map-state`**: per-map saved state.
-7. ✅ **`refactor/project-folders`**: the folder moves and snake_case renames from [Project folders](#8-project-folders), done in the container as described in [Moving files without the editor](#moving-files-without-the-editor). Done before step 5, so new interiors go in `scenes/maps/interiors/` from the start.
+5. ✅ **`refactor/project-folders`**: the folder moves and snake_case renames from [Project folders](#7-project-folders), done in the container as described in [Moving files without the editor](#moving-files-without-the-editor).
    As built: one commit per move. After a fresh headless import (no errors), `exit_smoke.gd`, `house_smoke.gd` and all 11 `drive.gd` scenarios pass, the same as before the moves.
+6. ✅ **`feat/map-state`**: per-map saved state, as described in [Saving map state](#6-saving-map-state).
+   As built: doors save `is_open` and `is_locked`. `house_smoke.gd` now goes back into the house through the World door it opened, checks that both doors are still open, and leaves again.
