@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://dxesken2bk8s" path="res://scenes/player/player.tscn" id="2_player"]
 [ext_resource type="PackedScene" uid="uid://gyyw12df1337" path="res://scenes/companion/companion.tscn" id="3_companion"]
 [ext_resource type="PackedScene" uid="uid://dwudlhw4kt30x" path="res://scenes/ui/screen_ui.tscn" id="4_ui"]
+[ext_resource type="Script" path="res://scripts/training/stay_training.gd" id="5_stay"]
 
 [node name="Main" type="Node" unique_id=418458649]
 script = ExtResource("1_main")
@@ -19,6 +20,9 @@ z_index = 1
 collision_layer = 8
 
 [node name="ScreenUI" parent="." unique_id=123641616 instance=ExtResource("4_ui")]
+
+[node name="StayTraining" type="Node" parent="."]
+script = ExtResource("5_stay")
 
 [node name="Transition" type="CanvasLayer" parent="." unique_id=1882901116]
 layer = 100

@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://scenes/ui/call_back_button.gd" id="8_callback"]
 [ext_resource type="Script" path="res://scenes/ui/treat_button.gd" id="9_treat"]
 [ext_resource type="Script" path="res://scenes/ui/debug_overlay.gd" id="10_debug"]
+[ext_resource type="Script" path="res://scenes/ui/training_toast.gd" id="11_toast"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_ao5ua"]
 font_size = 100
@@ -157,6 +158,20 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 8
 theme_override_font_sizes/font_size = 40
 script = ExtResource("10_debug")
+
+[node name="TrainingToast" type="Label" parent="."]
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 40.0
+offset_bottom = 120.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.95, 0.7, 1)
+theme_override_colors/font_outline_color = Color(0.2, 0.12, 0.02, 1)
+theme_override_constants/outline_size = 12
+theme_override_font_sizes/font_size = 52
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("11_toast")
 
 [node name="DialogueBox" type="Control" parent="." unique_id=2021558575]
 layout_mode = 3
