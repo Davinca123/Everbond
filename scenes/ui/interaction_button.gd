@@ -33,6 +33,13 @@ func _on_show_interaction(type: String) -> void:
 func _on_hide_interaction() -> void:
 	hide()
 
+# PC-n az "interact" billentyű (E, szóköz, Enter) is megnyomja a gombot, amíg látszik.
+# Az _unhandled_input-ban: ha épp dialógus van, azt a dialógus ablak már lekezelte.
+func _unhandled_input(event: InputEvent) -> void:
+	if visible and event.is_action_pressed("interact"):
+		get_viewport().set_input_as_handled()
+		_on_pressed()
+
 func _on_pressed() -> void:
 	# Ha megnyomtak, jelzi a SignalBus-on az NPC-nek
 	SignalBus.interaction_pressed.emit()

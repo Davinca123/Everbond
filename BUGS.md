@@ -31,12 +31,14 @@ The code never checks `event.index`, so it can't tell fingers apart:
 
 **Fix:** store the finger index when the joystick activates and ignore events from other fingers.
 
-### 3. Dialogue can't be advanced on PC (Confirmed)
+### 3. ~~Dialogue can't be advanced on PC~~ (Fixed)
 `scenes/ui/dialogue_box.gd:54`
 
 The dialogue box only handles `InputEventScreenTouch`. `TouchScreenButton` also only reacts to touch. `input_devices/pointing/emulate_touch_from_mouse` is off, and there is no keyboard action for "interact" or "next line". On desktop, once a dialogue opens, the player stays frozen. This defeats the keyboard fallback in `player.gd:27`.
 
 **Fix:** add `interact` and `dialogue_next` input actions. Accept them alongside touch, or turn on touch emulation from the mouse.
+
+Fixed: a new `interact` input action (E, Space, Enter). The interaction button reacts to it while it's shown, and the dialogue box advances on it and on a left mouse click (clicks emulated from touch are skipped, so a touch doesn't advance twice). Both mark the event as handled, so the key press that ends a dialogue doesn't start it again, and a click in a dialogue doesn't send the companion. Test: `pc_key_and_mouse_dialogue` in `test/tap_test.gd`.
 
 ### 4. Interaction button calls a missing method (Confirmed)
 `scenes/ui/screen_ui.tscn:146`

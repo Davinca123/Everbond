@@ -50,11 +50,17 @@ func _input(event: InputEvent) -> void:
 	if not visible:
 		return
 		
-	# Csak akkor lépünk be, ha az ujjunk LEÉR (pressed),
-	if event is InputEventScreenTouch and event.pressed:
+	# Csak akkor lépünk be, ha az ujjunk LEÉR (pressed). PC-n az "interact" billentyű
+	# (E, szóköz, Enter) és a bal egérgomb is lapoz. Az érintésből emulált egérkattintást
+	# kihagyjuk, különben mobilon minden érintés kétszer lapozna.
+	var advance: bool = (event is InputEventScreenTouch and event.pressed) \
+			or event.is_action_pressed("interact") \
+			or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT \
+				and event.device != InputEvent.DEVICE_ID_EMULATION)
+	if advance:
 		# Letiltjuk, hogy a Godot továbbküldje ezt az érintést a háttérben lévő elemeknek
 		get_viewport().set_input_as_handled()
-		
+
 		if is_typing:
 			# 1. KATTINTÁS: Azonnal kirakja a teljes szöveget
 			is_typing = false
