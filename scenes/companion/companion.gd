@@ -666,7 +666,8 @@ func _draw() -> void:
 	stay_bar_shown = current_state == State.IDLE and stay_duration > 0.0
 	if not stay_bar_shown:
 		return
-	var ratio: float = clampf(wait_timer / stay_duration, 0.0, 1.0)
+	# Végtelen várakozásnál (teszt kapcsoló) tele marad
+	var ratio: float = 1.0 if is_inf(stay_duration) else clampf(wait_timer / stay_duration, 0.0, 1.0)
 	var left := STAY_BAR_OFFSET - Vector2(STAY_BAR_WIDTH / 2.0, 0)
 	draw_line(left, left + Vector2(STAY_BAR_WIDTH, 0), STAY_BAR_BACKGROUND_COLOR, STAY_BAR_THICKNESS)
 	if ratio > 0.0:

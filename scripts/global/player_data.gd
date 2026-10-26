@@ -10,7 +10,7 @@ var gold: int = 0
 var inventory: Array[String] = []
 
 # Jutalomfalatok a lénynek (pl. tanításhoz); a ládákban is találni
-var treats: int = 5
+var treats: int = 10
 
 func add_treats(amount: int) -> void:
 	treats += amount
