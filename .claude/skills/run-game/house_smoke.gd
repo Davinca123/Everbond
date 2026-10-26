@@ -1,5 +1,6 @@
 extends SceneTree
-# Smoke test (via scenes/main/main.tscn): World -> Door1 -> House1Interior (companion present, follows, tap-to-send) -> exit -> World.
+# Smoke test (via scenes/main/main.tscn): World -> Door1 -> House1Interior (companion present, follows, tap-to-send) -> exit -> World,
+# then back in through the door that stayed open (saved map state) and out again.
 # Run it as described in SKILL.md. Exit code 0 = every CHECK passed. OUT=<dir> saves screenshots.
 
 var out := OS.get_environment("OUT")
@@ -122,7 +123,28 @@ func _process(delta):
 				var d = P().global_position.distance_to(C().global_position)
 				print("INFO back in World after 4s: dist=%.0f" % d)
 				shot("back_in_world_4s")
-				return finish()
+				var door = scene().get_node("YSort_Entities/Doors/Door1")
+				check("world door still open", door.is_open)
+				P().global_position = door.global_position + Vector2(0, 30)
+				set_phase("reenter")
+		"reenter":
+			bus().joystick_moved.emit(Vector2.ZERO)
+			if phase_t > 0.3: bus().interaction_pressed.emit()
+			if scene().name == "House1Interior": set_phase("inside_again")
+			elif phase_t > 3.0: check("entered house through open door", false); return finish()
+		"inside_again":
+			if phase_t > 0.5:
+				check("entered house through open door", true)
+				var door = scene().get_node("YSort_Entities/Doors/ExitDoor")
+				check("house exit door still open", door.is_open)
+				P().global_position = door.global_position + Vector2(0, 30)
+				set_phase("exit_again")
+		"exit_again":
+			bus().joystick_moved.emit(Vector2.ZERO)
+			if phase_t > 0.3: bus().interaction_pressed.emit()
+			if scene().name == "World":
+				check("left house through open door", true); return finish()
+			elif phase_t > 3.0: check("left house through open door", false); return finish()
 	return false
 
 func finish():

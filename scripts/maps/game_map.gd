@@ -9,6 +9,10 @@ class_name GameMap extends Node2D
 ## (a kültéri pályákon; a belső terekben a falcsempék zárnak)
 @export var block_map_edges: bool = false
 
+# Ennek a csoportnak a tagjai a pálya elhagyásakor elmentik, betöltéskor visszakapják az
+# állapotukat (save_state() -> Dictionary, load_state(state: Dictionary)), pl. a nyitott ajtók
+const PERSISTENT_GROUP: StringName = &"map_state"
+
 # A pályaszéli fal mindkét szinten (Lenti_Szint, Fenti_Szint) ütközik
 const EDGE_COLLISION_LAYERS: int = 1 | 2
 
@@ -20,6 +24,38 @@ const EDGE_COLLISION_LAYERS: int = 1 | 2
 func _enter_tree() -> void:
 	if block_map_edges and not has_node("EdgeWalls"):
 		add_child(build_edge_walls())
+
+# A gyerekek _ready-je után: a mentett állapot visszatöltése
+func _ready() -> void:
+	load_map_state()
+
+func load_map_state() -> void:
+	if map_id == &"":
+		return
+	var saved: Dictionary = GameManager.map_state.get(map_id, {})
+	for node in get_persistent_nodes():
+		var key := str(get_path_to(node))
+		if saved.has(key):
+			node.load_state(saved[key])
+
+# A SceneManager hívja, mielőtt kiveszi a pályát a fából (az _exit_tree-ben már késő:
+# addigra a gyerekek kiléptek a fából és a csoportokból)
+func save_map_state() -> void:
+	if map_id == &"":
+		push_warning("%s: nincs map_id, az állapota nem mentődik." % name)
+		return
+	var saved: Dictionary = {}
+	for node in get_persistent_nodes():
+		saved[str(get_path_to(node))] = node.save_state()
+	GameManager.map_state[map_id] = saved
+
+# A pálya saját mentendő csomópontjai (a Player és a Companion nincs a csoportban)
+func get_persistent_nodes() -> Array[Node]:
+	var nodes: Array[Node] = []
+	for node in get_tree().get_nodes_in_group(PERSISTENT_GROUP):
+		if is_ancestor_of(node):
+			nodes.append(node)
+	return nodes
 
 # A talaj (a MAP_LAYERS alatti, a Ground_TileMapLayer rácsán lévő csempék) körüli üres
 # cellák ütköznek, az átlósan szomszédosak is, hogy a sarkoknál ne legyen rés. A pálya

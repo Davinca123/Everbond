@@ -26,6 +26,8 @@ var FRAME_OPEN: int = 1
 
 
 func _ready() -> void:
+	# A nyitott és a kulccsal feloldott ajtó ilyen marad, ha visszajövünk a pályára
+	add_to_group(GameMap.PERSISTENT_GROUP)
 	interaction_area.body_entered.connect(_on_body_entered)
 	interaction_area.body_exited.connect(_on_body_exited)
 	SignalBus.interaction_pressed.connect(_on_interaction_pressed)
@@ -33,7 +35,8 @@ func _ready() -> void:
 	sprite_2d.frame = FRAME_CLOSED
 
 func _on_body_entered(body: Node2D) -> void:
-	if body.name == "Player" and not is_open:
+	# A nyitott ajtón át is be lehet menni, ha pályát vált
+	if body.name == "Player" and (not is_open or target_map != ""):
 		player_in_range = true
 		SignalBus.show_interaction_button.emit(interaction_type)
 
@@ -43,9 +46,16 @@ func _on_body_exited(body: Node2D) -> void:
 		SignalBus.hide_interaction_button.emit()
 
 func _on_interaction_pressed() -> void:
-	if not player_in_range or is_open:
+	# Pályaváltás közben (elsötétítés) a gombnyomás még nem az új pálya ajtajának szól
+	if not player_in_range or SceneManager.changing:
 		return
-		
+	if is_open:
+		if target_map != "":
+			player_in_range = false
+			SignalBus.hide_interaction_button.emit()
+			teleport_player()
+		return
+
 	# 1. Ellenőrizzük, hogy zárva van-e
 	if is_locked:
 		if check_player_has_key():
@@ -60,20 +70,31 @@ func _on_interaction_pressed() -> void:
 		open_door()
 
 func open_door() -> void:
-	is_open = true
 	player_in_range = false
 	SignalBus.hide_interaction_button.emit()
-	
-	collision_shape.set_deferred("disabled", true)
-	# A kikapcsolás után szólunk, hogy a nyitott ajtón át is vezethessen út
-	SignalBus.navigation_obstacles_changed.emit.call_deferred()
-	sprite_2d.frame = FRAME_OPEN
-	
+	set_open()
+
 	# 2. Ha az ajtó egy belső térbe vezet, elindítjuk a jelenetváltást egy kis szünet után
 	if target_map != "":
 		# Várunk 0.1 másodpercet, míg lefut a nyitási vizualizáció
 		await get_tree().create_timer(0.1).timeout
 		teleport_player()
+
+func set_open() -> void:
+	is_open = true
+	collision_shape.set_deferred("disabled", true)
+	# A kikapcsolás után szólunk, hogy a nyitott ajtón át is vezethessen út
+	SignalBus.navigation_obstacles_changed.emit.call_deferred()
+	sprite_2d.frame = FRAME_OPEN
+
+# A pálya mentett állapota (GameMap.save_map_state / load_map_state)
+func save_state() -> Dictionary:
+	return { "is_open": is_open, "is_locked": is_locked }
+
+func load_state(state: Dictionary) -> void:
+	is_locked = state.get("is_locked", is_locked)
+	if state.get("is_open", false):
+		set_open()
 
 func check_player_has_key() -> bool:
 	# Ezt a függvényt később össze kell kötnöd a Player vagy a globális Inventory rendszereddel!

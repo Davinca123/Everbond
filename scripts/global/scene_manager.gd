@@ -25,7 +25,7 @@ func register_main(main_node: Node) -> void:
 		start_levels[character] = { "mask": character.collision_mask, "z_index": character.z_index }
 
 # A pálya lecserélése; a karakterek a spawn_id nevű érkezési pontra kerülnek (a pálya
-# Spawns csomópontja alatt). A régi pálya minden állapota elveszik (lásd a terv 7. pontját).
+# Spawns csomópontja alatt). A régi pálya a kivétele előtt elmenti az állapotát (GameMap.save_map_state).
 func change_map(map_path: String, spawn_id: StringName = &"default", fade: bool = true) -> void:
 	if changing:
 		return
@@ -42,6 +42,7 @@ func change_map(map_path: String, spawn_id: StringName = &"default", fade: bool 
 	if current_map:
 		player.reparent(main, false)
 		companion.reparent(main, false)
+		current_map.save_map_state()
 		main.map_container.remove_child(current_map)
 		current_map.queue_free()
 
