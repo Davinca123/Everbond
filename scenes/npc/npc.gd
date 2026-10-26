@@ -2,11 +2,12 @@ extends CharacterBody2D
 
 @onready var interaction_area: Area2D = $InteractionArea
 
-@export var npc_name: String = "Öreg Bölcs"
+# A név és a sorok fordítási kulcsok (localization/texts.csv); a dialógus ablak fordítja le őket
+@export var npc_name: String = "NPC_OLD_SAGE_NAME"
 @export var dialogue_lines: Array[String] = [
-	"Üdvözöllek, utazó!",
-	"A sötétség egyre jobban terjed a világban...",
-	"Kérlek, légy nagyon óvatos az erdőben!"
+	"NPC_OLD_SAGE_GREETING_1",
+	"NPC_OLD_SAGE_GREETING_2",
+	"NPC_OLD_SAGE_GREETING_3",
 ]
 
 # Itt határozzuk meg, hogy ez egy beszélgetős NPC

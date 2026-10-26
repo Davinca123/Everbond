@@ -300,7 +300,8 @@ Training and practice data (in the training plan) stay in `PlayerData` for now, 
 
 ## Order of work
 
-1. `feat/localization`: the translation setup and a language setting (English, Hungarian), before many texts exist.
+1. ✅ `feat/localization`: the translation setup and a language setting (English, Hungarian), before many texts exist.
+   As built: texts live in `localization/texts.csv` (columns `keys,en,hu`) and are referred to by key, such as `NPC_OLD_SAGE_NAME`. Labels translate their keys by themselves; code uses `tr()`, and the dialogue box translates names and lines. The `Settings` autoload keeps the language in `user://settings.cfg` (first start: the system language if it's English or Hungarian, otherwise English) and emits `SignalBus.language_changed`. There's no settings menu yet; a temporary button in the top-right corner (`scenes/ui/language_button.gd`) switches between the languages. Test: `test/localization_test.gd`.
 2. `feat/companion-state`: the `CompanionState` autoload, needs over time, mood and events, a debug overlay to see them.
 3. `feat/speech-bubbles`: the bubble above the companion and the text bank with triggers and conditions, starting with a handful of lines.
 4. `feat/companion-free-time`: the brain and the first activities (sniff, nap, butterfly).

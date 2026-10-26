@@ -57,7 +57,7 @@ func interact() -> void:
 			is_locked = false # Feloldjuk a zárat véglegesen
 			open_door()
 		else:
-			SignalBus.dialogue_started.emit("", (["Zárva van..."] as Array[String]))
+			SignalBus.dialogue_started.emit("", (["DOOR_LOCKED"] as Array[String]))
 			return
 	else:
 		open_door()
