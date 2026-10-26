@@ -36,6 +36,10 @@ signal companion_arrived
 signal companion_stay_finished(full: bool)
 # Visszaért a hős mellé, újra lehet küldeni
 signal companion_returned
+# A hős adott egy jutalomfalatot a lénynek (a falat gomb vagy a T billentyű)
+signal treat_given
+# Változott a hős falatainak száma (PlayerData.treats)
+signal treats_changed(count: int)
 signal companion_obedience_changed(new_level: int)
 signal companion_leveled_up(new_form: String)
 

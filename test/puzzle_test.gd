@@ -112,13 +112,20 @@ func run() -> void:
 	var opened_signals: Array[int] = [0]
 	chest.opened.connect(func(): opened_signals[0] += 1)
 	await put_player(chest.global_position + Vector2(0, 60))
+	var treats_before: int = root.get_node("PlayerData").treats
 	var could_open: bool = root.get_node("InteractionManager").current() == chest
 	bus().interaction_pressed.emit()
 	await frames(3)
+	# A "találtál falatot" üzenetet végiglapozzuk (a gombnyomás most a dialógusé), aztán még egyszer próbáljuk
+	var dialogue = root.get_node("Main/ScreenUI/DialogueBox") if root.has_node("Main") else null
+	if dialogue: dialogue.finish_dialogue()
+	await frames(3)
 	bus().interaction_pressed.emit()
 	await frames(3)
-	check("chest_opens_once", could_open and chest.is_open and opened_signals[0] == 1 and root.get_node("InteractionManager").current() != chest,
-			"could_open=%s open=%s signals=%d" % [could_open, chest.is_open, opened_signals[0]])
+	var treats_gained: int = root.get_node("PlayerData").treats - treats_before
+	check("chest_opens_once_with_treats", could_open and chest.is_open and opened_signals[0] == 1 \
+			and root.get_node("InteractionManager").current() != chest and treats_gained == chest.treats,
+			"could_open=%s open=%s signals=%d treats_gained=%d" % [could_open, chest.is_open, opened_signals[0], treats_gained])
 
 	# 5. A retesz és a nyitott láda megmarad pályaváltás után (World -> Town -> World)
 	await put_player(gate_front + Vector2(0, 200))

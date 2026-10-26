@@ -189,6 +189,7 @@ func run() -> void:
 
 	await run_send_range()
 	await run_send_once()
+	await run_treats()
 
 	# 7. Az interakció gomb megnyomása nem küldi el a lényt, és a dialógus alatti koppintások sem
 	var npc = world.get_node("YSort_Entities/Npc")
@@ -462,3 +463,48 @@ func run_send_once() -> void:
 			[SignalBus.companion_arrived, on_arrived], [SignalBus.companion_stay_finished, on_finished],
 			[SignalBus.companion_returned, on_returned], [SignalBus.companion_recalled, on_recalled]]:
 		connection[0].disconnect(connection[1])
+
+# --- jutalomfalat (docs/gameplay-plan.md, 10. rész, 4. lépés) ---
+
+func run_treats() -> void:
+	var button: TouchScreenButton = main.get_node("ScreenUI/CallBackButtonAnchor/TreatButton")
+	var given: Array[int] = [0]
+	var on_given := func(): given[0] += 1
+	SignalBus.treat_given.connect(on_given)
+	await wait_until_following()
+	await frames(5)
+	PlayerData.treats = 2
+
+	# 20. A lény a hős mellett van, és van falat: a gomb látszik; megnyomva a lény kap egyet,
+	# és ez nem koppintás
+	var near: bool = comp.is_next_to_player()
+	var shown: bool = button.visible
+	taps = 0
+	await tap(button_window_center(button))
+	await frames(3)
+	await check("treat_button_gives_a_treat", near and shown and given[0] == 1 and PlayerData.treats == 1 and taps == 0 \
+			and comp.current_state == comp.State.FOLLOW,
+			"near=%s shown=%s given=%d treats=%d taps=%d" % [near, shown, given[0], PlayerData.treats, taps])
+
+	# 21. A T billentyű is ad egyet; elfogyott: a gomb eltűnik, a T nem ad többet
+	await key(KEY_T)
+	await frames(2)
+	var after_key: int = PlayerData.treats
+	await key(KEY_T)
+	await frames(2)
+	await check("treat_key_and_running_out", after_key == 0 and given[0] == 2 and PlayerData.treats == 0 and not button.visible,
+			"after_key=%d given=%d treats=%d visible=%s" % [after_key, given[0], PlayerData.treats, button.visible])
+
+	# 22. Van falat, de a lény messze van: nincs gomb, a T nem ad
+	PlayerData.add_treats(5)
+	await settle()
+	await tap(to_window(pfeet.global_position + Vector2(350, 0)))
+	await wait_until_idle(5.0)
+	await key(KEY_T)
+	await frames(2)
+	await check("no_treat_when_far", not button.visible and given[0] == 2 and PlayerData.treats == 5,
+			"visible=%s given=%d treats=%d" % [button.visible, given[0], PlayerData.treats])
+	await wait_until_following()
+	await frames(5)
+	await check("treat_button_back_when_near", button.visible, "visible=%s" % button.visible)
+	SignalBus.treat_given.disconnect(on_given)

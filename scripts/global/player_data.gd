@@ -9,6 +9,21 @@ var gold: int = 0
 # Ideiglenes inventory (egyelőre csak teszteléshez)
 var inventory: Array[String] = []
 
+# Jutalomfalatok a lénynek (pl. tanításhoz); a ládákban is találni
+var treats: int = 5
+
+func add_treats(amount: int) -> void:
+	treats += amount
+	SignalBus.treats_changed.emit(treats)
+
+# Egy falatot elhasznál; hamisat ad, ha nincs több
+func use_treat() -> bool:
+	if treats <= 0:
+		return false
+	treats -= 1
+	SignalBus.treats_changed.emit(treats)
+	return true
+
 # Mágikus lény (Companion) alapvető adatai
 var companion_name: String = "Lélektárs"
 var companion_obedience: int = 1

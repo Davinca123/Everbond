@@ -5,6 +5,8 @@ UI_INTERACT_LOOT,Pick up,Felvesz
 UI_INTERACT_CHEST,Open,Kinyit
 UI_INTERACT_DOOR_ENTER,Enter,Belép
 UI_CALL_BACK,Come back,Gyere vissza
+UI_GIVE_TREAT,Treat,Falat
+CHEST_FOUND_TREATS,You found a handful of treats!,Találtál egy marék jutalomfalatot!
 DOOR_LOCKED,It's locked...,Zárva van...
 NPC_OLD_SAGE_NAME,Old Sage,Öreg Bölcs
 NPC_OLD_SAGE_GREETING_1,"Welcome, traveller!","Üdvözöllek, utazó!"
