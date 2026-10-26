@@ -86,12 +86,18 @@ var stay_bar_shown: bool = false
 var target_marker: Node2D
 var goto_stuck_timer: float = 0.0
 var goto_best_distance: float = INF
+# Egy küldés a koppintástól addig tart, amíg a lény vissza nem ér a hős mellé: addig
+# a többi koppintást nem fogadja el. returning: a várakozás után (vagy visszahívva) a hős felé tart.
+var returning: bool = false
+# A fejrázás (elutasított koppintás) animációja
+var shake_tween: Tween
 # Koppintásnál a szintváltó kapuk, amiken át a legrövidebb út vezet a célhoz (lásd plan_crossings)
 var goto_crossings: Array[Dictionary] = []
 
 func _ready() -> void:
 	# BIZTONSÁGI CSERE: Leválasztjuk a régit (ha volt), és tisztán kódból kötjük össze
 	animation_player.animation_finished.connect(_on_animation_finished)
+	SignalBus.companion_recalled.connect(_on_recalled)
 	target_marker = create_target_marker()
 	place_target_marker.call_deferred()
 	last_player_level = get_level(player)
@@ -115,8 +121,10 @@ func _physics_process(delta):
 			# Kis várakozás után visszaszalad a hőshöz; ha a hős közben túl messzire ment
 			# (a küldési távolságon túl), azonnal
 			wait_timer -= delta
-			if wait_timer <= 0.0 or is_player_out_of_range():
-				end_stay()
+			if wait_timer <= 0.0:
+				end_stay(true)
+			elif is_player_out_of_range():
+				end_stay(false)
 			
 	# IRÁNYBA FORDULÁS:
 	# Ha a sebesség x tengelye negatív, balra megy -> tükrözzük a képet
@@ -182,11 +190,23 @@ func handle_follow_logic():
 		velocity = path_direction() * follow_speed
 	else:
 		velocity = Vector2.ZERO # Ha elég közel van, megáll
+		# Visszaért a hős mellé: innen újra lehet küldeni
+		if returning:
+			returning = false
+			SignalBus.companion_returned.emit()
 
-# Vége a várakozásnak: vissza a hőshöz
-func end_stay() -> void:
+# Vége a várakozásnak: vissza a hőshöz. full: kivárta a teljes időt.
+func end_stay(full: bool) -> void:
+	SignalBus.companion_stay_finished.emit(full)
+	return_to_player()
+
+# A hős felé indul, és amíg oda nem ér, nem fogad el új koppintást
+func return_to_player() -> void:
 	current_state = State.FOLLOW
+	returning = true
 	wait_timer = 0.0
+	goto_crossings.clear()
+	repath_timer = 0.0
 	# Ha a hős szintjén vagyunk, de a hozzá vezető legrövidebb út más szinten át
 	# visz (pl. az alagúton jöttünk ide), azon megyünk vissza
 	if level_crossings.is_empty():
@@ -251,11 +271,24 @@ func arrive() -> void:
 	current_state = State.IDLE
 	wait_timer = stay_duration
 	print("Lény: Megérkeztem a célhoz!")
+	SignalBus.companion_arrived.emit()
+
+# Visszahívás: a cél felé menet megfordul, várakozás közben abbahagyja a várakozást
+func _on_recalled() -> void:
+	match current_state:
+		State.GO_TO_TARGET:
+			return_to_player()
+		State.IDLE:
+			end_stay(false)
 
 # Pályaváltás után (SceneManager): a régi pálya útjai, szintváltó pontjai és célja már
 # nem érvényesek, ezért a hős mellől, követő állapotból indulunk újra
 func on_map_entered() -> void:
 	place_target_marker()
+	# A hős mellett érkezik az új pályára, tehát a küldés véget ért
+	if is_away():
+		SignalBus.companion_returned.emit()
+	returning = false
 	current_state = State.FOLLOW
 	velocity = Vector2.ZERO
 	path.clear()
@@ -268,9 +301,26 @@ func on_map_entered() -> void:
 	last_level = get_level(self)
 	queue_redraw()
 
-# Ezt a függvényt a fő Game kód fogja meghívni, ha a játékos kattintott
-func send_to_position(target_pos: Vector2):
+# Kint van-e: a küldéstől addig, amíg vissza nem ér a hős mellé
+func is_away() -> bool:
+	return current_state != State.FOLLOW or returning
+
+# Koppintásra (main.gd): egyszerre csak egy küldés. Amíg kint van, a koppintást nem
+# fogadja el, csak megrázza a fejét, hogy a játékos lássa, hogy hallotta.
+# Igazat ad, ha elindult.
+func send_to_position(target_pos: Vector2) -> bool:
+	if is_away():
+		shake_head()
+		SignalBus.companion_tap_ignored.emit()
+		return false
+	go_to_position(target_pos)
+	SignalBus.companion_sent.emit(click_target_pos)
+	return true
+
+# Elindul a pont felé (a küldési szabály nélkül; a tesztek is így küldik egymás után)
+func go_to_position(target_pos: Vector2) -> void:
 	current_state = State.GO_TO_TARGET
+	returning = false
 	goto_stuck_timer = 0.0
 	goto_best_distance = INF
 	repath_timer = 0.0 # Azonnal új utat számolunk az új célhoz
@@ -605,6 +655,14 @@ func _draw() -> void:
 	draw_line(left, left + Vector2(STAY_BAR_WIDTH, 0), STAY_BAR_BACKGROUND_COLOR, STAY_BAR_THICKNESS)
 	if ratio > 0.0:
 		draw_line(left, left + Vector2(STAY_BAR_WIDTH * ratio, 0), STAY_BAR_COLOR, STAY_BAR_THICKNESS)
+
+# Rövid fejrázás (a sprite billeg jobbra-balra): "most nem"
+func shake_head() -> void:
+	if shake_tween and shake_tween.is_running():
+		return
+	shake_tween = create_tween()
+	for angle in [0.2, -0.2, 0.15, -0.15, 0.0]:
+		shake_tween.tween_property(sprite_2d, "rotation", angle, 0.06)
 
 func _on_animation_finished(anim_name: String) -> void:
 	# Ha az idle2 ért véget (és közben nem indultunk el)
