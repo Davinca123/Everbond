@@ -39,6 +39,8 @@ const NAV_REACH: float = 40.0
 # Várakozás közben ennyivel lehet a hős a küldési távolságon túl, mielőtt a lény feladja:
 # a cél a háló legközelebbi pontjára kerül, ami kicsit a távolságon túl is lehet
 const SEND_RANGE_TOLERANCE: float = 40.0
+# Ennyire közel (a két láb között) van a lény "a hős mellett", pl. hogy falatot kapjon
+const NEXT_TO_PLAYER_DISTANCE: float = 120.0
 
 # Hivatkozás a főhősre
 @onready var player = $"../Player"
@@ -89,8 +91,9 @@ var goto_best_distance: float = INF
 # Egy küldés a koppintástól addig tart, amíg a lény vissza nem ér a hős mellé: addig
 # a többi koppintást nem fogadja el. returning: a várakozás után (vagy visszahívva) a hős felé tart.
 var returning: bool = false
-# A fejrázás (elutasított koppintás) animációja
+# A fejrázás és az örömugrás animációja, és a sprite nyugalmi helye, ahová visszatér
 var shake_tween: Tween
+var sprite_rest_position: Vector2
 # Koppintásnál a szintváltó kapuk, amiken át a legrövidebb út vezet a célhoz (lásd plan_crossings)
 var goto_crossings: Array[Dictionary] = []
 
@@ -98,6 +101,9 @@ func _ready() -> void:
 	# BIZTONSÁGI CSERE: Leválasztjuk a régit (ha volt), és tisztán kódból kötjük össze
 	animation_player.animation_finished.connect(_on_animation_finished)
 	SignalBus.companion_recalled.connect(_on_recalled)
+	SignalBus.treat_given.connect(hop)
+	add_to_group(&"companion")
+	sprite_rest_position = sprite_2d.position
 	target_marker = create_target_marker()
 	place_target_marker.call_deferred()
 	last_player_level = get_level(player)
@@ -664,10 +670,25 @@ func _draw() -> void:
 	if ratio > 0.0:
 		draw_line(left, left + Vector2(STAY_BAR_WIDTH * ratio, 0), STAY_BAR_COLOR, STAY_BAR_THICKNESS)
 
+func is_next_to_player() -> bool:
+	return feet.global_position.distance_to(player_feet.global_position) <= NEXT_TO_PLAYER_DISTANCE
+
+# Örömugrás (pl. falatért), amíg nincs rá animáció: a sprite kétszer felugrik
+func hop() -> void:
+	if shake_tween and shake_tween.is_running():
+		shake_tween.kill()
+	sprite_2d.rotation = 0.0
+	sprite_2d.position = sprite_rest_position
+	shake_tween = create_tween()
+	for i in 2:
+		shake_tween.tween_property(sprite_2d, "position", sprite_rest_position + Vector2(0, -24), 0.12).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+		shake_tween.tween_property(sprite_2d, "position", sprite_rest_position, 0.12).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+
 # Rövid fejrázás (a sprite billeg jobbra-balra): "most nem"
 func shake_head() -> void:
 	if shake_tween and shake_tween.is_running():
 		return
+	sprite_2d.rotation = 0.0
 	shake_tween = create_tween()
 	for angle in [0.2, -0.2, 0.15, -0.15, 0.0]:
 		shake_tween.tween_property(sprite_2d, "rotation", angle, 0.06)

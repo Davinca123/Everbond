@@ -10,6 +10,7 @@
 [ext_resource type="Script" uid="uid://bpllg8tk4axmt" path="res://scenes/ui/dialogue_box.gd" id="6_p7mho"]
 [ext_resource type="Script" path="res://scenes/ui/language_button.gd" id="7_lang"]
 [ext_resource type="Script" path="res://scenes/ui/call_back_button.gd" id="8_callback"]
+[ext_resource type="Script" path="res://scenes/ui/treat_button.gd" id="9_treat"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_ao5ua"]
 font_size = 100
@@ -94,6 +95,20 @@ script = ExtResource("8_callback")
 offset_right = 40.0
 offset_bottom = 23.0
 text = "UI_CALL_BACK"
+label_settings = SubResource("LabelSettings_ao5ua")
+
+[node name="TreatButton" type="TouchScreenButton" parent="CallBackButtonAnchor"]
+unique_name_in_owner = true
+modulate = Color(1, 0.85, 0.6, 1)
+position = Vector2(-820, -601)
+scale = Vector2(0.2, 0.2)
+texture_normal = ExtResource("4_m2ohg")
+texture_pressed = ExtResource("4_m2ohg")
+script = ExtResource("9_treat")
+
+[node name="Label" type="Label" parent="CallBackButtonAnchor/TreatButton"]
+offset_right = 40.0
+offset_bottom = 23.0
 label_settings = SubResource("LabelSettings_ao5ua")
 
 [node name="JoystickVisual" type="Control" parent="." unique_id=843325025]

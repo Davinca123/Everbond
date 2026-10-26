@@ -5,6 +5,9 @@ extends StaticBody2D
 
 signal opened
 
+## Ennyi jutalomfalat van benne
+@export var treats: int = 5
+
 const CLOSED_REGION: Rect2 = Rect2(96, 30, 32, 31)
 const OPEN_REGION: Rect2 = Rect2(96, 76, 32, 49)
 
@@ -36,6 +39,9 @@ func interact() -> void:
 		return
 	is_open = true
 	update_sprite()
+	if treats > 0:
+		PlayerData.add_treats(treats)
+		SignalBus.dialogue_started.emit("", (["CHEST_FOUND_TREATS"] as Array[String]))
 	opened.emit()
 
 # A kép alja a csomópont helyén van (a nyitott láda magasabb a felcsapott fedél miatt)
