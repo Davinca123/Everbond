@@ -59,6 +59,20 @@ func tap(window_pos: Vector2, index: int = 0) -> void:
 	touch(index, window_pos, false)
 	await frames(2)
 
+func key(keycode: Key) -> void:
+	for pressed in [true, false]:
+		var e := InputEventKey.new()
+		e.physical_keycode = keycode; e.keycode = keycode; e.pressed = pressed
+		Input.parse_input_event(e)
+		await frames(2)
+
+func click(window_pos: Vector2) -> void:
+	for pressed in [true, false]:
+		var e := InputEventMouseButton.new()
+		e.button_index = MOUSE_BUTTON_LEFT; e.position = window_pos; e.global_position = window_pos; e.pressed = pressed
+		Input.parse_input_event(e)
+		await frames(3 if pressed else 2)
+
 func check(name: String, ok: bool, detail: String = "") -> void:
 	print("%s %s %s" % ["PASS" if ok else "FAIL", name, detail])
 	if not ok: failures += 1
@@ -199,3 +213,24 @@ func run() -> void:
 			"gave_up=%s comp=%s target=%s state=%d" % [gave_up, cfeet.global_position.round(), target.round(), comp.current_state])
 	for region in world.find_children("*", "NavigationRegion2D", true, false):
 		region.enabled = true
+
+	# 9. PC: az "interact" billentyű (E) elindítja a dialógust, az E és az egérkattintás
+	# lapoz, és egyik sem küldi el a lényt
+	await seconds(2.0)
+	player.global_position = npc.global_position + Vector2(-116, 29)
+	await seconds(0.5)
+	taps = 0
+	dialogue.started = false; dialogue.finished = false
+	await key(KEY_E)
+	var started_by_key: bool = dialogue.started
+	var presses: int = 0
+	while dialogue.started and not dialogue.finished and presses < 15:
+		# Felváltva billentyű és egérkattintás
+		if presses % 2 == 0: await click(viewport_to_window(Vector2(1800, 300)))
+		else: await key(KEY_E)
+		await seconds(0.2)
+		presses += 1
+	await check("pc_key_and_mouse_dialogue", started_by_key and dialogue.finished and presses >= 2 \
+			and taps == 0 and comp.current_state == comp.State.FOLLOW,
+			"started_by_key=%s finished=%s presses=%d taps=%d state=%d" % [started_by_key,
+			dialogue.finished, presses, taps, comp.current_state])
