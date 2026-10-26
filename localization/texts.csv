@@ -12,3 +12,31 @@ NPC_OLD_SAGE_NAME,Old Sage,Öreg Bölcs
 NPC_OLD_SAGE_GREETING_1,"Welcome, traveller!","Üdvözöllek, utazó!"
 NPC_OLD_SAGE_GREETING_2,The darkness is spreading further and further across the world...,A sötétség egyre jobban terjed a világban...
 NPC_OLD_SAGE_GREETING_3,"Please, be very careful in the forest!","Kérlek, légy nagyon óvatos az erdőben!"
+COMP_SENT_1,On my way!,Megyek már!
+COMP_SENT_2,Wheee!,Hiii!
+COMP_SENT_3,Over there? Okay!,Oda? Rendben!
+COMP_ARRIVED_1,Here! Now what?,Itt vagyok! És most?
+COMP_ARRIVED_2,I'll wait right here.,Itt várok.
+COMP_RECALLED_1,"Coming, coming!","Jövök, jövök!"
+COMP_RECALLED_2,"Aww, already?","Jaj, máris?"
+COMP_RECALLED_3,Hmph. Fine.,"Hmpf. Jó, jó."
+COMP_IGNORED_TAP_1,One thing at a time!,Egyszerre csak egyet!
+COMP_IGNORED_TAP_2,"Hold on, I'm busy!","Várj, épp dolgozom!"
+COMP_IGNORED_TAP_3,Hmm? Not now!,Hm? Most nem!
+COMP_STAY_TOO_SHORT_1,I can't hold it that long… yet!,Ennyi ideig még nem bírom… egyelőre!
+COMP_STAY_TOO_SHORT_2,Sorry! My paws got fidgety.,Bocsi! Elkezdett izegni a mancsom.
+COMP_STAY_TOO_SHORT_3,Teach me to stay longer?,Megtanítasz tovább maradni?
+COMP_TREAT_1,Yum!,Nyamm!
+COMP_TREAT_2,"Ooh, crunchy!","Hű, ropogós!"
+COMP_TREAT_3,Best. Treat. Ever.,A. Legjobb. Falat. Valaha.
+COMP_TRAINING_PROGRESS_1,I'm getting better!,Egyre jobban megy!
+COMP_TRAINING_PROGRESS_2,Again! Again!,Még! Még!
+COMP_SKILL_LEVEL_UP_1,I can stay longer now! Let's try the gate!,Most már tovább bírom! Próbáljuk meg a kaput!
+COMP_SKILL_LEVEL_UP_2,I did it! Did you see?,Sikerült! Láttad?
+COMP_GATE_OPENED_1,We did it! Teamwork!,Sikerült! Csapatmunka!
+COMP_GATE_OPENED_2,The gate stays open now!,Most már nyitva marad a kapu!
+COMP_BORED_1,Sooo… what now?,Szóóóval… most mi lesz?
+COMP_BORED_2,*yawn*,*ásít*
+COMP_BORED_3,Let's go explore!,Menjünk felfedezni!
+COMP_SAGE_HINT_1,A stone that opens a gate? Let's find it!,"Egy kő, ami kaput nyit? Keressük meg!"
+COMP_SAGE_HINT_2,"South-east, he said. Come on!","Délkeletre, azt mondta. Gyere!"

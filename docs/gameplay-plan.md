@@ -203,7 +203,7 @@ Each step is its own branch from `dev`, merged back with `--no-ff`, with its own
 - The nature attributes, needs, feelings and memory come later.
 - Tests (`test/companion_state_test.gd`, headless): each event moves mood and bond as the table says; mood stays within −1..+1; the treat and recall signals apply their events; mood drifts back to its resting point; F3 shows the overlay.
 
-**6. `feat/speech-bubbles`**: the companion talks.
+**6. ✅ `feat/speech-bubbles`**: the companion talks.
 - A bubble above the companion's head (a small panel with a label, following it), shown for a time that depends on the line's length.
 - A text bank file, `localization/companion_lines.csv`: one row per line with `key`, `trigger`, `min_mood`, `max_mood`, `min_bond`, `weight`, `cooldown`. The texts themselves are keys in `texts.csv`, in English and Hungarian.
 - Triggers in the slice: `sent`, `arrived`, `recalled`, `ignored_tap`, `stay_too_short`, `treat`, `training_progress`, `skill_level_up`, `gate_opened`, `bored` (idle for a while), `sage_hint`. About 2–3 lines each, 25–30 lines in all.

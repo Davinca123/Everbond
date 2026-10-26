@@ -40,6 +40,9 @@ signal companion_returned
 signal treat_given
 # Változott a hős falatainak száma (PlayerData.treats)
 signal treats_changed(count: int)
+# Kérés a lénynek, hogy szóljon valamit erre a helyzetre (pl. &"gate_opened"); a mondatot
+# a buborék választja (scenes/companion/speech_bubble.gd, localization/companion_lines.csv)
+signal companion_say(trigger: StringName)
 # A lény hangulata (-1..1) és kötődése (0-tól) változott (CompanionState)
 signal companion_mood_changed(mood: float)
 signal companion_bond_changed(bond: float)
