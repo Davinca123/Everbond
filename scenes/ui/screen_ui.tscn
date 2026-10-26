@@ -143,5 +143,4 @@ scroll_following = true
 wait_time = 0.03
 one_shot = true
 
-[connection signal="pressed" from="InteractionButtonAnchor/InteractionButton" to="." method="_on_interaction_button_pressed"]
 [connection signal="timeout" from="DialogueBox/Timer" to="DialogueBox" method="_on_timer_timeout"]

@@ -40,14 +40,16 @@ The dialogue box only handles `InputEventScreenTouch`. `TouchScreenButton` also 
 
 Fixed: a new `interact` input action (E, Space, Enter). The interaction button reacts to it while it's shown, and the dialogue box advances on it and on a left mouse click (clicks emulated from touch are skipped, so a touch doesn't advance twice). Both mark the event as handled, so the key press that ends a dialogue doesn't start it again, and a click in a dialogue doesn't send the companion. Test: `pc_key_and_mouse_dialogue` in `test/tap_test.gd`.
 
-### 4. Interaction button calls a missing method (Confirmed)
+### 4. ~~Interaction button calls a missing method~~ (Fixed)
 `scenes/ui/screen_ui.tscn:146`
 
 `InteractionButton.pressed` is connected to `ScreenUI._on_interaction_button_pressed`. `screen_ui.gd` is empty, so every press logs an error. The real handling is in `interaction_button.gd`.
 
 **Fix:** delete the connection.
 
-### 5. Interactables share one button and one signal (Code review; locked-door part confirmed in playtest)
+Fixed: the connection is deleted.
+
+### 5. ~~Interactables share one button and one signal~~ (Fixed)
 `scenes/npc/npc.gd`, `scenes/objects/door.gd`, `scripts/global/signal_bus.gd`
 
 `interaction_pressed` goes to every listener, and each NPC or door shows and hides the button on its own. Problems:
@@ -57,12 +59,16 @@ Fixed: a new `interact` input action (E, Space, Enter). The interaction button r
 
 **Fix:** keep a "current interactable" tracker on the player or in `GameManager`. Only the tracked object handles the press and controls the button.
 
-### 6. Locked doors can never be opened (Code review)
+Fixed: a new autoload, `InteractionManager` (`scripts/global/interaction_manager.gd`), is the only listener of `interaction_pressed` and the only one that shows or hides the button. NPCs and doors call `InteractionManager.enter(self)` / `exit(self)` from their interaction areas and provide `interaction_type`, `interact()` and optionally `can_interact()`. The current object is the one the player entered last that can be used now; leaving it falls back to the previous one still in range. The button is hidden during a dialogue and a map change and shown again afterwards, which also brings it back after the locked door's message. Test: `overlapping_interactables` in `test/tap_test.gd`.
+
+### 6. ~~Locked doors can never be opened~~ (Fixed)
 `scenes/objects/door.gd:74-78`
 
 `check_player_has_key()` always returns `false`. The commented-out code refers to `GameManager.player_inventory`, which doesn't exist. The inventory is `PlayerData.inventory`.
 
 **Fix:** `return PlayerData.inventory.has(required_key_name)`.
+
+Fixed as suggested; a door with no `required_key_name` can't be unlocked. The key stays in the inventory. Test: `locked_door_opens_with_key` in `test/tap_test.gd`.
 
 ### 7. Companion idle logic errors (Code review)
 `scenes/companion/companion.gd`

@@ -31,6 +31,7 @@ func change_map(map_path: String, spawn_id: StringName = &"default", fade: bool 
 		return
 	changing = true
 	main.player.control_enabled = false
+	InteractionManager.refresh() # a gomb a váltás alatt rejtve
 
 	if fade:
 		await _fade(1.0)
@@ -67,6 +68,8 @@ func change_map(map_path: String, spawn_id: StringName = &"default", fade: bool 
 		await _fade(0.0)
 	main.player.control_enabled = true
 	changing = false
+	# A váltás alatt rejtett interakció gomb az új pálya tárgya szerint jelenik meg
+	InteractionManager.refresh()
 
 # A kamera nem mutat a pálya csempéin túl; csempék nélkül (pl. üres belső tér) nincs határ.
 # A képernyőnél kisebb pályát (pl. egy szobát) középre tesszük: a határt a pálya közepe

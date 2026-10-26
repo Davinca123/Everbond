@@ -113,7 +113,7 @@ Only pull is planned in detail. The others get their own sections when they're d
 - **Nature and mood:** some things it refuses to swallow because they're yucky (a picky companion refuses more). A tasty thing, like a cookie, may get eaten for real by a hungry or selfish companion: "Oops."
 - **Puzzles both ways:** world puzzles that need spitting are one more reason to come back after form 3; dungeons before form 3 must not need it.
 
-Note bugs #4 and #5 in `BUGS.md`: interactables share one button and one signal today. The interaction skills go through gestures and their own groups, so they don't add to that, but the shared button should be fixed before more objects rely on it.
+Objects the player uses with the interaction button register with `InteractionManager` (bug #5 in `BUGS.md`). The interaction skills go through gestures and their own groups instead, so they don't compete for that button.
 
 ## 6. Mind swap
 
