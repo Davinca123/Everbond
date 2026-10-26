@@ -1,0 +1,11 @@
+keys,en,hu
+UI_INTERACT,Interact,Interakció
+UI_INTERACT_CHAT,Talk,Beszéd
+UI_INTERACT_LOOT,Pick up,Felvesz
+UI_INTERACT_CHEST,Open,Kinyit
+UI_INTERACT_DOOR_ENTER,Enter,Belép
+DOOR_LOCKED,It's locked...,Zárva van...
+NPC_OLD_SAGE_NAME,Old Sage,Öreg Bölcs
+NPC_OLD_SAGE_GREETING_1,"Welcome, traveller!","Üdvözöllek, utazó!"
+NPC_OLD_SAGE_GREETING_2,The darkness is spreading further and further across the world...,A sötétség egyre jobban terjed a világban...
+NPC_OLD_SAGE_GREETING_3,"Please, be very careful in the forest!","Kérlek, légy nagyon óvatos az erdőben!"

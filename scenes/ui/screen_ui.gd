@@ -27,7 +27,7 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		if event.pressed:
-			if not _is_button_press():
+			if not _is_button_press() and not _is_on_blocking_control(event.position):
 				touches[event.index] = { "position": event.position, "time": Time.get_ticks_msec(), "moved": false }
 		elif touches.has(event.index):
 			_try_tap(touches[event.index], event.position)
@@ -54,6 +54,13 @@ func _try_tap(touch: Dictionary, release_position: Vector2) -> void:
 	if release_position.distance_to(touch.position) > TAP_MAX_DISTANCE:
 		return
 	SignalBus.screen_tapped.emit(touch.position)
+
+# Az érintés egy olyan vezérlőn kezdődik (pl. a nyelvváltó gombon), amelyik nem enged koppintást
+func _is_on_blocking_control(screen_position: Vector2) -> bool:
+	for control in get_tree().get_nodes_in_group("blocks_taps"):
+		if control.is_visible_in_tree() and control.get_global_rect().has_point(screen_position):
+			return true
+	return false
 
 # Ugyanebben a képkockában egy gomb kapta el az érintést (a gombok _input-ja előbb fut)
 func _is_button_press() -> bool:

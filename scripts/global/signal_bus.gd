@@ -14,6 +14,10 @@ signal screen_tapped(screen_position: Vector2)
 signal show_interaction_button(interaction_type: String)
 signal hide_interaction_button
 
+# --- BEÁLLÍTÁSOK ---
+# A játék nyelve megváltozott (Settings.set_language), pl. "en" vagy "hu"
+signal language_changed(language: String)
+
 # --- NAVIGÁCIÓ ---
 # Akkor küldjük, ha egy akadály eltűnt vagy megjelent (pl. kinyílt egy ajtó),
 # így a navigációs hálót újra kell sütni

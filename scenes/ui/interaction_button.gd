@@ -3,6 +3,14 @@ extends TouchScreenButton
 # Ha raktál alá egy Label-t a feliratnak, így éred el:
 @onready var label: Label = $Label 
 
+# A gomb feliratának fordítási kulcsa interakció típusonként (localization/texts.csv)
+const LABEL_KEYS: Dictionary = {
+	"chat": "UI_INTERACT_CHAT",
+	"loot": "UI_INTERACT_LOOT",
+	"chest": "UI_INTERACT_CHEST",
+	"door_enter": "UI_INTERACT_DOOR_ENTER",
+}
+
 func _ready() -> void:
 	hide() # Alapból elrejtjük magunkat
 	
@@ -15,20 +23,8 @@ func _ready() -> void:
 
 func _on_show_interaction(type: String) -> void:
 	show()
-	print("gomb")
-	
-	# Dinamikusan átírja a saját feliratát
-	match type:
-		"chat":
-			label.text = "Beszéd"
-		"loot":
-			label.text = "Felvesz"
-		"chest":
-			label.text = "Kinyit"
-		"door_enter":
-			label.text = "Belép"
-		_:
-			label.text = "Interakció"
+	# A Label a kulcsot magától lefordítja, nyelvváltáskor is
+	label.text = LABEL_KEYS.get(type, "UI_INTERACT")
 
 func _on_hide_interaction() -> void:
 	hide()

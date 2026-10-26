@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://b8p2g5fp5epwc" path="res://scenes/ui/interaction_button.gd" id="4_ao5ua"]
 [ext_resource type="Texture2D" uid="uid://lqn40wgi2per" path="res://scenes/ui/Joystick-tip.png" id="4_m2ohg"]
 [ext_resource type="Script" uid="uid://bpllg8tk4axmt" path="res://scenes/ui/dialogue_box.gd" id="6_p7mho"]
+[ext_resource type="Script" path="res://scenes/ui/language_button.gd" id="7_lang"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_ao5ua"]
 font_size = 100
@@ -88,6 +89,19 @@ unique_name_in_owner = true
 position = Vector2(255, 735)
 scale = Vector2(0.12, 0.12)
 texture = ExtResource("4_m2ohg")
+
+[node name="LanguageButton" type="Button" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 30.0
+offset_right = -30.0
+offset_bottom = 130.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 56
+text = "EN"
+script = ExtResource("7_lang")
 
 [node name="DialogueBox" type="Control" parent="." unique_id=2021558575]
 layout_mode = 3

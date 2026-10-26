@@ -30,10 +30,11 @@ func display_line() -> void:
 		return
 		
 	is_typing = true
-	name_label.text = npc_name
+	# A név és a sor fordítási kulcs is lehet (localization/texts.csv); a sima szöveg változatlan marad
+	name_label.text = tr(npc_name)
 	
 	# Tisztítjuk a szöveget és nullára állítjuk a látható karaktereket
-	text_label.text = dialog_lines[current_line_index]
+	text_label.text = tr(dialog_lines[current_line_index])
 	text_label.visible_characters = 0
 	
 	timer.start() # Elindítjuk a timert a gépeléshez
