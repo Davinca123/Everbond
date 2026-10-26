@@ -36,6 +36,9 @@ const GOTO_STUCK_TIME: float = 1.0
 const GOTO_PROGRESS_DISTANCE: float = 10.0
 # Egy pont akkor van egy szint hálóján, ha a háló legközelebbi pontja ennyin belül van
 const NAV_REACH: float = 40.0
+# Várakozás közben ennyivel lehet a hős a küldési távolságon túl, mielőtt a lény feladja:
+# a cél a háló legközelebbi pontjára kerül, ami kicsit a távolságon túl is lehet
+const SEND_RANGE_TOLERANCE: float = 40.0
 
 # Hivatkozás a főhősre
 @onready var player = $"../Player"
@@ -75,6 +78,8 @@ enum State { FOLLOW, GO_TO_TARGET, IDLE }
 var current_state : State = State.FOLLOW
 
 # Változók a kattintásos mozgáshoz
+# tap_target: a koppintott pont; click_target_pos: az aktuális cél, a küldési távolságon belül
+var tap_target: Vector2 = Vector2.ZERO
 var click_target_pos : Vector2 = Vector2.ZERO
 var wait_timer: float = 0.0
 var stay_bar_shown: bool = false
@@ -107,14 +112,11 @@ func _physics_process(delta):
 			handle_goto_logic(delta)
 		State.IDLE:
 			velocity = Vector2.ZERO
-			# Kis várakozás után visszaszalad a hőshöz
+			# Kis várakozás után visszaszalad a hőshöz; ha a hős közben túl messzire ment
+			# (a küldési távolságon túl), azonnal
 			wait_timer -= delta
-			if wait_timer <= 0.0:
-				current_state = State.FOLLOW
-				# Ha a hős szintjén vagyunk, de a hozzá vezető legrövidebb út más szinten át
-				# visz (pl. az alagúton jöttünk ide), azon megyünk vissza
-				if level_crossings.is_empty():
-					level_crossings = plan_crossings(player_feet.global_position, get_level(player))
+			if wait_timer <= 0.0 or is_player_out_of_range():
+				end_stay()
 			
 	# IRÁNYBA FORDULÁS:
 	# Ha a sebesség x tengelye negatív, balra megy -> tükrözzük a képet
@@ -181,6 +183,18 @@ func handle_follow_logic():
 	else:
 		velocity = Vector2.ZERO # Ha elég közel van, megáll
 
+# Vége a várakozásnak: vissza a hőshöz
+func end_stay() -> void:
+	current_state = State.FOLLOW
+	wait_timer = 0.0
+	# Ha a hős szintjén vagyunk, de a hozzá vezető legrövidebb út más szinten át
+	# visz (pl. az alagúton jöttünk ide), azon megyünk vissza
+	if level_crossings.is_empty():
+		level_crossings = plan_crossings(player_feet.global_position, get_level(player))
+
+func is_player_out_of_range() -> bool:
+	return feet.global_position.distance_to(player_feet.global_position) > PlayerData.get_companion_send_range() + SEND_RANGE_TOLERANCE
+
 # 2. LOGIKA: Séta a kattintott pontra
 func handle_goto_logic(delta: float):
 	# Ha a cél felé vezető legrövidebb út más szinten át visz (pl. az alagúton),
@@ -198,6 +212,14 @@ func handle_goto_logic(delta: float):
 			arrive()
 		return
 
+	# Újratervezéskor a cél követi a hőst, hogy a küldési távolságon belül maradjon.
+	# Ha a cél arrébb került, az elakadásfigyelés elölről kezdi (nem a lény akadt el).
+	if repath_timer <= 0.0:
+		var destination: Vector2 = get_reachable_point(clamp_to_send_range(tap_target))
+		if destination.distance_to(click_target_pos) > GOTO_PROGRESS_DISTANCE:
+			goto_best_distance = INF
+			goto_stuck_timer = 0.0
+		click_target_pos = destination
 	update_path(click_target_pos)
 
 	# Ha nem jutunk előre (pl. a cél fal mögött van, és nincs navigációs háló), feladjuk.
@@ -252,10 +274,22 @@ func send_to_position(target_pos: Vector2):
 	goto_stuck_timer = 0.0
 	goto_best_distance = INF
 	repath_timer = 0.0 # Azonnal új utat számolunk az új célhoz
-	goto_crossings = plan_crossings(target_pos)
+	tap_target = target_pos
+	var in_range_target: Vector2 = clamp_to_send_range(target_pos)
+	goto_crossings = plan_crossings(in_range_target)
 	# Falra/akadályra koppintva a legközelebbi elérhető pont lesz a cél (a jelölő is oda kerül)
-	click_target_pos = get_reachable_point(target_pos)
+	click_target_pos = get_reachable_point(in_range_target)
 	print("Lény: Indulok a koordinátára: ", click_target_pos)
+
+# A koppintott pont, ha a hős lábától a küldési távolságon belül van; különben a
+# távolság körének a koppintás felé eső pontja (egyenes vonalban mérve, nem az úton).
+# A távolságot mindig újra kiolvassuk, így egy új szint azonnal érvényes.
+func clamp_to_send_range(target: Vector2) -> Vector2:
+	var from: Vector2 = player_feet.global_position
+	var send_range: float = PlayerData.get_companion_send_range()
+	if from.distance_to(target) <= send_range:
+		return target
+	return from + from.direction_to(target) * send_range
 
 # A célhoz legközelebbi pont, ahová a lény eljut: az út vége azon a szinten, ahol a
 # koppintott út véget ér (az utolsó kapu után). A map_get_closest_point nem jó, mert nem

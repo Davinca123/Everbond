@@ -7,7 +7,10 @@ var phase := "boot"
 var phase_t := 0.0
 var results := []
 var marks := {}
-func _initialize(): change_scene_to_file("res://scenes/main/main.tscn")
+func _initialize():
+	# The send range (500 px) would clamp the far taps; this checks path finding, not the range
+	root.get_node("PlayerData").companion_send_range_override = INF
+	change_scene_to_file("res://scenes/main/main.tscn")
 func sm(): return root.get_node("SceneManager")
 func scene(): return sm().current_map
 func P(): return scene().get_node_or_null("YSort_Entities/Player")

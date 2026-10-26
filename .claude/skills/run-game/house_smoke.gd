@@ -15,6 +15,8 @@ var tap_checked := false
 var back_logged := false
 
 func _initialize():
+	# The send range (500 px) would clamp the far taps; this checks path finding, not the range
+	root.get_node("PlayerData").companion_send_range_override = INF
 	change_scene_to_file("res://scenes/main/main.tscn")
 
 # The map loaded inside Main (Main itself is current_scene and never changes)

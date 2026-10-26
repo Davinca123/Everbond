@@ -90,6 +90,20 @@ func settle() -> void:
 	# A kamera simítása miatt várunk, amíg a kép megáll
 	await seconds(1.5)
 
+# Megvárjuk, amíg a lény újra a hős mellett jár (követő állapot, közel a hőshöz)
+func wait_until_following(timeout: float = 8.0) -> void:
+	var t := 0.0
+	while (comp.current_state != comp.State.FOLLOW or cfeet.global_position.distance_to(pfeet.global_position) > comp.min_distance + 20.0) and t < timeout:
+		await get_tree().physics_frame
+		t += get_physics_process_delta_time()
+
+# A hős adott ideig megy egy irányba (a joystick szignálján át)
+func walk(direction: Vector2, time: float) -> void:
+	SignalBus.joystick_moved.emit(direction)
+	await seconds(time)
+	SignalBus.joystick_moved.emit(Vector2.ZERO)
+	await frames(2)
+
 # --- esetek ---
 
 func run() -> void:
@@ -172,6 +186,8 @@ func run() -> void:
 	await check("multitouch_tap_while_moving", taps == 1 and comp.current_state != comp.State.FOLLOW and still_moving,
 			"taps=%d state=%d player_moving=%s" % [taps, comp.current_state, still_moving])
 	await seconds(4.5)
+
+	await run_send_range()
 
 	# 7. Az interakció gomb megnyomása nem küldi el a lényt, és a dialógus alatti koppintások sem
 	var npc = world.get_node("YSort_Entities/Npc")
@@ -277,3 +293,77 @@ func run() -> void:
 	await check("locked_door_opens_with_key", was_current and not door.is_locked and door.is_open,
 			"was_current=%s locked=%s open=%s" % [was_current, door.is_locked, door.is_open])
 	await seconds(1.0)
+
+# --- küldési távolság (docs/companion-training-plan.md, 1. rész) ---
+
+func run_send_range() -> void:
+	var send_range: float = PlayerData.get_companion_send_range()
+
+	# 12. Távolságon túli koppintás: a cél a távolság körén van, a koppintás felé, és a jelölő ott van
+	await wait_until_following()
+	await settle()
+	var target: Vector2 = pfeet.global_position + Vector2(900, 40)
+	await tap(to_window(target))
+	await frames(3)
+	var from_player: Vector2 = comp.click_target_pos - pfeet.global_position
+	var marker_spot: Vector2 = comp.target_marker.get_child(0).global_position
+	await check("tap_beyond_range_clamped", absf(from_player.length() - send_range) < 40.0 \
+			and from_player.angle_to(target - pfeet.global_position) < 0.1 and marker_spot.distance_to(comp.click_target_pos) < 2.0,
+			"dist=%.0f range=%.0f marker=%s dest=%s" % [from_player.length(), send_range, marker_spot.round(), comp.click_target_pos.round()])
+	await wait_until_idle(6.0)
+	await wait_until_following()
+
+	# 13. A hős mozog, amíg a lény megy: a cél vele mozog, a távolságon belül marad, és ha
+	# a hős visszamegy, a cél visszaáll a koppintott pontra
+	await settle()
+	target = pfeet.global_position + Vector2(480, 0)
+	await tap(to_window(target))
+	await frames(3)
+	await walk(Vector2.LEFT, 0.6)
+	await frames(10)
+	var moved_dest: Vector2 = comp.click_target_pos
+	var dest_dist: float = moved_dest.distance_to(pfeet.global_position)
+	var walking: bool = comp.current_state == comp.State.GO_TO_TARGET
+	await walk(Vector2.RIGHT, 0.6)
+	await frames(10)
+	var back_dest: Vector2 = comp.click_target_pos
+	await check("destination_follows_player", walking and moved_dest.x < target.x - 40.0 and dest_dist <= send_range + 2.0 \
+			and back_dest.distance_to(target) < 5.0,
+			"walking=%s moved=%s dist=%.0f back=%s target=%s" % [walking, moved_dest.round(), dest_dist, back_dest.round(), target.round()])
+	await wait_until_idle(6.0)
+	await wait_until_following()
+
+	# 14. A hős a távolságon belül mozog a várakozás alatt: a lény kivárja az időt
+	await settle()
+	target = pfeet.global_position + Vector2(300, 0)
+	await tap(to_window(target))
+	await wait_until_idle(5.0)
+	await walk(Vector2.LEFT, 0.4)
+	await frames(5)
+	var still_waiting: bool = comp.current_state == comp.State.IDLE
+	await seconds(comp.stay_duration)
+	await check("player_moves_within_range_keeps_wait", still_waiting and comp.current_state == comp.State.FOLLOW,
+			"still_waiting=%s state=%d" % [still_waiting, comp.current_state])
+	await wait_until_following()
+
+	# 15. A hős kilép a távolságból a várakozás alatt: a lény abban a pillanatban feladja,
+	# és a csík eltűnik
+	await settle()
+	target = pfeet.global_position + Vector2(440, 0)
+	await tap(to_window(target))
+	await wait_until_idle(5.0)
+	var waited_at: Vector2 = cfeet.global_position
+	var limit: float = send_range + comp.SEND_RANGE_TOLERANCE
+	var gave_up_at: float = -1.0
+	SignalBus.joystick_moved.emit(Vector2.LEFT)
+	for i in 120:
+		await get_tree().physics_frame
+		if comp.current_state != comp.State.IDLE:
+			gave_up_at = waited_at.distance_to(pfeet.global_position)
+			break
+	SignalBus.joystick_moved.emit(Vector2.ZERO)
+	await frames(3)
+	await check("player_leaves_range_ends_wait", gave_up_at > limit and gave_up_at < limit + 10.0 \
+			and comp.current_state == comp.State.FOLLOW and not comp.stay_bar_shown,
+			"gave_up_at=%.0f limit=%.0f state=%d bar=%s" % [gave_up_at, limit, comp.current_state, comp.stay_bar_shown])
+	await wait_until_following()
