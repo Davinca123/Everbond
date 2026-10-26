@@ -11,6 +11,7 @@ DOOR_LOCKED,It's locked...,Zárva van...
 NPC_OLD_SAGE_NAME,Old Sage,Öreg Bölcs
 NPC_OLD_SAGE_GREETING_1,"Welcome, traveller!","Üdvözöllek, utazó!"
 NPC_OLD_SAGE_GREETING_2,The darkness is spreading further and further across the world...,A sötétség egyre jobban terjed a világban...
+NPC_OLD_SAGE_GATE_HINT,"There is an old gate south-east of here. It only opens while someone stands on the stone in front of it.","Innen délkeletre van egy régi kapu. Csak akkor nyílik ki, ha valaki áll az előtte lévő kövön."
 NPC_OLD_SAGE_GREETING_3,"Please, be very careful in the forest!","Kérlek, légy nagyon óvatos az erdőben!"
 COMP_SENT_1,On my way!,Megyek már!
 COMP_SENT_2,Wheee!,Hiii!

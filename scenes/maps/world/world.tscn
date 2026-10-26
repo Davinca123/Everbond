@@ -66,6 +66,8 @@ position = Vector2(188, 886)
 
 [node name="Npc" parent="YSort_Entities" index="1" unique_id=82338993 instance=ExtResource("5_v5dby")]
 z_index = 1
+dialogue_lines = Array[String](["NPC_OLD_SAGE_GREETING_1", "NPC_OLD_SAGE_GREETING_2", "NPC_OLD_SAGE_GATE_HINT", "NPC_OLD_SAGE_GREETING_3"])
+companion_reply = &"sage_hint"
 
 [node name="GatePen" parent="YSort_Entities" instance=ExtResource("15_gatepen")]
 position = Vector2(1200, 1750)

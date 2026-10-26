@@ -51,6 +51,10 @@ Door1, checks that the companion is there, follows the player and goes to a tapp
 point, then leaves the house again. It then goes back in through the door that stayed
 open (saved map state) and out once more. Exit code 0 means every check passed.
 `exit_smoke.gd` does the same for the edge exits: World → Town → World.
+`slice_playthrough.gd` plays the first playable slice (docs/gameplay-plan.md, section 10): the
+Sage's hint, the gate failing at stay level 0, five stay trainings with treats (T), getting
+through at level 1, and the chest. It also shows how to advance dialogue (`interact` action)
+and give treats (`give_treat` action) through `Input.parse_input_event`.
 
 The game is controlled through the `SignalBus` autoload, the same way the touch UI does it:
 

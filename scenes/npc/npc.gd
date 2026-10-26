@@ -10,6 +10,9 @@ extends CharacterBody2D
 	"NPC_OLD_SAGE_GREETING_3",
 ]
 
+## A dialógus után a lény erre a helyzetre mond valamit (pl. &"sage_hint"; üres = semmit)
+@export var companion_reply: StringName = &""
+
 # Itt határozzuk meg, hogy ez egy beszélgetős NPC
 var interaction_type: String = "chat" 
 
@@ -30,3 +33,9 @@ func _on_body_exited(body: Node2D) -> void:
 
 func interact() -> void:
 	SignalBus.dialogue_started.emit(npc_name, dialogue_lines)
+	if companion_reply != &"" and not SignalBus.dialogue_finished.is_connected(_on_dialogue_finished):
+		SignalBus.dialogue_finished.connect(_on_dialogue_finished, CONNECT_ONE_SHOT)
+
+# Késleltetve, hogy a buborék már tudja, hogy véget ért a dialógus
+func _on_dialogue_finished() -> void:
+	SignalBus.companion_say.emit.call_deferred(companion_reply)
