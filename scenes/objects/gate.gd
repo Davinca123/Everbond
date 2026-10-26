@@ -9,6 +9,8 @@ extends StaticBody2D
 # (a pálya állapotával mentve).
 
 signal opened_changed(open: bool)
+# A hős átment a nyitott kapun, és a retesz nyitva tartja (a betöltött állapotra nem jön)
+signal latched_by_pass
 
 ## A nyomólapok, amelyek nyitják (bármelyik elég)
 @export var plates: Array[NodePath] = []
@@ -111,6 +113,7 @@ func _on_doorway_exited(body: Node2D) -> void:
 	# A hős a nyitott kapun át a túloldalra ért
 	if latch_on_pass and not latched and is_open and body.name == "Player" and entry_side != 0 and side_of(body) != entry_side:
 		latch()
+		latched_by_pass.emit()
 
 # Záráskor a kapunyílásban állókat kitolja arra, amerről jöttek
 func push_out_of_doorway() -> void:

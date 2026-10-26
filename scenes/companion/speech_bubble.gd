@@ -10,8 +10,9 @@ extends Node2D
 const LINES_PATH: String = "res://localization/companion_lines.csv"
 ## Ennyi idő legalább két mondat között (mp), kivéve a fontosakat
 const CHATTINESS_GAP: float = 4.0
-# (a tanítás haladása közvetlenül a falatra mondott sor után jön, és azt váltja)
-const IMPORTANT_TRIGGERS: Array[StringName] = [&"skill_level_up", &"gate_opened", &"training_progress"]
+# (a tanítás haladása a falatra mondott sor után jön, és azt váltja; a "túl rövid volt" a
+# jelenet fő útmutatása, és pár mp-cel a küldésre mondott sor után jön)
+const IMPORTANT_TRIGGERS: Array[StringName] = [&"skill_level_up", &"gate_opened", &"training_progress", &"stay_too_short"]
 ## Ennyi ideig unatkozik egy helyben a hős mellett, mielőtt szól (mp)
 const BORED_TIME: float = 20.0
 # Ennyi ideig látszik a buborék: alap + karakterenként (mp)

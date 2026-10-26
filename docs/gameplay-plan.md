@@ -221,8 +221,10 @@ Each step is its own branch from `dev`, merged back with `--no-ff`, with its own
 - Tests: a full task run raises the level; a treat given too late, or a stay cut short by calling back, doesn't count; the new stay duration is used from the next wait.
 
 **8. Putting it together and playtesting**
-- The Sage's hint line, the companion's `stay_too_short` line when the gate closes in front of the player, and the tuning of the plate-to-gate distance.
-- A driver script (`.claude/skills/run-game/`) that plays the whole scene: fails at level 0, trains, succeeds at level 1, opens the chest.
+- ✅ The Sage's hint line (`NPC_OLD_SAGE_GATE_HINT`); after the dialogue the companion answers with a `sage_hint` line (`companion_reply` on the NPC).
+- ✅ The companion's `stay_too_short` line when the gate closes in front of the player: `gate_pen.gd` checks, when a full stay on the plate ends, whether the gate shut while the player was still near it, and applies the `CompanionState` event. When the player passes and the latch holds, it says a `gate_opened` line and applies `puzzle_solved`. `stay_too_short` skips the chattiness gap: it comes about 3 s after the line said when the companion is sent.
+- ✅ Tuning: the plate-to-gate distance from step 3 holds; level 0 fails and level 1 gets through, in `test/puzzle_test.gd` and in the driver.
+- ✅ A driver script, `.claude/skills/run-game/slice_playthrough.gd`, that plays the whole scene: the Sage, fails at level 0, trains five times, succeeds at level 1, the companion follows, opens the chest.
 - A playtest on a phone: is it clear what to do, is the training fun or a chore, does the companion feel alive?
 
 ### Not in the slice
