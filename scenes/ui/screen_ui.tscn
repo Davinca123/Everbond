@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scenes/ui/language_button.gd" id="7_lang"]
 [ext_resource type="Script" path="res://scenes/ui/call_back_button.gd" id="8_callback"]
 [ext_resource type="Script" path="res://scenes/ui/treat_button.gd" id="9_treat"]
+[ext_resource type="Script" path="res://scenes/ui/debug_overlay.gd" id="10_debug"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_ao5ua"]
 font_size = 100
@@ -145,6 +146,17 @@ grow_horizontal = 0
 theme_override_font_sizes/font_size = 56
 text = "EN"
 script = ExtResource("7_lang")
+
+[node name="DebugOverlay" type="Label" parent="."]
+offset_left = 30.0
+offset_top = 30.0
+offset_right = 900.0
+offset_bottom = 200.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 40
+script = ExtResource("10_debug")
 
 [node name="DialogueBox" type="Control" parent="." unique_id=2021558575]
 layout_mode = 3
