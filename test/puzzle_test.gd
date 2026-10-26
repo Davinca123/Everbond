@@ -39,7 +39,8 @@ func put_player(feet_at: Vector2) -> void:
 func reset_companion() -> void:
 	comp.global_position = player.global_position + Vector2(-80, 0)
 	comp.on_map_entered()
-	comp.stay_duration = 2.0
+	root.get_node("PlayerData").companion_skills.stay.level = 0
+	root.get_node("PlayerData").companion_stay_duration_override = 0.0
 	await frames(3)
 
 func wait_until(condition: Callable, timeout: float) -> bool:
@@ -92,7 +93,7 @@ func run() -> void:
 	for stay in [2.0, 3.0]:
 		await put_player(gate_front)
 		await reset_companion()
-		comp.stay_duration = stay
+		root.get_node("PlayerData").companion_skills.stay.level = 0 if stay == 2.0 else 1
 		comp.send_to_position(plate.center())
 		await wait_until(func(): return gate.is_open, 6.0)
 		bus().joystick_moved.emit(Vector2.UP)
@@ -144,8 +145,8 @@ func run() -> void:
 	await put_player(gate.global_position + Vector2(0, -300))
 	await reset_companion()
 	comp.global_position = plate.center() - comp.get_node("CollisionShape2D").position
+	root.get_node("PlayerData").companion_stay_duration_override = 30.0
 	comp.go_to_position(plate.center())
-	comp.stay_duration = 30.0
 	await wait_until(func(): return gate.is_open, 4.0)
 	bus().joystick_moved.emit(Vector2.DOWN)
 	await seconds(0.4)

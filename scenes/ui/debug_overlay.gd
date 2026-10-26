@@ -21,5 +21,8 @@ func describe() -> String:
 	var lines: Array[String] = [
 		"mood %+.2f   bond %.1f" % [CompanionState.mood, CompanionState.bond],
 		"treats %d   send range %.0f px" % [PlayerData.treats, PlayerData.get_companion_send_range()],
+		"stay level %d (%.0f s)   training %d/%d" % [PlayerData.companion_skills.stay.level,
+				PlayerData.get_companion_stay_duration(), PlayerData.companion_skills.stay.progress,
+				PlayerData.get_training_goal("stay")],
 	]
 	return "\n".join(lines)

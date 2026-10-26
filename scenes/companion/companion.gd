@@ -4,9 +4,10 @@ extends CharacterBody2D
 @export var follow_speed: float = 160.0 # Kicsit lassabb, mint a főhős
 @export var min_distance: float = 60.0  # Milyen közel álljon meg a hőstől
 @export var target_margin: float = 5.0  # Pontosság a kattintott célpontnál
-## Koppintott célnál ennyit vár (mp), mielőtt visszamegy a hőshöz.
-## Később a lény tanításával ("maradj!") nőhet.
-@export var stay_duration: float = 2.0
+# Koppintott célnál ennyit vár (mp), mielőtt visszamegy a hőshöz. Megérkezéskor olvassuk
+# ki a "maradj" szintjéből (PlayerData.get_companion_stay_duration()), így egy új szint
+# a következő várakozástól számít.
+var stay_duration: float = 2.0
 
 # Útkeresés: ilyen gyakran számoljuk újra az utat (mp), és ilyen közel kell érni egy útponthoz
 const REPATH_INTERVAL: float = 0.25
@@ -275,6 +276,7 @@ func arrive() -> void:
 	velocity = Vector2.ZERO
 	goto_crossings.clear()
 	current_state = State.IDLE
+	stay_duration = PlayerData.get_companion_stay_duration()
 	wait_timer = stay_duration
 	print("Lény: Megérkeztem a célhoz!")
 	SignalBus.companion_arrived.emit()

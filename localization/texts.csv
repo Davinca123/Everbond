@@ -40,3 +40,7 @@ COMP_BORED_2,*yawn*,*ásít*
 COMP_BORED_3,Let's go explore!,Menjünk felfedezni!
 COMP_SAGE_HINT_1,A stone that opens a gate? Let's find it!,"Egy kő, ami kaput nyit? Keressük meg!"
 COMP_SAGE_HINT_2,"South-east, he said. Come on!","Délkeletre, azt mondta. Gyere!"
+SKILL_STAY,Stay,Maradj
+SKILL_RANGE,Send range,Küldési távolság
+UI_TRAINING_PROGRESS,%s training %d/%d,%s tanítás: %d/%d
+UI_SKILL_LEVEL_UP,%s: level %d!,%s: %d. szint!

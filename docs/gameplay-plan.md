@@ -211,11 +211,12 @@ Each step is its own branch from `dev`, merged back with `--no-ff`, with its own
 - No voice yet; the voice decision (AI or babble) is made after a test, outside the slice.
 - Tests: the right trigger shows a line from its set; conditions and cooldowns are respected; the bubble follows the companion and disappears.
 
-**7. `feat/stay-training`**: the first training task.
+**7. ✅ `feat/stay-training`**: the first training task.
 - `PlayerData.companion_skills` with `stay` and `range` (level and progress), the level tables, and `get_companion_stay_duration()` (training plan, section 8). Only stay gets a task in the slice.
 - **The task:** the companion is sent, waits the whole stay (`companion_stay_finished(full = true)`), comes back (`companion_returned`), and the player gives a treat within 5 s of its return. That's one success; five successes raise the stay level.
 - The task is a small script that listens to the signals (training plan, section 8: "where the tasks live"), so `companion.gd` stays free of training code.
-- **Feedback:** a short toast at the top of the screen ("Stay training 3/5"), the companion's `training_progress` and `skill_level_up` lines, and the `CompanionState` events.
+- **Feedback:** a short toast at the top of the screen ("Stay training 3/5"), the companion's `training_progress` and `skill_level_up` lines, and the `CompanionState` events. The `training_progress` line replaces the treat line said a moment before, so it skips the chattiness gap like the important lines.
+- The task is `scripts/training/stay_training.gd`, a node in `main.tscn`. `PlayerData.add_training_progress()` raises the level by itself when the count for the level is reached (`COMPANION_TRAINING_GOALS`, stay: 5, 10, 15, 20). The send range level moved into `companion_skills.range`. Tests that need a fixed wait set `PlayerData.companion_stay_duration_override`.
 - The skill tree screen isn't part of the slice.
 - Tests: a full task run raises the level; a treat given too late, or a stay cut short by calling back, doesn't count; the new stay duration is used from the next wait.
 
