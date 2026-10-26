@@ -7,6 +7,7 @@
 [ext_resource type="Shader" uid="uid://dvnu7oa6ul780" path="res://scenes/objects/opacity_zones/opacity_polygon.gdshader" id="6_umvgx"]
 [ext_resource type="PackedScene" uid="uid://cr2dqwf614ji1" path="res://scenes/objects/opacity_zones/opacity_polygon_zone.tscn" id="13_srmg5"]
 [ext_resource type="PackedScene" path="res://scenes/objects/map_exit.tscn" id="14_exit"]
+[ext_resource type="PackedScene" path="res://scenes/maps/world/gate_pen.tscn" id="15_gatepen"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_t5ptc"]
 resource_local_to_scene = true
@@ -65,6 +66,9 @@ position = Vector2(188, 886)
 
 [node name="Npc" parent="YSort_Entities" index="1" unique_id=82338993 instance=ExtResource("5_v5dby")]
 z_index = 1
+
+[node name="GatePen" parent="YSort_Entities" instance=ExtResource("15_gatepen")]
+position = Vector2(1200, 1750)
 
 [node name="default" type="Marker2D" parent="Spawns" index="0" unique_id=947644501]
 position = Vector2(304, 359)
