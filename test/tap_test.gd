@@ -188,6 +188,7 @@ func run() -> void:
 	await seconds(4.5)
 
 	await run_send_range()
+	await run_send_once()
 
 	# 7. Az interakció gomb megnyomása nem küldi el a lényt, és a dialógus alatti koppintások sem
 	var npc = world.get_node("YSort_Entities/Npc")
@@ -367,3 +368,97 @@ func run_send_range() -> void:
 			and comp.current_state == comp.State.FOLLOW and not comp.stay_bar_shown,
 			"gave_up_at=%.0f limit=%.0f state=%d bar=%s" % [gave_up_at, limit, comp.current_state, comp.stay_bar_shown])
 	await wait_until_following()
+
+# --- egy küldés, visszahívás (docs/companion-training-plan.md, 2. rész) ---
+
+func button_window_center(button: TouchScreenButton) -> Vector2:
+	return viewport_to_window(button.get_global_transform_with_canvas() * (button.texture_normal.get_size() / 2.0))
+
+func run_send_once() -> void:
+	var events: Array[String] = []
+	var log_event := func(event_name: String): events.append(event_name)
+	var on_sent := func(_t): log_event.call("sent")
+	var on_ignored := func(): log_event.call("ignored")
+	var on_arrived := func(): log_event.call("arrived")
+	var on_finished := func(full: bool): log_event.call("finished_full" if full else "finished_cut")
+	var on_returned := func(): log_event.call("returned")
+	var on_recalled := func(): log_event.call("recalled")
+	SignalBus.companion_sent.connect(on_sent)
+	SignalBus.companion_tap_ignored.connect(on_ignored)
+	SignalBus.companion_arrived.connect(on_arrived)
+	SignalBus.companion_stay_finished.connect(on_finished)
+	SignalBus.companion_returned.connect(on_returned)
+	SignalBus.companion_recalled.connect(on_recalled)
+	var button: TouchScreenButton = main.get_node("ScreenUI/CallBackButtonAnchor/CallBackButton")
+
+	# 16. Egy küldés: amíg a lény kint van (megy, vár, jön vissza), a koppintást nem fogadja
+	# el; a jelek sorrendben jönnek; visszaérve újra lehet küldeni
+	await wait_until_following()
+	await settle()
+	events.clear()
+	var target: Vector2 = pfeet.global_position + Vector2(300, 0)
+	await tap(to_window(target))
+	await frames(5)
+	await tap(to_window(pfeet.global_position + Vector2(0, 200)))
+	var kept_walking: bool = comp.click_target_pos.distance_to(target) < 2.0
+	await wait_until_idle(5.0)
+	await tap(to_window(pfeet.global_position + Vector2(0, 200)))
+	var kept_waiting: bool = comp.current_state == comp.State.IDLE
+	while comp.current_state == comp.State.IDLE:
+		await get_tree().physics_frame
+	await frames(10)
+	var returning: bool = comp.returning
+	await tap(to_window(pfeet.global_position + Vector2(0, 200)))
+	var not_resent: bool = comp.current_state == comp.State.FOLLOW
+	await wait_until_following()
+	await frames(10)
+	var expected: Array[String] = ["sent", "ignored", "arrived", "ignored", "finished_full", "ignored", "returned"]
+	await check("second_tap_ignored_until_back", kept_walking and kept_waiting and returning and not_resent and events == expected,
+			"walking=%s waiting=%s returning=%s not_resent=%s events=%s" % [kept_walking, kept_waiting, returning, not_resent, events])
+	events.clear()
+	await tap(to_window(pfeet.global_position + Vector2(250, 0)))
+	await frames(3)
+	await check("tap_accepted_after_return", comp.current_state == comp.State.GO_TO_TARGET and events == (["sent"] as Array[String]),
+			"state=%d events=%s" % [comp.current_state, events])
+
+	# 17. A visszahívó gomb a cél felé menet: látszik, megnyomva a lény megfordul, a gomb
+	# eltűnik, és a gombnyomás nem koppintás
+	await frames(10)
+	var shown_while_walking: bool = button.visible
+	taps = 0
+	events.clear()
+	await tap(button_window_center(button))
+	await frames(3)
+	await check("call_back_button_while_walking", shown_while_walking and taps == 0 and not button.visible \
+			and comp.current_state == comp.State.FOLLOW and comp.returning and events == (["recalled"] as Array[String]),
+			"shown=%s taps=%d visible=%s state=%d returning=%s events=%s" % [shown_while_walking, taps, button.visible,
+			comp.current_state, comp.returning, events])
+	await wait_until_following()
+	await frames(10)
+
+	# 18. Q a várakozás alatt: a lény abbahagyja a várakozást, nem teljes (full = false)
+	await settle()
+	await tap(to_window(pfeet.global_position + Vector2(250, 0)))
+	await wait_until_idle(5.0)
+	var shown_while_waiting: bool = button.visible
+	events.clear()
+	await key(KEY_Q)
+	await frames(2)
+	# A két jel sorrendje csak a feliratkozások sorrendjén múlik
+	events.sort()
+	await check("call_back_key_while_waiting", shown_while_waiting and not button.visible and comp.current_state == comp.State.FOLLOW \
+			and events == (["finished_cut", "recalled"] as Array[String]),
+			"shown=%s visible=%s state=%d events=%s" % [shown_while_waiting, button.visible, comp.current_state, events])
+	await wait_until_following()
+	await frames(10)
+
+	# 19. Q, amikor a lény a hős mellett van: semmi (a gomb sem látszik)
+	events.clear()
+	await key(KEY_Q)
+	await frames(2)
+	await check("call_back_key_ignored_when_following", events.is_empty() and not button.visible, "events=%s" % [events])
+
+	for connection in [[SignalBus.companion_sent, on_sent], [SignalBus.companion_tap_ignored, on_ignored],
+			[SignalBus.companion_arrived, on_arrived], [SignalBus.companion_stay_finished, on_finished],
+			[SignalBus.companion_returned, on_returned], [SignalBus.companion_recalled, on_recalled]]:
+		connection[0].disconnect(connection[1])

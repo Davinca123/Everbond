@@ -167,11 +167,12 @@ Each step is its own branch from `dev`, merged back with `--no-ff`, with its own
 - The range comes from `PlayerData.get_companion_send_range()`, range level 0 for now. Tests that check path finding to far spots set `PlayerData.companion_send_range_override`.
 - Tests in `test/tap_test.gd`: tap inside and beyond the range, the player moving while the companion walks, the player leaving the range during the wait (the cases listed in the training plan, section 11).
 
-**2. `feat/companion-send-once`**: one send, then back (training plan, section 2).
+**2. ✅ `feat/companion-send-once`**: one send, then back (training plan, section 2).
 - While the companion is walking to a spot, waiting or coming back, other taps are ignored. An ignored tap gets a short reaction on the companion (a head shake), so the player knows it was heard.
 - **Call-back button:** a new `TouchScreenButton` in `ScreenUI`, shown only while the companion is walking to a spot or waiting. Keyboard: Q (a new `call_back` input action). It emits a new `SignalBus.companion_recalled`; the companion stops and comes back.
 - **Back at the player's side:** within the follow distance; from then on a new tap is accepted.
-- The companion emits new signals that later steps listen to: `companion_arrived`, `companion_stay_finished(full: bool)` (full = it waited the whole time, not called back or out of range), `companion_returned`.
+- The companion emits new signals that later steps listen to: `companion_sent`, `companion_tap_ignored`, `companion_arrived`, `companion_stay_finished(full: bool)` (full = it waited the whole time, not called back or out of range), `companion_returned`.
+- `send_to_position()` applies the rule (taps); `go_to_position()` just walks, for the path-finding drivers in `test/drive.gd` that chain sends.
 - Waypoint queues (more than one spot per send) aren't part of the slice.
 - Tests: a second tap while out is ignored; the call-back button and Q during the walk and during the wait; the signals arrive in order.
 

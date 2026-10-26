@@ -24,6 +24,18 @@ signal language_changed(language: String)
 signal navigation_obstacles_changed
 
 # --- KÍSÉRŐ / SZIMBIÓZIS JELZÉSEK ---
+# A hős visszahívja a lényt (a visszahívó gomb vagy a Q billentyű)
+signal companion_recalled
+# Egy koppintásra elindult a cél felé
+signal companion_sent(target: Vector2)
+# Amíg a lény kint van, a koppintást nem fogadja el (fejrázás)
+signal companion_tap_ignored
+# Odaért a célhoz (vagy elakadt előtte), és elkezdett várni
+signal companion_arrived
+# Vége a várakozásnak; full: kivárta a teljes időt (nem hívták vissza, és a hős nem ment túl messzire)
+signal companion_stay_finished(full: bool)
+# Visszaért a hős mellé, újra lehet küldeni
+signal companion_returned
 signal companion_obedience_changed(new_level: int)
 signal companion_leveled_up(new_form: String)
 

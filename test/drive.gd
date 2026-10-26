@@ -85,7 +85,8 @@ func start_leg():
 	elif s[0] == "line":
 		leg_path = PackedVector2Array([s[1]])
 	elif s[0] == "tap":
-		comp.send_to_position(s[1])
+		# Az útkeresést teszteljük: a küldési szabály (egyszerre egy küldés) nélkül
+		comp.go_to_position(s[1])
 	elif s[0] == "keep":
 		keep_target = s[1]
 	elif s[0] == "release":
@@ -152,7 +153,7 @@ func _physics_process(delta):
 	last_pos = pfeet.global_position
 	SignalBus.joystick_moved.emit(dir)
 	if keep_target != null and comp.current_state != comp.State.GO_TO_TARGET:
-		comp.send_to_position(keep_target)
+		comp.go_to_position(keep_target)
 	# camera frames both characters
 	cam.global_position = cam.global_position.lerp((pfeet.global_position + cfeet.global_position) / 2.0, 0.1)
 	log_t -= delta
