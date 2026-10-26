@@ -1,0 +1,36 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/objects/chest.gd" id="1_chest"]
+[ext_resource type="Texture2D" uid="uid://cpj0021bnuvnd" path="res://assets/Pixel Art Top Down - Basic v1.2.3/Texture/TX Props.png" id="2_props"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_chest"]
+size = Vector2(130, 50)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_chest"]
+radius = 130.0
+
+[node name="Chest" type="StaticBody2D"]
+script = ExtResource("1_chest")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(-72, -140)
+scale = Vector2(4.5, 4.5)
+texture = ExtResource("2_props")
+centered = false
+region_enabled = true
+region_rect = Rect2(96, 30, 32, 31)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+visible = false
+position = Vector2(0, -25)
+shape = SubResource("RectangleShape2D_chest")
+
+[node name="InteractionArea" type="Area2D" parent="."]
+visible = false
+collision_layer = 0
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea"]
+position = Vector2(0, -40)
+shape = SubResource("CircleShape2D_chest")

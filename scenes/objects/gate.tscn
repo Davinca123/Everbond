@@ -1,0 +1,33 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/objects/gate.gd" id="1_gate"]
+[ext_resource type="Texture2D" uid="uid://cpj0021bnuvnd" path="res://assets/Pixel Art Top Down - Basic v1.2.3/Texture/TX Props.png" id="2_props"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gate"]
+size = Vector2(165, 212)
+
+[node name="Gate" type="StaticBody2D"]
+script = ExtResource("1_gate")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(-83, -288)
+scale = Vector2(4.5, 4.5)
+texture = ExtResource("2_props")
+centered = false
+region_enabled = true
+region_rect = Rect2(29, 90, 37, 64)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+visible = false
+position = Vector2(0.5, -112)
+shape = SubResource("RectangleShape2D_gate")
+
+[node name="Doorway" type="Area2D" parent="."]
+visible = false
+collision_layer = 0
+collision_mask = 12
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Doorway"]
+position = Vector2(0.5, -112)
+shape = SubResource("RectangleShape2D_gate")

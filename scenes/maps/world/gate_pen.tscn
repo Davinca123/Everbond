@@ -1,0 +1,105 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/objects/gate.tscn" id="1_gate"]
+[ext_resource type="PackedScene" path="res://scenes/objects/pressure_plate.tscn" id="2_plate"]
+[ext_resource type="PackedScene" path="res://scenes/objects/chest.tscn" id="3_chest"]
+[ext_resource type="Texture2D" path="res://assets/Pixel Art Top Down - Basic v1.2.3/Texture/TX Tileset Wall.png" id="4_wall"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_front"]
+size = Vector2(289, 212)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_side"]
+size = Vector2(45, 432)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_back"]
+size = Vector2(742, 36)
+
+[node name="GatePen" type="Node2D"]
+z_index = 1
+y_sort_enabled = true
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="FrontLeft" type="Sprite2D" parent="Walls"]
+texture_filter = 1
+position = Vector2(-371, -288)
+scale = Vector2(4.5, 4.5)
+texture = ExtResource("4_wall")
+centered = false
+region_enabled = true
+region_rect = Rect2(32, 192, 64, 64)
+
+[node name="FrontRight" type="Sprite2D" parent="Walls"]
+texture_filter = 1
+position = Vector2(83, -288)
+scale = Vector2(4.5, 4.5)
+texture = ExtResource("4_wall")
+centered = false
+region_enabled = true
+region_rect = Rect2(96, 192, 64, 64)
+
+[node name="SideLeft" type="Sprite2D" parent="Walls"]
+texture_filter = 1
+position = Vector2(-371, -720)
+scale = Vector2(4.5, 4.5)
+texture = ExtResource("4_wall")
+centered = false
+region_enabled = true
+region_rect = Rect2(288, 32, 10, 96)
+
+[node name="SideRight" type="Sprite2D" parent="Walls"]
+texture_filter = 1
+position = Vector2(326, -720)
+scale = Vector2(4.5, 4.5)
+texture = ExtResource("4_wall")
+centered = false
+region_enabled = true
+region_rect = Rect2(288, 32, 10, 96)
+
+[node name="BackLeft" type="Sprite2D" parent="Walls"]
+texture_filter = 1
+position = Vector2(-371, -720)
+scale = Vector2(4.5, 4.5)
+texture = ExtResource("4_wall")
+centered = false
+region_enabled = true
+region_rect = Rect2(384, 32, 96, 8)
+
+[node name="BackRight" type="Sprite2D" parent="Walls"]
+texture_filter = 1
+position = Vector2(-61, -720)
+scale = Vector2(4.5, 4.5)
+texture = ExtResource("4_wall")
+centered = false
+region_enabled = true
+region_rect = Rect2(384, 32, 96, 8)
+
+[node name="FrontLeftShape" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-226.5, -112)
+shape = SubResource("RectangleShape2D_front")
+
+[node name="FrontRightShape" type="CollisionShape2D" parent="Walls"]
+position = Vector2(227.5, -112)
+shape = SubResource("RectangleShape2D_front")
+
+[node name="SideLeftShape" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-348.5, -504)
+shape = SubResource("RectangleShape2D_side")
+
+[node name="SideRightShape" type="CollisionShape2D" parent="Walls"]
+position = Vector2(348.5, -504)
+shape = SubResource("RectangleShape2D_side")
+
+[node name="BackShape" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -702)
+shape = SubResource("RectangleShape2D_back")
+
+[node name="Gate" parent="." instance=ExtResource("1_gate")]
+plates = [NodePath("../PressurePlate")]
+latch_on_pass = true
+
+[node name="PressurePlate" parent="." instance=ExtResource("2_plate")]
+position = Vector2(160, 100)
+
+[node name="Chest" parent="." instance=ExtResource("3_chest")]
+position = Vector2(0, -470)

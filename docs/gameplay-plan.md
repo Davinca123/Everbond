@@ -155,7 +155,7 @@ The foundations it builds on are done: dialogue on PC (bug #3), one interaction 
 7. The player tries again and gets through. A latch on the far side keeps the gate open for good, so the companion can follow. The chest holds more treats.
 8. All along, the companion talks: when it's sent, when it arrives, when it's called back, when it gets a treat, when it's bored. Its mood and bond go up with the treats and the success.
 
-The numbers (stay time, plate-to-gate distance, number of treats) are tuned so that stay level 0 just fails and level 1 just works.
+The numbers (stay time, the gate's opening time, the doorway's depth, number of treats) are tuned so that stay level 0 just fails and level 1 just works.
 
 ### Steps
 
@@ -176,14 +176,17 @@ Each step is its own branch from `dev`, merged back with `--no-ff`, with its own
 - Waypoint queues (more than one spot per send) aren't part of the slice.
 - Tests: a second tap while out is ignored; the call-back button and Q during the walk and during the wait; the signals arrive in order.
 
-**3. `feat/pressure-plate-gate`**: the first puzzle elements.
-- **`pressure_plate.tscn`** (`scenes/objects/`): an `Area2D` that's pressed while the Player, the Companion (or later a crate) stands on it. A sprite with an up and a down frame. Signal `pressed_changed(pressed: bool)`.
-- **`gate.tscn`**: a `StaticBody2D` with an open and a closed frame, linked to one or more plates (an exported array of plate paths). Open while any linked plate is pressed. Opening disables its collision and emits `navigation_obstacles_changed`, like the door.
-- **Latch:** an exported `latch_on_pass` flag: when the player walks through the open gate (an `Area2D` on the far side), it stays open for good. This is saved in the map state (the gate joins `GameMap.PERSISTENT_GROUP`), so it's still open after leaving World and coming back.
-- **Closing on someone:** if the gate closes while the player or the companion is in its doorway, it waits until they're out, so nobody gets stuck in it.
+**3. ✅ `feat/pressure-plate-gate`**: the first puzzle elements.
+- **`pressure_plate.tscn`** (`scenes/objects/`): an `Area2D` that's pressed while the Player or the Companion (or later a crate) stands on it, with their feet on the middle of the plate, not just touching its edge. It glows while pressed. Signal `pressed_changed(pressed: bool)`.
+- **Sending to the plate:** a tap near a plate (within its `snap_radius`) sends the companion to its centre. Plates are in the `companion_spots` group; other spots can use it later.
+- **`gate.tscn`**: a `StaticBody2D` linked to one or more plates (an exported array of plate paths). While a plate is pressed it slides up over `open_time` (1.5 s), and only then can it be walked through. When the plate is released, it shuts at once. Opening and shutting disable and enable its collision and emit `navigation_obstacles_changed`, like the door.
+- **Why it opens slowly:** the companion gives up if the player is more than the send range away (step 1), so the plate, the gate and the latch are all close together, and the player can wait right at the gate. If the gate opened at once, any stay time would be enough. The slow opening is what makes the stay time matter: at stay level 0 the gate is fully open for about 0.9 s, at level 1 for about 1.9 s, and walking through the doorway takes about 1.2 s.
+- **Latch:** an exported `latch_on_pass` flag: when the player walks through the open gate (in through the doorway on one side, out on the other), it stays open for good. This is saved in the map state (the gate is in `GameMap.PERSISTENT_GROUP`), so it's still open after leaving World and coming back.
+- **Closing on someone:** whoever is in the doorway when the gate shuts is pushed back out the way they came. Nobody gets stuck in it, and standing in the doorway doesn't hold it open. (The first plan was for the gate to wait until they were out, but then stepping into the doorway in time would be enough to get through.)
 - **The companion and the plate:** a companion sent onto a plate stands on it and presses it while it waits. When its stay ends, it walks off and the plate goes up.
-- Placed in World, east of the Old Sage, in front of a chest. The chest is a simple interactable (through `InteractionManager`, type `"chest"`) that gives treats once.
-- Tests (`test/puzzle_test.gd`): the plate presses for the player and for the companion and releases when they leave; the gate opens and closes with it; the latch keeps it open and survives a map change; the gate doesn't close on someone in the doorway.
+- **`chest.tscn`**: an interactable (through `InteractionManager`, type `"chest"`) that opens once, stays open in the map state and emits `opened`. The treats in it come with step 4.
+- **The pen:** `scenes/maps/world/gate_pen.tscn` holds the walls, the gate, the plate and the chest. It's placed in World south-east of the Old Sage, at (1200, 1750).
+- Tests (`test/puzzle_test.gd`, headless): the plate and the gate with the player and with the companion; stay level 0 is too short and pushes the player back, level 1 gets through and latches; the chest opens once; the latch and the chest survive a map change; pushing out works both ways.
 
 **4. `feat/treats`**: the first item.
 - `PlayerData.treats: int`, starting at 5; the chest adds 5.

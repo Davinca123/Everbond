@@ -313,9 +313,17 @@ func send_to_position(target_pos: Vector2) -> bool:
 		shake_head()
 		SignalBus.companion_tap_ignored.emit()
 		return false
-	go_to_position(target_pos)
+	go_to_position(snap_to_spot(target_pos))
 	SignalBus.companion_sent.emit(click_target_pos)
 	return true
+
+# Egy kijelölt hely (pl. nyomólap) közelébe koppintva a lény a hely közepére megy.
+# A helyek a "companion_spots" csoportban vannak: center() és snap_radius.
+func snap_to_spot(target: Vector2) -> Vector2:
+	for spot in get_tree().get_nodes_in_group(&"companion_spots"):
+		if spot.center().distance_to(target) <= spot.snap_radius:
+			return spot.center()
+	return target
 
 # Elindul a pont felé (a küldési szabály nélkül; a tesztek is így küldik egymás után)
 func go_to_position(target_pos: Vector2) -> void:

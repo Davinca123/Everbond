@@ -1,0 +1,24 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/objects/pressure_plate.gd" id="1_plate"]
+[ext_resource type="Texture2D" uid="uid://cpj0021bnuvnd" path="res://assets/Pixel Art Top Down - Basic v1.2.3/Texture/TX Props.png" id="2_props"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_plate"]
+size = Vector2(240, 180)
+
+[node name="PressurePlate" type="Area2D"]
+collision_mask = 12
+script = ExtResource("1_plate")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(0, 80)
+scale = Vector2(2, 2)
+texture = ExtResource("2_props")
+region_enabled = true
+region_rect = Rect2(353, 269, 94, 71)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+visible = false
+position = Vector2(0, 80)
+shape = SubResource("RectangleShape2D_plate")
