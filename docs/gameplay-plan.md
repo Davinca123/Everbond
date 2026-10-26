@@ -194,13 +194,14 @@ Each step is its own branch from `dev`, merged back with `--no-ff`, with its own
 - Throwing treats (used by the later stay training in the training plan) isn't part of the slice.
 - Tests: the button shows only when the companion is close and there are treats; giving one lowers the count and emits the signal.
 
-**5. `feat/companion-state`**: a minimal version of `CompanionState` from the nature plan (section 10).
+**5. ✅ `feat/companion-state`**: a minimal version of `CompanionState` from the nature plan (section 10).
 - A new autoload with `mood` (−1 to +1, resting at +0.3 and drifting back to it) and `bond` (0 and up).
 - `apply_event(event: StringName)` looks the event up in a table and changes mood and bond. Events in the slice: `treat`, `training_success`, `skill_level_up`, `puzzle_solved`, `recalled`, `stay_too_short`.
 - Signals `companion_mood_changed` and `companion_bond_changed`.
-- A debug overlay (F3) that shows mood, bond, stay level and training progress.
+- `CompanionState` applies `treat` and `recalled` itself, from `SignalBus.treat_given` and `companion_recalled`. The other events come from the steps where they happen (7 and 8).
+- A debug overlay (F3, a new `toggle_debug` input action) that shows mood, bond, treats and the send range; stay level and training progress join it in step 7.
 - The nature attributes, needs, feelings and memory come later.
-- Tests: each event moves mood and bond as the table says; mood drifts back to its resting point.
+- Tests (`test/companion_state_test.gd`, headless): each event moves mood and bond as the table says; mood stays within −1..+1; the treat and recall signals apply their events; mood drifts back to its resting point; F3 shows the overlay.
 
 **6. `feat/speech-bubbles`**: the companion talks.
 - A bubble above the companion's head (a small panel with a label, following it), shown for a time that depends on the line's length.

@@ -40,6 +40,9 @@ signal companion_returned
 signal treat_given
 # Változott a hős falatainak száma (PlayerData.treats)
 signal treats_changed(count: int)
+# A lény hangulata (-1..1) és kötődése (0-tól) változott (CompanionState)
+signal companion_mood_changed(mood: float)
+signal companion_bond_changed(bond: float)
 signal companion_obedience_changed(new_level: int)
 signal companion_leveled_up(new_form: String)
 
