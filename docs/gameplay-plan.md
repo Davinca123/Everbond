@@ -136,11 +136,96 @@ The game is played on a phone first, so the screen must stay simple:
 - swipe from an object: pull (and other skill gestures),
 - call-back button, talk-to-companion button, pet: small buttons near the companion's portrait.
 
-Buttons appear only when they can be used. The keyboard and mouse work too (bug #3 in `BUGS.md` needs fixing for that).
+Buttons appear only when they can be used. The keyboard and mouse work too: E, Space or Enter is the interaction button, and a mouse click is a tap.
+
+## 10. First playable slice: the dragon and the gate
+
+A short scene in World that shows the main pillars together: sending and stay, a puzzle with the companion, training with treats, a companion that talks and has a mood and a bond. If this feels cute and alive, the rest of the plans are mostly more of the same; if it doesn't, it shows early and cheaply.
+
+The foundations it builds on are done: dialogue on PC (bug #3), one interaction manager (bugs #4–#6) and English/Hungarian texts (`feat/localization`).
+
+### The scene
+
+1. The Old Sage mentions an old gate east of him: "It only opens while someone stands on the stone in front of it."
+2. The player finds the gate. Behind it is a chest. In front of it is a pressure plate, a few steps away.
+3. The player stands on the plate: the gate opens, but closes as soon as they step off. They send the companion onto the plate instead and run for the gate.
+4. The companion's stay time (2 s at the start) is too short: the gate closes before the player gets through. The companion says something about it ("I can't hold it that long… yet!").
+5. Next to the gate there's room to train. The companion suggests it, or the Sage does. The task: send the companion, let it wait the whole time, and when it comes back by itself, give it a treat. Five times.
+6. After the fifth treat the stay level goes up (2 s → 3 s). The companion celebrates.
+7. The player tries again and gets through. A latch on the far side keeps the gate open for good, so the companion can follow. The chest holds more treats.
+8. All along, the companion talks: when it's sent, when it arrives, when it's called back, when it gets a treat, when it's bored. Its mood and bond go up with the treats and the success.
+
+The numbers (stay time, plate-to-gate distance, number of treats) are tuned so that stay level 0 just fails and level 1 just works.
+
+### Steps
+
+Each step is its own branch from `dev`, merged back with `--no-ff`, with its own tests. The order matters: each one uses the ones before.
+
+**1. `feat/companion-send-range`**: the send range from the training plan (section 1).
+- The destination is clamped to the range around the player (placeholder 500 px), and follows the player while the companion walks there.
+- During the wait, the companion gives up and comes back if the player goes out of range (plus a 40 px tolerance).
+- The range comes from `PlayerData.get_companion_send_range()`, stay level 0 for now.
+- Tests in `test/tap_test.gd`: tap inside and beyond the range, the player moving while the companion walks, the player leaving the range during the wait (the cases listed in the training plan, section 11).
+
+**2. `feat/companion-send-once`**: one send, then back (training plan, section 2).
+- While the companion is walking to a spot, waiting or coming back, other taps are ignored. An ignored tap gets a short reaction on the companion (a head shake), so the player knows it was heard.
+- **Call-back button:** a new `TouchScreenButton` in `ScreenUI`, shown only while the companion is walking to a spot or waiting. Keyboard: Q (a new `call_back` input action). It emits a new `SignalBus.companion_recalled`; the companion stops and comes back.
+- **Back at the player's side:** within the follow distance; from then on a new tap is accepted.
+- The companion emits new signals that later steps listen to: `companion_arrived`, `companion_stay_finished(full: bool)` (full = it waited the whole time, not called back or out of range), `companion_returned`.
+- Waypoint queues (more than one spot per send) aren't part of the slice.
+- Tests: a second tap while out is ignored; the call-back button and Q during the walk and during the wait; the signals arrive in order.
+
+**3. `feat/pressure-plate-gate`**: the first puzzle elements.
+- **`pressure_plate.tscn`** (`scenes/objects/`): an `Area2D` that's pressed while the Player, the Companion (or later a crate) stands on it. A sprite with an up and a down frame. Signal `pressed_changed(pressed: bool)`.
+- **`gate.tscn`**: a `StaticBody2D` with an open and a closed frame, linked to one or more plates (an exported array of plate paths). Open while any linked plate is pressed. Opening disables its collision and emits `navigation_obstacles_changed`, like the door.
+- **Latch:** an exported `latch_on_pass` flag: when the player walks through the open gate (an `Area2D` on the far side), it stays open for good. This is saved in the map state (the gate joins `GameMap.PERSISTENT_GROUP`), so it's still open after leaving World and coming back.
+- **Closing on someone:** if the gate closes while the player or the companion is in its doorway, it waits until they're out, so nobody gets stuck in it.
+- **The companion and the plate:** a companion sent onto a plate stands on it and presses it while it waits. When its stay ends, it walks off and the plate goes up.
+- Placed in World, east of the Old Sage, in front of a chest. The chest is a simple interactable (through `InteractionManager`, type `"chest"`) that gives treats once.
+- Tests (`test/puzzle_test.gd`): the plate presses for the player and for the companion and releases when they leave; the gate opens and closes with it; the latch keeps it open and survives a map change; the gate doesn't close on someone in the doorway.
+
+**4. `feat/treats`**: the first item.
+- `PlayerData.treats: int`, starting at 5; the chest adds 5.
+- **Give:** a "treat" button shown when the companion is next to the player (within 120 px) and there's at least one treat. Keyboard: T (a new `give_treat` input action). It emits `SignalBus.treat_given`. The companion plays a happy animation (a placeholder until there's art).
+- Throwing treats (used by the later stay training in the training plan) isn't part of the slice.
+- Tests: the button shows only when the companion is close and there are treats; giving one lowers the count and emits the signal.
+
+**5. `feat/companion-state`**: a minimal version of `CompanionState` from the nature plan (section 10).
+- A new autoload with `mood` (−1 to +1, resting at +0.3 and drifting back to it) and `bond` (0 and up).
+- `apply_event(event: StringName)` looks the event up in a table and changes mood and bond. Events in the slice: `treat`, `training_success`, `skill_level_up`, `puzzle_solved`, `recalled`, `stay_too_short`.
+- Signals `companion_mood_changed` and `companion_bond_changed`.
+- A debug overlay (F3) that shows mood, bond, stay level and training progress.
+- The nature attributes, needs, feelings and memory come later.
+- Tests: each event moves mood and bond as the table says; mood drifts back to its resting point.
+
+**6. `feat/speech-bubbles`**: the companion talks.
+- A bubble above the companion's head (a small panel with a label, following it), shown for a time that depends on the line's length.
+- A text bank file, `localization/companion_lines.csv`: one row per line with `key`, `trigger`, `min_mood`, `max_mood`, `min_bond`, `weight`, `cooldown`. The texts themselves are keys in `texts.csv`, in English and Hungarian.
+- Triggers in the slice: `sent`, `arrived`, `recalled`, `ignored_tap`, `stay_too_short`, `treat`, `training_progress`, `skill_level_up`, `gate_opened`, `bored` (idle for a while), `sage_hint`. About 2–3 lines each, 25–30 lines in all.
+- Choosing: of the lines whose conditions match, one at random by weight; a line said recently is skipped. A chattiness gap (placeholder 4 s) between lines, except for important ones (`skill_level_up`, `gate_opened`).
+- No voice yet; the voice decision (AI or babble) is made after a test, outside the slice.
+- Tests: the right trigger shows a line from its set; conditions and cooldowns are respected; the bubble follows the companion and disappears.
+
+**7. `feat/stay-training`**: the first training task.
+- `PlayerData.companion_skills` with `stay` and `range` (level and progress), the level tables, and `get_companion_stay_duration()` (training plan, section 8). Only stay gets a task in the slice.
+- **The task:** the companion is sent, waits the whole stay (`companion_stay_finished(full = true)`), comes back (`companion_returned`), and the player gives a treat within 5 s of its return. That's one success; five successes raise the stay level.
+- The task is a small script that listens to the signals (training plan, section 8: "where the tasks live"), so `companion.gd` stays free of training code.
+- **Feedback:** a short toast at the top of the screen ("Stay training 3/5"), the companion's `training_progress` and `skill_level_up` lines, and the `CompanionState` events.
+- The skill tree screen isn't part of the slice.
+- Tests: a full task run raises the level; a treat given too late, or a stay cut short by calling back, doesn't count; the new stay duration is used from the next wait.
+
+**8. Putting it together and playtesting**
+- The Sage's hint line, the companion's `stay_too_short` line when the gate closes in front of the player, and the tuning of the plate-to-gate distance.
+- A driver script (`.claude/skills/run-game/`) that plays the whole scene: fails at level 0, trains, succeeds at level 1, opens the chest.
+- A playtest on a phone: is it clear what to do, is the training fun or a chore, does the companion feel alive?
+
+### Not in the slice
+
+The skill tree screen, practice and mishaps, the nature attributes and needs, pull and the other skills, combat, the home and saving (everything is lost on restart for now), voice, and the dragon art (the current companion sprite stays as a placeholder).
 
 ## Order of work
 
-1. The first world puzzle with the existing skills (send and stay): a pressure plate that opens a gate.
+1. The first playable slice, "the dragon and the gate" (section 10).
 2. `feat/combat-basics`: the sword swing, one enemy type, the companion's automatic attack, fainting and waking up.
 3. The first small dungeon: a few rooms, a reset, one new element, a simple boss.
 4. Story and quests through NPC conversations, once the dialogue system has choices (nature plan).
