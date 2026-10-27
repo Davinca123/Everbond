@@ -1,6 +1,6 @@
 extends Label
 
-# Rövid felirat a képernyő tetején, amikor a lény tanulás közben halad
+# Rövid felirat a képernyő alján (fent a küldetés doboza, középen a lény buboréka van), amikor a lény tanulás közben halad
 # ("Maradj-tanítás 3/5") vagy szintet lép (SignalBus.companion_skill_changed).
 
 ## Ennyi ideig látszik (mp), utána elhalványul

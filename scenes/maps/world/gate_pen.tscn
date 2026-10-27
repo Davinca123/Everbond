@@ -6,19 +6,24 @@
 [ext_resource type="PackedScene" path="res://scenes/objects/chest.tscn" id="3_chest"]
 [ext_resource type="Texture2D" path="res://assets/Pixel Art Top Down - Basic v1.2.3/Texture/TX Tileset Wall.png" id="4_wall"]
 [ext_resource type="Script" path="res://scenes/objects/stone_roof.gd" id="5_roof"]
-[ext_resource type="Script" path="res://scenes/objects/opacity_zones/roof_zone.gd" id="6_roofzone"]
+[ext_resource type="PackedScene" uid="uid://cr2dqwf614ji1" path="res://scenes/objects/opacity_zones/opacity_polygon_zone.tscn" id="6_zone"]
+[ext_resource type="Shader" uid="uid://dvnu7oa6ul780" path="res://scenes/objects/opacity_zones/opacity_polygon.gdshader" id="7_shader"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_front"]
 size = Vector2(289, 212)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_side"]
-size = Vector2(45, 432)
+size = Vector2(45, 502)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_back"]
 size = Vector2(742, 36)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_room"]
-size = Vector2(652, 466)
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_roof"]
+resource_local_to_scene = true
+shader = ExtResource("7_shader")
+shader_parameter/polygon_points = PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/point_counts = PackedInt32Array(0, 0)
+shader_parameter/opacities = PackedFloat32Array(0, 0)
 
 [node name="GatePen" type="Node2D"]
 script = ExtResource("0_pen")
@@ -99,11 +104,11 @@ position = Vector2(227.5, -112)
 shape = SubResource("RectangleShape2D_front")
 
 [node name="SideLeftShape" type="CollisionShape2D" parent="Walls"]
-position = Vector2(-348.5, -504)
+position = Vector2(-348.5, -469)
 shape = SubResource("RectangleShape2D_side")
 
 [node name="SideRightShape" type="CollisionShape2D" parent="Walls"]
-position = Vector2(348.5, -504)
+position = Vector2(348.5, -469)
 shape = SubResource("RectangleShape2D_side")
 
 [node name="BackShape" type="CollisionShape2D" parent="Walls"]
@@ -122,15 +127,19 @@ position = Vector2(0, -470)
 
 [node name="Roof" type="Node2D" parent="."]
 z_index = 2
+material = SubResource("ShaderMaterial_roof")
 position = Vector2(-371, -720)
 script = ExtResource("5_roof")
 
-[node name="RoofZone" type="Area2D" parent="." node_paths=PackedStringArray("roof")]
-collision_layer = 0
-collision_mask = 4
-script = ExtResource("6_roofzone")
-roof = NodePath("../Roof")
+[node name="RoofOpacityZone" parent="." node_paths=PackedStringArray("additional_layers") instance=ExtResource("6_zone")]
+additional_layers = [NodePath("../Roof")]
+target_opacity = 0.15
+changes_level = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="RoofZone"]
-position = Vector2(0, -451)
-shape = SubResource("RectangleShape2D_room")
+[node name="ShaderZone" parent="RoofOpacityZone" index="0"]
+polygon = PackedVector2Array(-371, -720, 371, -720, 371, -218, -371, -218)
+
+[node name="EnterZone1" parent="RoofOpacityZone" index="1"]
+polygon = PackedVector2Array(-83, -218, 83, -218, 83, -208, -83, -208)
+
+[editable path="RoofOpacityZone"]

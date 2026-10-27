@@ -1,7 +1,7 @@
 extends SceneTree
 # Plays the first playable slice, "the dragon and the gate" (docs/gameplay-plan.md, section 10),
 # the way a player would: talk to the Old Sage, try the gate with the companion on the plate
-# at stay level 0 (too short), train stay five times with treats, get through at level 1,
+# at stay level 0 (too short: it rises halfway and drops), train stay five times with treats, get through at level 1,
 # and open the chest. The quest label follows each step.
 # Screenshots go to $OUT. Exit code 0 = every check passed.
 #
@@ -102,23 +102,23 @@ func run() -> void:
 	check("companion answers the sage", bubble.visible and bubble.current_key.begins_with("COMP_SAGE_HINT"), bubble.current_key)
 	await shot("companion_answers")
 
-	# 2. At the gate, stay level 0: the companion holds the plate, the gate opens slowly,
-	#    the player runs for it, and it shuts in front of them
+	# 2. At the gate, stay level 0: the companion holds the plate for 1 s, the gate rises
+	#    halfway and drops again while the player pushes against it
 	var gate_front: Vector2 = gate.global_position + Vector2(0, 40)
 	await put_player(gate_front)
 	check("quest: send the companion to the plate", quest.stage == quest.Stage.SEND_TO_PLATE, quest.text())
 	bubble.last_line_time = -INF
 	tap_world(plate.center())
-	var opened: bool = await wait_until(func(): return gate.is_open, 6.0)
-	await shot("level0_gate_open")
 	bus().joystick_moved.emit(Vector2.UP)
-	await wait_until(func(): return not gate.is_open or gate.latched, 4.0)
+	var risen: bool = await wait_until(func(): return gate.progress > 0.4, 6.0)
+	await shot("level0_gate_rising")
+	var opened: bool = await wait_until(func(): return gate.is_open, 2.0)
+	await wait_until(func(): return gate.progress == 0.0, 2.0)
 	await seconds(0.5)
 	bus().joystick_moved.emit(Vector2.ZERO)
-	await seconds(0.3)
 	var through: bool = feet(player).y < gate.doorway_rect().position.y
-	check("level 0: gate opens with the companion on the plate", opened)
-	check("level 0: too short, the player is pushed back", not through and not gate.latched, "player_y=%.0f" % feet(player).y)
+	check("level 0: the gate rises with the companion on the plate", risen)
+	check("level 0: too short, it drops before opening", not opened and not through and not gate.latched, "player_y=%.0f" % feet(player).y)
 	check("level 0: companion says its stay was too short", bubble.current_key.begins_with("COMP_STAY_TOO_SHORT"), bubble.current_key)
 	check("quest: train, with progress", quest.stage == quest.Stage.TRAIN and quest.text().ends_with("0/5"), quest.text())
 	await shot("level0_too_short")

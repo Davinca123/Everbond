@@ -41,7 +41,9 @@ var companion_skills: Dictionary = {
 # A küldési távolság (px): a lény célja legfeljebb ennyire lehet a hős lábától (1. rész)
 const COMPANION_SEND_RANGES: Array[float] = [500.0, 650.0, 800.0, 1000.0, 1200.0]
 # A várakozás ideje (mp) egy koppintott helyen, mielőtt magától visszajön (3. rész)
-const COMPANION_STAY_DURATIONS: Array[float] = [2.0, 3.0, 5.0, 8.0, 12.0]
+# A 0. szint (1 mp) rövidebb, mint a kapu nyílása (1,5 mp): a kapu félig felemelkedik és
+# visszaesik, így senki sem lép be a nyílásba, hogy aztán kitolja a záródó kapu
+const COMPANION_STAY_DURATIONS: Array[float] = [1.0, 3.0, 5.0, 8.0, 12.0]
 # Ennyi sikeres ismétlés kell a következő szinthez (az n. elem: az n. szintről az n+1.-re)
 const COMPANION_TRAINING_GOALS: Dictionary = {
 	"range": [10, 20, 30, 40],

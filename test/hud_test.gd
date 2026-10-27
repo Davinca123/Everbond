@@ -43,7 +43,7 @@ func run() -> void:
 	await create_timer(3.5).timeout
 	var stays_forever: bool = is_inf(comp.stay_duration) and comp.is_away() and stay_toggle.text == "Stay: ∞"
 	stay_toggle.pressed.emit()
-	check("stay_toggle", stays_forever and data.companion_stay_duration_override == 0.0 and data.get_companion_stay_duration() == 2.0
+	check("stay_toggle", stays_forever and data.companion_stay_duration_override == 0.0 and data.get_companion_stay_duration() == 1.0
 			and stay_toggle.text == "Stay: level", "forever=%s duration=%s text=%s" % [stays_forever, comp.stay_duration, stay_toggle.text])
 	root.get_node("SignalBus").companion_recalled.emit()
 

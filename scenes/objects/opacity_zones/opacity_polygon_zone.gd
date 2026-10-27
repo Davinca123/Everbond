@@ -4,6 +4,10 @@ extends Area2D
 @export var additional_layers: Array[Node2D] = []
 @export var target_opacity: float = 0.4
 @export var fade_duration: float = 0.2
+## Szintváltó zóna (alagút/híd): a belépés a karaktert "a föld alá" teszi (z-index és
+## ütközési réteg), és a kapui a lény útvonaltervezésében szintváltó pontok. Kikapcsolva
+## a zóna csak halványít (pl. egy szoba teteje), a hősnek és a lénynek is.
+@export var changes_level: bool = true
 
 # Lokális állapotok a Playernek és a Companionnek
 var player_in: bool = false #player enterer the zone through an EnterZone
@@ -46,7 +50,8 @@ func _ready() -> void:
 	if global_points.size() > MAX_POINTS:
 		push_warning("%s: a ShaderZone-nak %d pontja van, a shader csak az első %d-at használja." % [name, global_points.size(), MAX_POINTS])
 		global_points.resize(MAX_POINTS)
-	find_portals()
+	if changes_level:
+		find_portals()
 
 # Az EnterZone sávok vékony téglalapok: a legrövidebb oldaluk iránya a sávon át mutat,
 # és amerre a ShaderZone van, arra van "bent"
@@ -209,6 +214,8 @@ func get_polygon_node_from_index(shape_index: int) -> Node:
 	
 # --- KARAKTER ÁLLAPOT VÁLTÓ ---
 func set_character_to_underground(character: Node2D, underground: bool) -> void:
+	if not changes_level:
+		return
 	if underground:
 		# VIZUÁLIS VÁLTÁS: Lemegy Z-index 0-ra, hogy a híd (Z-index: 1) eltakarja őt
 		character.z_index = 0
