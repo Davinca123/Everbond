@@ -186,7 +186,8 @@ Each step is its own branch from `dev`, merged back with `--no-ff`, with its own
 - **Closing on someone:** whoever is in the doorway when the gate shuts is pushed back out the way they came. Nobody gets stuck in it, and standing in the doorway doesn't hold it open. (The first plan was for the gate to wait until they were out, but then stepping into the doorway in time would be enough to get through.)
 - **The companion and the plate:** a companion sent onto a plate stands on it and presses it while it waits. When its stay ends, it walks off and the plate goes up.
 - **`chest.tscn`**: an interactable (through `InteractionManager`, type `"chest"`) that opens once, stays open in the map state and emits `opened`. The treats in it come with step 4.
-- **The pen:** `scenes/maps/world/gate_pen.tscn` holds the walls, the gate, the plate and the chest. It's placed in World south-east of the Old Sage, at (1200, 1750).
+- **Looks:** the gate slides up and is gone once fully open (no open-door picture); when it shuts, its picture slides back down over 0.25 s, though it blocks and pushes from the first moment.
+- **The pen:** `scenes/maps/world/gate_pen.tscn` holds the walls, the gate, the plate and the chest. It's a closed room with a flat stone roof (`scenes/objects/stone_roof.gd`) and a lintel above the doorway; the roof fades while the player is inside (`scenes/objects/opacity_zones/roof_zone.gd`, simpler than the tunnel zones, which also switch collision layers). It's placed in World south-east of the Old Sage, at (1200, 1750).
 - Tests (`test/puzzle_test.gd`, headless): the plate and the gate with the player and with the companion; stay level 0 is too short and pushes the player back, level 1 gets through and latches; the chest opens once; the latch and the chest survive a map change; pushing out works both ways.
 
 **4. ✅ `feat/treats`**: the first item.
