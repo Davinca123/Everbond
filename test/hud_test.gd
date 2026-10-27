@@ -1,6 +1,6 @@
 extends SceneTree
 # Teszt a lény jelzőjéhez (scenes/ui/companion_hud.gd), a teszt kapcsolókhoz
-# (scenes/ui/test_toggle_button.gd) és a kezdő falatokhoz.
+# (scenes/ui/test_toggle_button.gd), a kezdő falatokhoz és a lény életerejéhez.
 #
 # Futtatás (a projekt mappájából):
 #   godot --headless --path . -s res://test/hud_test.gd
@@ -63,6 +63,19 @@ func run() -> void:
 		if at.x < screen.x * 0.75 or at.y < screen.y * 0.55: buttons_right = false
 	check("toggles_block_taps_and_buttons_bottom_right", stay_toggle.is_in_group("blocks_taps") and range_toggle.is_in_group("blocks_taps")
 			and buttons_right, "buttons_right=%s" % buttons_right)
+
+	# 6. A lény életereje: a CompanionState-ben, a határok között, és jelez
+	var state = root.get_node("CompanionState")
+	var healths: Array = []
+	root.get_node("SignalBus").companion_health_changed.connect(func(h, m): healths.append([h, m]))
+	var full: bool = state.health == state.MAX_HEALTH
+	state.take_damage(30)
+	var hurt: int = state.health
+	state.take_damage(500)
+	var floored: int = state.health
+	state.heal(1000)
+	check("companion_health", full and hurt == 70 and floored == 0 and state.health == state.MAX_HEALTH
+			and healths == [[70, 100], [0, 100], [100, 100]] and not ui.has_node("HealthBar"), str(healths))
 
 	print("DONE: %d failure(s)" % failures)
 	quit(1 if failures else 0)

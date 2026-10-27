@@ -7,6 +7,7 @@ extends Node
 #
 # mood: -1 (nagyon rosszkedvű) … +1 (nagyon boldog); idővel visszatér a nyugalmi pontjához.
 # bond: a kötődés a hőshöz, 0-tól felfelé.
+# health: az életereje, 0 és MAX_HEALTH között (a harc később jön; 0-nál elájul).
 # Az események (apply_event) a EVENTS táblából változtatják őket.
 
 ## A hangulat nyugalmi pontja (később a természet és a szükségletek állítják)
@@ -26,6 +27,9 @@ const EVENTS: Dictionary = {
 	&"stay_too_short": { "mood": -0.1, "bond": 0.0 },
 }
 
+const MAX_HEALTH: int = 100
+
+var health: int = MAX_HEALTH
 var mood: float = MOOD_REST
 var bond: float = 0.0
 var last_signalled_mood: float = MOOD_REST
@@ -44,6 +48,16 @@ func apply_event(event: StringName) -> void:
 	if bond_change != 0.0:
 		bond = maxf(bond + bond_change, 0.0)
 		SignalBus.companion_bond_changed.emit(bond)
+
+func set_health(value: int) -> void:
+	health = clampi(value, 0, MAX_HEALTH)
+	SignalBus.companion_health_changed.emit(health, MAX_HEALTH)
+
+func take_damage(amount: int) -> void:
+	set_health(health - amount)
+
+func heal(amount: int) -> void:
+	set_health(health + amount)
 
 func set_mood(value: float) -> void:
 	mood = clampf(value, -1.0, 1.0)

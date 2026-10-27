@@ -54,6 +54,8 @@ signal quest_changed(quest: Node)
 # A lény hangulata (-1..1) és kötődése (0-tól) változott (CompanionState)
 signal companion_mood_changed(mood: float)
 signal companion_bond_changed(bond: float)
+# A lény életereje változott (CompanionState)
+signal companion_health_changed(health: int, max_health: int)
 signal companion_obedience_changed(new_level: int)
 signal companion_leveled_up(new_form: String)
 

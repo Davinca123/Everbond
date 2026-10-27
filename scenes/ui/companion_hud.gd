@@ -1,7 +1,7 @@
 extends Control
 
 # A lény jelzője a jobb felső sarokban: egy kör, benne a róka (a lény sprite-ját másolja,
-# így látszik, mit csinál), és a körből balra induló csíkok: hangulat és kötődés
+# így látszik, mit csinál), és a körből balra induló csíkok: életerő, hangulat és kötődés
 # (CompanionState). A tanítás haladása a küldetés feliratán és a felugró feliraton látszik.
 
 const RADIUS: float = 75.0
@@ -23,6 +23,10 @@ const MOOD_LOW_COLOR: Color = Color(0.85, 0.3, 0.25)
 const MOOD_MID_COLOR: Color = Color(0.95, 0.8, 0.3)
 const MOOD_HIGH_COLOR: Color = Color(0.45, 0.85, 0.35)
 const BOND_COLOR: Color = Color(0.95, 0.45, 0.65)
+const HEALTH_COLOR: Color = Color(0.85, 0.2, 0.2)
+const LOW_HEALTH_COLOR: Color = Color(1.0, 0.45, 0.2)
+## Ez alatt (arány) narancsos az életerő csík
+const LOW_HEALTH: float = 0.25
 
 var companion: Node2D
 var fox: Sprite2D
@@ -34,6 +38,7 @@ func _ready() -> void:
 	add_child(fox)
 	SignalBus.companion_mood_changed.connect(queue_redraw.unbind(1))
 	SignalBus.companion_bond_changed.connect(queue_redraw.unbind(1))
+	SignalBus.companion_health_changed.connect(queue_redraw.unbind(2))
 	SignalBus.language_changed.connect(queue_redraw.unbind(1))
 	resized.connect(queue_redraw)
 
@@ -62,7 +67,10 @@ func _draw() -> void:
 	var mood_ratio: float = (CompanionState.mood + 1.0) / 2.0
 	var mood_color: Color = MOOD_LOW_COLOR.lerp(MOOD_MID_COLOR, mood_ratio * 2.0) if mood_ratio < 0.5 \
 			else MOOD_MID_COLOR.lerp(MOOD_HIGH_COLOR, mood_ratio * 2.0 - 1.0)
+	var health_ratio: float = float(CompanionState.health) / CompanionState.MAX_HEALTH
 	var rows: Array = [
+		["%s %d/%d" % [tr("HUD_HEALTH"), CompanionState.health, CompanionState.MAX_HEALTH], health_ratio,
+				LOW_HEALTH_COLOR if health_ratio < LOW_HEALTH else HEALTH_COLOR],
 		[tr("HUD_MOOD"), mood_ratio, mood_color],
 		["%s %.0f" % [tr("HUD_BOND"), CompanionState.bond], minf(CompanionState.bond / BOND_FULL, 1.0), BOND_COLOR],
 	]

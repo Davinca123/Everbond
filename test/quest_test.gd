@@ -1,6 +1,6 @@
 extends SceneTree
 # Teszt az első küldetéshez (scripts/quests/gate_quest.gd), a feliratához
-# (scenes/ui/quest_label.gd) és az életerő csíkhoz (scenes/ui/health_bar.gd).
+# (scenes/ui/quest_label.gd).
 #
 # Futtatás (a projekt mappájából):
 #   godot --headless --path . -s res://test/quest_test.gd
@@ -59,6 +59,10 @@ func run() -> void:
 		if not dialogue.visible: break
 		await press("interact")
 		await create_timer(0.1).timeout
+	await process_frame
+	await process_frame
+	# Hiba volt: az első megjelenéskor a doboz ~2000 px magas lett (a tördelés 0 szélességgel számolt)
+	check("box_fits_text_after_sage", label.size.y < 200.0 and label.size.x == label.WIDTH, "size=%s" % label.size)
 	check("sage_starts_find_gate", quest.stage == quest.Stage.FIND_GATE and label.visible
 			and label.text_label.text == "Find the old gate south-east of the Old Sage." and label.title_label.text == "The old gate",
 			"stage=%d text=%s" % [quest.stage, label.text_label.text])
@@ -96,14 +100,6 @@ func run() -> void:
 	var done_shown: bool = label.visible and label.text_label.text == "Quest completed!"
 	await create_timer(label.DONE_SHOW_TIME + label.FADE_TIME + 0.3).timeout
 	check("passed_completes_and_hides", quest.stage == quest.Stage.DONE and done_shown and not label.visible)
-
-	# 10. Az életerő csík a bal felső sarokban, és a változásra újrarajzol
-	var health = root.get_node("Main/ScreenUI/HealthBar")
-	var rect: Rect2 = health.get_global_rect()
-	data.take_damage(30)
-	check("health_bar_top_left", rect.position.x < 60 and rect.position.y < 60 and rect.size.x > 300 and data.current_health == 70,
-			"rect=%s health=%d" % [rect, data.current_health])
-	data.heal(30)
 
 	print("DONE: %d failure(s)" % failures)
 	quit(1 if failures else 0)

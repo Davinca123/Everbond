@@ -3,6 +3,9 @@ extends PanelContainer
 # A küldetés felirata a képernyő tetején: a címe és a teendő (SignalBus.quest_changed).
 # Teljesítéskor egy ideig még látszik, utána elhalványul.
 
+## A felirat szélessége (px); a szöveg ezen belül tördelődik
+const WIDTH: float = 1000.0
+const MARGIN_X: float = 28.0
 ## Ennyi ideig látszik a "teljesítve" felirat (mp)
 const DONE_SHOW_TIME: float = 4.0
 const FADE_TIME: float = 0.5
@@ -25,7 +28,7 @@ func build() -> void:
 	style.border_color = Color(0.95, 0.85, 0.6)
 	style.set_border_width_all(4)
 	style.set_corner_radius_all(14)
-	style.content_margin_left = 28; style.content_margin_right = 28
+	style.content_margin_left = MARGIN_X; style.content_margin_right = MARGIN_X
 	style.content_margin_top = 12; style.content_margin_bottom = 14
 	add_theme_stylebox_override("panel", style)
 	var box := VBoxContainer.new()
@@ -38,6 +41,9 @@ func build() -> void:
 	text_label.add_theme_color_override("font_color", Color.WHITE)
 	text_label.add_theme_font_size_override("font_size", 36)
 	text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# Rögzített tördelési szélesség: rejtve a címke szélessége még 0, és akkor a tördelt
+	# szöveg magasságát szavanként egy sorral számolná (az első megjelenéskor óriási doboz)
+	text_label.custom_minimum_size.x = WIDTH - 2.0 * MARGIN_X
 	for label in [title_label, text_label]:
 		label.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
