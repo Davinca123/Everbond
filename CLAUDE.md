@@ -10,6 +10,9 @@
   is kept in history. Merges into `main` also use `--no-ff`.
 - Only commit, push, or merge when asked. Pushing a branch and pushing
   `dev`/`main` are separate steps: push `dev`/`main` only on an explicit request.
+- Never push feature branches (`feat/...`, `fix/...`, `docs/...`, `refactor/...`)
+  unless explicitly requested. They stay local; only `dev` (and `main`) go to
+  the remote, after the branch is merged.
 
 ## Session log and working files
 
