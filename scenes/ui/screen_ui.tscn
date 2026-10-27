@@ -16,7 +16,6 @@
 [ext_resource type="Script" path="res://scenes/ui/companion_hud.gd" id="12_hud"]
 [ext_resource type="Script" path="res://scenes/ui/test_toggle_button.gd" id="13_toggle"]
 [ext_resource type="Script" path="res://scenes/ui/quest_label.gd" id="14_quest"]
-[ext_resource type="Script" path="res://scenes/ui/health_bar.gd" id="15_health"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_ao5ua"]
 font_size = 100
@@ -199,13 +198,6 @@ text = "Range: level"
 script = ExtResource("13_toggle")
 setting = 1
 
-[node name="HealthBar" type="Control" parent="."]
-offset_left = 30.0
-offset_top = 30.0
-offset_right = 470.0
-offset_bottom = 64.0
-script = ExtResource("15_health")
-
 [node name="QuestLabel" type="PanelContainer" parent="."]
 anchors_preset = 5
 anchor_left = 0.5
@@ -220,9 +212,9 @@ script = ExtResource("14_quest")
 
 [node name="DebugOverlay" type="Label" parent="."]
 offset_left = 30.0
-offset_top = 90.0
+offset_top = 30.0
 offset_right = 680.0
-offset_bottom = 260.0
+offset_bottom = 200.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 8
