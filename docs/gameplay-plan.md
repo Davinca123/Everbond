@@ -138,7 +138,7 @@ The game is played on a phone first, so the screen must stay simple:
 
 Buttons appear only when they can be used. The keyboard and mouse work too: E, Space or Enter is the interaction button, and a mouse click is a tap.
 
-## 10. First playable slice: the dragon and the gate
+## 10. ✅ First playable slice: the dragon and the gate
 
 A short scene in World that shows the main pillars together: sending and stay, a puzzle with the companion, training with treats, a companion that talks and has a mood and a bond. If this feels cute and alive, the rest of the plans are mostly more of the same; if it doesn't, it shows early and cheaply.
 
@@ -223,13 +223,13 @@ Each step is its own branch from `dev`, merged back with `--no-ff`, with its own
 - The skill tree screen isn't part of the slice.
 - Tests: a full task run raises the level; a treat given too late, or a stay cut short by calling back, doesn't count; the new stay duration is used from the next wait.
 
-**8. Putting it together and playtesting**
+**8. ✅ Putting it together and playtesting**
 - ✅ The Sage's hint line (`NPC_OLD_SAGE_GATE_HINT`); after the dialogue the companion answers with a `sage_hint` line (`companion_reply` on the NPC).
 - ✅ The companion's `stay_too_short` line when the gate closes in front of the player: `gate_pen.gd` checks, when a full stay on the plate ends, whether the gate shut while the player was still near it, and applies the `CompanionState` event. When the player passes and the latch holds, it says a `gate_opened` line and applies `puzzle_solved`. `stay_too_short` skips the chattiness gap: it comes about 3 s after the line said when the companion is sent.
 - ✅ Tuning: the plate-to-gate distance from step 3 holds; level 0 fails and level 1 gets through, in `test/puzzle_test.gd` and in the driver.
 - ✅ A driver script, `.claude/skills/run-game/slice_playthrough.gd`, that plays the whole scene: the Sage, fails at level 0, trains five times, succeeds at level 1, the companion follows, opens the chest.
 - ✅ A quest, "The old gate" (`scripts/quests/gate_quest.gd`, a node in `main.tscn`), with its text at the top of the screen (`scenes/ui/quest_label.gd`): find the gate (after the Sage), send the companion to the plate and go through, train stay with the x/5 progress (after a try where the gate shut too soon), go through the gate (after the level up), completed. It follows `SignalBus.npc_talked` and `puzzle_event` (`found`, `too_short`, `passed` from `gate_pen.gd`). The companion has health too (`CompanionState.health`, 0–100, for the combat later), shown as the first bar of its stats in the top right.
-- A playtest on a phone: is it clear what to do, is the training fun or a chore, does the companion feel alive?
+- ✅ A playtest: is it clear what to do, is the training fun or a chore, does the companion feel alive? Tested and works (2026-10-27); the fixes it led to are listed above (the quest box, the room's roof and walls, the gate at level 0, the send circle). Tagged `gameplay-slice-v1`.
 
 ### Not in the slice
 
@@ -237,7 +237,7 @@ The skill tree screen, practice and mishaps, the nature attributes and needs, pu
 
 ## Order of work
 
-1. The first playable slice, "the dragon and the gate" (section 10).
+1. ✅ The first playable slice, "the dragon and the gate" (section 10).
 2. `feat/combat-basics`: the sword swing, one enemy type, the companion's automatic attack, fainting and waking up.
 3. The first small dungeon: a few rooms, a reset, one new element, a simple boss.
 4. Story and quests through NPC conversations, once the dialogue system has choices (nature plan).
