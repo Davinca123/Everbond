@@ -40,7 +40,8 @@ func text() -> String:
 			return tr("QUEST_GATE_SEND")
 		Stage.TRAIN:
 			var stay: Dictionary = PlayerData.companion_skills.stay
-			return tr("QUEST_GATE_TRAIN") % [stay.progress, PlayerData.get_training_goal("stay")]
+			# A haladás külön sorban
+			return "%s\n%s" % [tr("QUEST_GATE_TRAIN"), tr("QUEST_TRAINING_PROGRESS") % [stay.progress, PlayerData.get_training_goal("stay")]]
 		Stage.ENTER:
 			return tr("QUEST_GATE_ENTER")
 		Stage.DONE:

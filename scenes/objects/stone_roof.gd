@@ -2,7 +2,8 @@ extends Node2D
 
 # Lapos kőtető: kőlapokkal kitöltött téglalap, körben a falak kőkeretével (mint a pálya
 # épületeinek teteje). A bal felső sarka a csomópont helye; a méret pixelben (a pálya léptékében).
-# A RoofZone (opacity_zones/roof_zone.gd) halványítja el, amíg a hős bent van.
+# Az opacity zóna (opacity_zones/opacity_polygon_zone.tscn, changes_level = false) halványítja
+# el, amíg a hős vagy a lény bent van; ehhez az opacity_polygon.gdshader anyag kell rajta.
 
 ## A tető mérete (px)
 @export var size: Vector2 = Vector2(742, 432)

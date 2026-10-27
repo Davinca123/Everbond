@@ -124,7 +124,7 @@ func run() -> void:
 
 	# 6. Az új idő a következő várakozástól érvényes
 	await send_and_return(true)
-	check("new_duration_from_next_wait", durations.all(func(d): return d == 2.0) and comp.stay_duration == 3.0
+	check("new_duration_from_next_wait", durations.all(func(d): return d == 1.0) and comp.stay_duration == 3.0
 			and data.get_training_goal("stay") == 10, "before=%s now=%.1f goal=%d" % [durations, comp.stay_duration, data.get_training_goal("stay")])
 
 	# 7. A legfelső szinten nincs több haladás

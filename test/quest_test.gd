@@ -77,7 +77,7 @@ func run() -> void:
 	bus.puzzle_event.emit(&"old_gate", &"too_short")
 	var train_text: String = label.text_label.text
 	data.add_training_progress("stay")
-	check("too_short_starts_training_with_progress", quest.stage == quest.Stage.TRAIN and train_text.ends_with("Training: 0/5")
+	check("too_short_starts_training_with_progress", quest.stage == quest.Stage.TRAIN and train_text.ends_with(".\nTraining: 0/5")
 			and label.text_label.text.ends_with("Training: 1/5"), "%s | %s" % [train_text, label.text_label.text])
 
 	# 6. Nyelvváltáskor a felirat is vált

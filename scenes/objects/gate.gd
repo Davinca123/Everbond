@@ -16,8 +16,9 @@ signal latched_by_pass
 
 ## A nyomólapok, amelyek nyitják (bármelyik elég)
 @export var plates: Array[NodePath] = []
-## Ennyi idő alatt nyílik ki teljesen (mp)
-@export var open_time: float = 1.5
+## Ennyi idő alatt nyílik ki teljesen (mp). Hosszabb, mint amennyit a lény a 0. szinten
+## (1 mp várakozás + rá- és lelépés) a lapon áll, így akkor a kapu nem nyílik ki.
+@export var open_time: float = 2.0
 ## Ennyi idő alatt csúszik vissza a kép záráskor (mp)
 @export var close_time: float = 0.25
 ## Ha a hős átment rajta, nyitva marad

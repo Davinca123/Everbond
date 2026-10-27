@@ -87,27 +87,36 @@ func run() -> void:
 			"snapped=%s pressed=%s held=%s released=%s state=%d" % [snapped, pressed_by_companion, held_while_waiting, released, comp.current_state])
 	await wait_until(func(): return not comp.is_away(), 4.0)
 
-	# 3. Időzítés: a hős a kapu előtt vár, és amint kinyílik, nekiindul. 2 mp várakozással
-	# (0. szint) nem jut át, a kapu kitolja; 3 mp-vel (1. szint) átjut, és a retesz nyitva tartja.
+	# 3. Időzítés: a hős végig a kapunak nyomul. 0. szinten (1 mp) a kapu félig felemelkedik és
+	# visszaesik: nem nyílik ki, a hős be sem lép a nyílásba (nem is tolja ki); 1. szinten (3 mp)
+	# kinyílik, a hős átjut, és a retesz nyitva tartja.
 	var through: Dictionary = {}
-	for stay in [2.0, 3.0]:
+	for level in [0, 1]:
 		await put_player(gate_front)
 		await reset_companion()
-		root.get_node("PlayerData").companion_skills.stay.level = 0 if stay == 2.0 else 1
+		root.get_node("PlayerData").companion_skills.stay.level = level
 		comp.send_to_position(plate.center())
-		await wait_until(func(): return gate.is_open, 6.0)
 		bus().joystick_moved.emit(Vector2.UP)
-		await wait_until(func(): return not gate.is_open or gate.latched, 4.0)
+		var peak: float = 0.0
+		var ever_open: bool = false
+		var entered_doorway: bool = false
+		var t: float = 0.0
+		while t < 7.0 and not gate.latched and not (level == 0 and t > 1.0 and not comp.is_away()):
+			await physics_frame
+			t += 1.0 / Engine.physics_ticks_per_second
+			peak = maxf(peak, gate.progress)
+			ever_open = ever_open or gate.is_open
+			entered_doorway = entered_doorway or gate.doorway.get_overlapping_bodies().has(player)
 		await seconds(0.5)
 		bus().joystick_moved.emit(Vector2.ZERO)
-		through[stay] = player.global_position.y < gate.doorway_rect().position.y
-		if stay == 2.0:
-			var pushed_back: bool = player.global_position.y > gate.doorway_rect().end.y and not gate.is_open and not gate.latched
-			check("stay_level_0_too_short", not through[stay] and pushed_back,
-					"through=%s player_y=%.0f doorway=%s" % [through[stay], player.global_position.y, gate.doorway_rect()])
+		through[level] = player.global_position.y < gate.doorway_rect().position.y
+		if level == 0:
+			check("stay_level_0_gate_rises_and_drops", not ever_open and peak > 0.4 and peak < 1.0 and not through[0]
+					and not entered_doorway and gate.progress == 0.0,
+					"open=%s peak=%.2f through=%s in_doorway=%s" % [ever_open, peak, through[0], entered_doorway])
 		await wait_until(func(): return not comp.is_away(), 8.0)
-	check("stay_level_1_gets_through_and_latches", through[3.0] and gate.latched and gate.is_open and gate.collision_shape.disabled,
-			"through=%s latched=%s open=%s" % [through[3.0], gate.latched, gate.is_open])
+	check("stay_level_1_gets_through_and_latches", through[1] and gate.latched and gate.is_open and gate.collision_shape.disabled,
+			"through=%s latched=%s open=%s" % [through[1], gate.latched, gate.is_open])
 
 	# 4. A ládát a hős egyszer nyithatja ki
 	var opened_signals: Array[int] = [0]
@@ -174,19 +183,59 @@ func run() -> void:
 			and gate.sprite.region_rect == gate.CLOSED_REGION and not gate.collision_shape.disabled,
 			"hidden=%s closing=%s shown=%.2f" % [hidden_when_open, closing_visible, gate.shown_progress])
 
-	# A tető: kintről látszik, bent elhalványul, kilépve visszaáll
-	var roof: CanvasItem = pen.get_node("Roof")
-	await put_player(gate.global_position + Vector2(0, 150))
-	await seconds(0.4)
-	var outside_alpha: float = roof.modulate.a
+	# A tető (opacity zóna, changes_level = false): kintről látszik, a kapun besétálva elhalványul,
+	# kisétálva visszaáll; a hős ütközési rétege és z-indexe közben nem változik
+	var zone: Area2D = pen.get_node("RoofOpacityZone")
 	gate.latch()
-	await put_player(gate.global_position + Vector2(0, -350))
+	await put_player(gate.global_position + Vector2(0, 60))
+	await reset_companion()
+	# A korábbi esetek teleportálták a hőst a szobába és ki, ami kihagyhatja a zóna belépő
+	# sávjának jeleit (játék közben csak pályaváltáskor van teleport, akkor a zóna is újraépül)
+	zone.player_in = false; zone.companion_in = false
+	zone.player_in_shader_zone = false; zone.companion_in_shader_zone = false
+	zone.update_zone_state()
 	await seconds(0.4)
-	var inside_alpha: float = roof.modulate.a
-	await put_player(gate.global_position + Vector2(0, 150))
+	var outside_opacity: float = zone.current_opacity
+	bus().joystick_moved.emit(Vector2.UP)
+	await seconds(1.5)
+	bus().joystick_moved.emit(Vector2.ZERO)
 	await seconds(0.4)
-	check("roof_fades_inside", outside_alpha == 1.0 and inside_alpha < 0.3 and roof.modulate.a == 1.0,
-			"outside=%.2f inside=%.2f after=%.2f" % [outside_alpha, inside_alpha, roof.modulate.a])
+	var inside_opacity: float = zone.current_opacity
+	var same_level: bool = player.z_index == 1 and player.get_collision_mask_value(1) and not player.get_collision_mask_value(2)
+	bus().joystick_moved.emit(Vector2.DOWN)
+	await seconds(1.8)
+	bus().joystick_moved.emit(Vector2.ZERO)
+	await seconds(0.4)
+	check("roof_fades_inside", outside_opacity == 1.0 and inside_opacity < 0.3 and zone.current_opacity == 1.0 and same_level
+			and zone.portals.is_empty(), "outside=%.2f inside=%.2f after=%.2f same_level=%s" % [outside_opacity, inside_opacity, zone.current_opacity, same_level])
+
+	# A lény egyedül is elhalványítja a tetőt, ha besétál (a hős kint marad)
+	await put_player(gate.global_position + Vector2(0, 120))
+	await reset_companion()
+	root.get_node("PlayerData").companion_stay_duration_override = 30.0
+	comp.go_to_position(gate.global_position + Vector2(0, -330))
+	await wait_until(func(): return comp.current_state == comp.State.IDLE, 6.0)
+	await seconds(0.4)
+	var companion_alone: float = zone.current_opacity
+	bus().companion_recalled.emit()
+	await wait_until(func(): return not comp.is_away(), 6.0)
+	await seconds(0.4)
+	root.get_node("PlayerData").companion_stay_duration_override = 0.0
+	check("companion_fades_roof_too", companion_alone < 0.3 and zone.current_opacity == 1.0,
+			"alone=%.2f after=%.2f" % [companion_alone, zone.current_opacity])
+
+	# A szoba két első sarkánál nem lehet kimenni a falon át (ott rés volt a falak ütközői között)
+	var leaks: Array[String] = []
+	for side in [-1, 1]:
+		await put_player(pen.global_position + Vector2(side * 290, -250))
+		bus().joystick_moved.emit(Vector2(side, 0))
+		await seconds(1.0)
+		bus().joystick_moved.emit(Vector2.ZERO)
+		await frames(3)
+		var x: float = player.get_node("CollisionShape2D").global_position.x - pen.global_position.x
+		if absf(x) > 330.0:
+			leaks.append("%s x=%.0f" % ["left" if side < 0 else "right", x])
+	check("no_gaps_in_the_room_corners", leaks.is_empty(), str(leaks))
 
 	print("DONE: %d failure(s)" % failures)
 	quit(1 if failures else 0)
