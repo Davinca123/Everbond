@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://dwudlhw4kt30x" path="res://scenes/ui/screen_ui.tscn" id="4_ui"]
 [ext_resource type="Script" path="res://scripts/training/stay_training.gd" id="5_stay"]
 [ext_resource type="Script" path="res://scripts/quests/gate_quest.gd" id="6_quest"]
+[ext_resource type="Script" path="res://scenes/player/send_range_circle.gd" id="7_range"]
 
 [node name="Main" type="Node" unique_id=418458649]
 script = ExtResource("1_main")
@@ -15,6 +16,10 @@ script = ExtResource("1_main")
 [node name="Player" parent="." unique_id=23632583 instance=ExtResource("2_player")]
 z_index = 1
 collision_layer = 4
+
+[node name="SendRangeCircle" type="Node2D" parent="Player"]
+z_index = -1
+script = ExtResource("7_range")
 
 [node name="Companion" parent="." unique_id=1584405563 instance=ExtResource("3_companion")]
 z_index = 1

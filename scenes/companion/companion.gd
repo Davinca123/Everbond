@@ -81,8 +81,7 @@ enum State { FOLLOW, GO_TO_TARGET, IDLE }
 var current_state : State = State.FOLLOW
 
 # Változók a kattintásos mozgáshoz
-# tap_target: a koppintott pont; click_target_pos: az aktuális cél, a küldési távolságon belül
-var tap_target: Vector2 = Vector2.ZERO
+# click_target_pos: a cél (a koppintott pont a küldési távolságon belül); a hős mozgása nem tolja el
 var click_target_pos : Vector2 = Vector2.ZERO
 var wait_timer: float = 0.0
 var stay_bar_shown: bool = false
@@ -222,8 +221,18 @@ func return_to_player() -> void:
 func is_player_out_of_range() -> bool:
 	return feet.global_position.distance_to(player_feet.global_position) > PlayerData.get_companion_send_range() + SEND_RANGE_TOLERANCE
 
+# A cél a küldési távolságon túlra került (a hős elment): a lény feladja és visszajön
+func is_target_out_of_range() -> bool:
+	return click_target_pos.distance_to(player_feet.global_position) > PlayerData.get_companion_send_range() + SEND_RANGE_TOLERANCE
+
 # 2. LOGIKA: Séta a kattintott pontra
 func handle_goto_logic(delta: float):
+	# A cél ott marad, ahová koppintottak; ha a hős közben úgy elment, hogy a cél kívül
+	# esik a küldési körén, azonnal visszafordul
+	if is_target_out_of_range():
+		return_to_player()
+		return
+
 	# Ha a cél felé vezető legrövidebb út más szinten át visz (pl. az alagúton),
 	# előbb sorban átmegyünk a kapukon
 	if not goto_crossings.is_empty():
@@ -239,14 +248,6 @@ func handle_goto_logic(delta: float):
 			arrive()
 		return
 
-	# Újratervezéskor a cél követi a hőst, hogy a küldési távolságon belül maradjon.
-	# Ha a cél arrébb került, az elakadásfigyelés elölről kezdi (nem a lény akadt el).
-	if repath_timer <= 0.0:
-		var destination: Vector2 = get_reachable_point(clamp_to_send_range(tap_target))
-		if destination.distance_to(click_target_pos) > GOTO_PROGRESS_DISTANCE:
-			goto_best_distance = INF
-			goto_stuck_timer = 0.0
-		click_target_pos = destination
 	update_path(click_target_pos)
 
 	# Ha nem jutunk előre (pl. a cél fal mögött van, és nincs navigációs háló), feladjuk.
@@ -315,9 +316,10 @@ func is_away() -> bool:
 
 # Koppintásra (main.gd): egyszerre csak egy küldés. Amíg kint van, a koppintást nem
 # fogadja el, csak megrázza a fejét, hogy a játékos lássa, hogy hallotta.
-# Igazat ad, ha elindult.
+# Végtelen várakozásnál (teszt kapcsoló) a küldés is korlátlan: egy új koppintás
+# azonnal az új pontra irányítja. Igazat ad, ha elindult.
 func send_to_position(target_pos: Vector2) -> bool:
-	if is_away():
+	if is_away() and not is_inf(PlayerData.get_companion_stay_duration()):
 		shake_head()
 		SignalBus.companion_tap_ignored.emit()
 		return false
@@ -340,7 +342,6 @@ func go_to_position(target_pos: Vector2) -> void:
 	goto_stuck_timer = 0.0
 	goto_best_distance = INF
 	repath_timer = 0.0 # Azonnal új utat számolunk az új célhoz
-	tap_target = target_pos
 	var in_range_target: Vector2 = clamp_to_send_range(target_pos)
 	goto_crossings = plan_crossings(in_range_target)
 	# Falra/akadályra koppintva a legközelebbi elérhető pont lesz a cél (a jelölő is oda kerül)
