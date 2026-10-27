@@ -2,7 +2,8 @@ extends SceneTree
 # Plays the first playable slice, "the dragon and the gate" (docs/gameplay-plan.md, section 10),
 # the way a player would: talk to the Old Sage, try the gate with the companion on the plate
 # at stay level 0 (too short), train stay five times with treats, get through at level 1,
-# and open the chest. Screenshots go to $OUT. Exit code 0 = every check passed.
+# and open the chest. The quest label follows each step.
+# Screenshots go to $OUT. Exit code 0 = every check passed.
 #
 #   OUT=.claude/tmp/screenshots/slice timeout 300 xvfb-run -a -s "-screen 0 1280x720x24" \
 #     "$G" --path . --rendering-method gl_compatibility --rendering-driver opengl3 \
@@ -12,7 +13,7 @@ var out := OS.get_environment("OUT")
 var checks := 0
 var failed := 0
 var shot_n := 0
-var map; var player; var comp; var bubble; var npc; var pen; var gate; var plate; var chest
+var quest; var map; var player; var comp; var bubble; var npc; var pen; var gate; var plate; var chest
 var returned := false
 
 func _initialize() -> void:
@@ -77,6 +78,7 @@ func run() -> void:
 	npc = map.get_node("YSort_Entities/Npc")
 	pen = map.get_node("YSort_Entities/GatePen")
 	gate = pen.get_node("Gate"); plate = pen.get_node("PressurePlate"); chest = pen.get_node("Chest")
+	quest = root.get_node("Main/GateQuest")
 	root.get_node("Settings").set_language("en", false)
 	bus().companion_returned.connect(func(): returned = true)
 	var treats_at_start: int = data().treats
@@ -96,6 +98,7 @@ func run() -> void:
 		await seconds(0.15)
 	await seconds(0.2)
 	check("sage tells about the gate", "NPC_OLD_SAGE_GATE_HINT" in lines_seen and not dialogue.visible, str(lines_seen))
+	check("quest: find the gate", quest.stage == quest.Stage.FIND_GATE, quest.text())
 	check("companion answers the sage", bubble.visible and bubble.current_key.begins_with("COMP_SAGE_HINT"), bubble.current_key)
 	await shot("companion_answers")
 
@@ -103,6 +106,7 @@ func run() -> void:
 	#    the player runs for it, and it shuts in front of them
 	var gate_front: Vector2 = gate.global_position + Vector2(0, 40)
 	await put_player(gate_front)
+	check("quest: send the companion to the plate", quest.stage == quest.Stage.SEND_TO_PLATE, quest.text())
 	bubble.last_line_time = -INF
 	tap_world(plate.center())
 	var opened: bool = await wait_until(func(): return gate.is_open, 6.0)
@@ -116,6 +120,7 @@ func run() -> void:
 	check("level 0: gate opens with the companion on the plate", opened)
 	check("level 0: too short, the player is pushed back", not through and not gate.latched, "player_y=%.0f" % feet(player).y)
 	check("level 0: companion says its stay was too short", bubble.current_key.begins_with("COMP_STAY_TOO_SHORT"), bubble.current_key)
+	check("quest: train, with progress", quest.stage == quest.Stage.TRAIN and quest.text().ends_with("0/5"), quest.text())
 	await shot("level0_too_short")
 	await wait_until(func(): return not comp.is_away(), 6.0)
 
@@ -135,6 +140,7 @@ func run() -> void:
 	var stay: Dictionary = data().companion_skills.stay
 	check("five trainings raise stay to level 1", stay.level == 1 and data().get_companion_stay_duration() == 3.0, str(stay))
 	check("companion celebrates the level up", bubble.current_key.begins_with("COMP_SKILL_LEVEL_UP"), bubble.current_key)
+	check("quest: enter the gate", quest.stage == quest.Stage.ENTER, quest.text())
 	await shot("level_up")
 	await seconds(2.0)
 
@@ -150,6 +156,7 @@ func run() -> void:
 	through = feet(player).y < gate.doorway_rect().position.y
 	check("level 1: the player gets through and the gate latches", through and gate.latched and gate.is_open, "player_y=%.0f" % feet(player).y)
 	check("level 1: companion cheers the open gate", bubble.current_key.begins_with("COMP_GATE_OPENED"), bubble.current_key)
+	check("quest: completed", quest.stage == quest.Stage.DONE, quest.text())
 	await shot("level1_through")
 	var followed: bool = await wait_until(func(): return not comp.is_away() and feet(comp).y < gate.doorway_rect().position.y, 10.0)
 	check("companion follows through the latched gate", followed, "comp_y=%.0f" % feet(comp).y)

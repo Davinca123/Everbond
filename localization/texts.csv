@@ -47,3 +47,10 @@ UI_TRAINING_PROGRESS,%s training %d/%d,%s tanítás: %d/%d
 UI_SKILL_LEVEL_UP,%s: level %d!,%s: %d. szint!
 HUD_MOOD,Mood,Kedv
 HUD_BOND,Bond,Kötődés
+HUD_HEALTH,Health,Életerő
+QUEST_GATE_TITLE,The old gate,A régi kapu
+QUEST_GATE_FIND,Find the old gate south-east of the Old Sage.,Keresd meg a régi kaput az Öreg Bölcstől délkeletre.
+QUEST_GATE_SEND,"Send your companion onto the stone plate, then go through the gate while it's open.","Küldd a társadat a kőlapra, és menj át a kapun, amíg nyitva van."
+QUEST_GATE_TRAIN,"The gate shuts too soon. Train your companion to stay longer: send it somewhere, wait until it comes back by itself, then give it a treat. Training: %d/%d","Túl hamar bezárul a kapu. Tanítsd a társadat tovább maradni: küldd el valahová, várd meg, amíg magától visszajön, aztán adj neki egy falatot. Tanítás: %d/%d"
+QUEST_GATE_ENTER,Your companion can stay longer now. Go through the gate!,A társad most már tovább bírja. Menj át a kapun!
+QUEST_COMPLETED,Quest completed!,Küldetés teljesítve!

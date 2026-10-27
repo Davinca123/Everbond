@@ -1,8 +1,8 @@
 extends Control
 
 # A lény jelzője a jobb felső sarokban: egy kör, benne a róka (a lény sprite-ját másolja,
-# így látszik, mit csinál), és a körből balra induló csíkok: hangulat, kötődés és a
-# "maradj" tanítás haladása (CompanionState, PlayerData.companion_skills).
+# így látszik, mit csinál), és a körből balra induló csíkok: hangulat és kötődés
+# (CompanionState). A tanítás haladása a küldetés feliratán és a felugró feliraton látszik.
 
 const RADIUS: float = 75.0
 const RING_WIDTH: float = 6.0
@@ -23,7 +23,6 @@ const MOOD_LOW_COLOR: Color = Color(0.85, 0.3, 0.25)
 const MOOD_MID_COLOR: Color = Color(0.95, 0.8, 0.3)
 const MOOD_HIGH_COLOR: Color = Color(0.45, 0.85, 0.35)
 const BOND_COLOR: Color = Color(0.95, 0.45, 0.65)
-const STAY_COLOR: Color = Color(0.45, 0.7, 1.0)
 
 var companion: Node2D
 var fox: Sprite2D
@@ -35,7 +34,6 @@ func _ready() -> void:
 	add_child(fox)
 	SignalBus.companion_mood_changed.connect(queue_redraw.unbind(1))
 	SignalBus.companion_bond_changed.connect(queue_redraw.unbind(1))
-	SignalBus.companion_skill_changed.connect(queue_redraw.unbind(3))
 	SignalBus.language_changed.connect(queue_redraw.unbind(1))
 	resized.connect(queue_redraw)
 
@@ -61,16 +59,12 @@ func _process(_delta: float) -> void:
 
 func _draw() -> void:
 	var center := circle_center()
-	var stay: Dictionary = PlayerData.companion_skills.stay
-	var goal: int = PlayerData.get_training_goal("stay")
 	var mood_ratio: float = (CompanionState.mood + 1.0) / 2.0
 	var mood_color: Color = MOOD_LOW_COLOR.lerp(MOOD_MID_COLOR, mood_ratio * 2.0) if mood_ratio < 0.5 \
 			else MOOD_MID_COLOR.lerp(MOOD_HIGH_COLOR, mood_ratio * 2.0 - 1.0)
-	var stay_text: String = "%s %d" % [tr("SKILL_STAY"), stay.level] + (" · %d/%d" % [stay.progress, goal] if goal > 0 else "")
 	var rows: Array = [
 		[tr("HUD_MOOD"), mood_ratio, mood_color],
 		["%s %.0f" % [tr("HUD_BOND"), CompanionState.bond], minf(CompanionState.bond / BOND_FULL, 1.0), BOND_COLOR],
-		[stay_text, float(stay.progress) / goal if goal > 0 else 1.0, STAY_COLOR],
 	]
 	# A csíkok a kör szélétől indulnak balra, a kör alá bújva; a kitöltés is a körtől indul.
 	# A bal végük egy vonalban van.

@@ -15,6 +15,8 @@
 [ext_resource type="Script" path="res://scenes/ui/training_toast.gd" id="11_toast"]
 [ext_resource type="Script" path="res://scenes/ui/companion_hud.gd" id="12_hud"]
 [ext_resource type="Script" path="res://scenes/ui/test_toggle_button.gd" id="13_toggle"]
+[ext_resource type="Script" path="res://scenes/ui/quest_label.gd" id="14_quest"]
+[ext_resource type="Script" path="res://scenes/ui/health_bar.gd" id="15_health"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_ao5ua"]
 font_size = 100
@@ -197,11 +199,30 @@ text = "Range: level"
 script = ExtResource("13_toggle")
 setting = 1
 
-[node name="DebugOverlay" type="Label" parent="."]
+[node name="HealthBar" type="Control" parent="."]
 offset_left = 30.0
 offset_top = 30.0
-offset_right = 900.0
-offset_bottom = 200.0
+offset_right = 470.0
+offset_bottom = 64.0
+script = ExtResource("15_health")
+
+[node name="QuestLabel" type="PanelContainer" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -500.0
+offset_top = 20.0
+offset_right = 500.0
+offset_bottom = 120.0
+grow_horizontal = 2
+custom_minimum_size = Vector2(1000, 0)
+script = ExtResource("14_quest")
+
+[node name="DebugOverlay" type="Label" parent="."]
+offset_left = 30.0
+offset_top = 90.0
+offset_right = 680.0
+offset_bottom = 260.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 8
@@ -211,8 +232,8 @@ script = ExtResource("10_debug")
 [node name="TrainingToast" type="Label" parent="."]
 anchors_preset = 10
 anchor_right = 1.0
-offset_top = 40.0
-offset_bottom = 120.0
+offset_top = 250.0
+offset_bottom = 330.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(1, 0.95, 0.7, 1)
 theme_override_colors/font_outline_color = Color(0.2, 0.12, 0.02, 1)
