@@ -225,12 +225,21 @@ func is_player_out_of_range() -> bool:
 func is_target_out_of_range() -> bool:
 	return click_target_pos.distance_to(player_feet.global_position) > PlayerData.get_companion_send_range() + SEND_RANGE_TOLERANCE
 
+# A lény (a lába) a hős küldési körén kívül van
+func is_outside_send_range() -> bool:
+	return feet.global_position.distance_to(player_feet.global_position) > PlayerData.get_companion_send_range()
+
 # 2. LOGIKA: Séta a kattintott pontra
 func handle_goto_logic(delta: float):
 	# A cél ott marad, ahová koppintottak; ha a hős közben úgy elment, hogy a cél kívül
 	# esik a küldési körén, azonnal visszafordul
 	if is_target_out_of_range():
 		return_to_player()
+		return
+	# A lény maga sem léphet ki a körből: ha az út kivezetne belőle (pl. egy lépcsőn át egy
+	# körön belüli pontra), a kör szélén megáll, és ott vár
+	if is_outside_send_range():
+		arrive()
 		return
 
 	# Ha a cél felé vezető legrövidebb út más szinten át visz (pl. az alagúton),

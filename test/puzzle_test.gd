@@ -237,5 +237,33 @@ func run() -> void:
 			leaks.append("%s x=%.0f" % ["left" if side < 0 else "right", x])
 	check("no_gaps_in_the_room_corners", leaks.is_empty(), str(leaks))
 
+	# A lény nem léphet ki a hős köréből akkor sem, ha a cél a körön belül van, de az út kivezetne
+	# (mint a lépcsőn át egy fenti pontra): a kör szélén megáll. Itt a cél a szobában van, egyenesen
+	# a körön belül, de csak a kapun át vezet út, ami a körön kívül esik.
+	gate.latch()
+	await put_player(pen.global_position + Vector2(-300, 60))
+	await reset_companion()
+	var test_range: float = 320.0
+	root.get_node("PlayerData").companion_send_range_override = test_range
+	var inside_target: Vector2 = pen.global_position + Vector2(-300, -250)
+	var pfeet: Vector2 = player.get_node("CollisionShape2D").global_position
+	var cfeet_node: Node2D = comp.get_node("CollisionShape2D")
+	var target_in_range: bool = inside_target.distance_to(pfeet) < test_range
+	comp.send_to_position(inside_target)
+	var farthest: float = 0.0
+	var t2: float = 0.0
+	while comp.current_state == comp.State.GO_TO_TARGET and t2 < 8.0:
+		await physics_frame
+		t2 += 1.0 / Engine.physics_ticks_per_second
+		farthest = maxf(farthest, cfeet_node.global_position.distance_to(pfeet))
+	var stopped_at: Vector2 = cfeet_node.global_position
+	var waiting: bool = comp.current_state == comp.State.IDLE
+	root.get_node("PlayerData").companion_send_range_override = 0.0
+	bus().companion_recalled.emit()
+	await wait_until(func(): return not comp.is_away(), 8.0)
+	check("companion_stays_inside_the_circle", target_in_range and waiting and farthest <= test_range + 5.0
+			and stopped_at.distance_to(inside_target) > 100.0,
+			"target_in_range=%s waiting=%s farthest=%.0f range=%.0f stopped=%s" % [target_in_range, waiting, farthest, test_range, (stopped_at - pen.global_position).round()])
+
 	print("DONE: %d failure(s)" % failures)
 	quit(1 if failures else 0)
