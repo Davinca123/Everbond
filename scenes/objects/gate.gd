@@ -1,8 +1,10 @@
 extends StaticBody2D
 
 # Kapu: nyitva van, amíg a hozzá kötött nyomólapok közül valamelyik le van nyomva.
-# Lassan nyílik (open_time alatt csúszik fel), és azonnal zárul, ha a lapot elengedik:
-# így a lény várakozási ideje dönti el, hogy a hős átjut-e (docs/gameplay-plan.md, 10. rész).
+# Lassan nyílik (open_time alatt csúszik fel, és nyitva eltűnik a falban), és azonnal
+# zárul, ha a lapot elengedik: így a lény várakozási ideje dönti el, hogy a hős átjut-e
+# (docs/gameplay-plan.md, 10. rész). Záráskor a kép close_time alatt csúszik vissza, de a
+# kapu már az elengedés pillanatában zárva van (ütközik, kitol).
 # Aki záráskor a kapu alatt áll, azt a kapu kitolja arra, amerről jött, így senki sem
 # ragad bele, de átjutni sem lehet úgy, hogy valaki benne áll.
 # latch_on_pass: ha a hős átment a nyitott kapun, a túloldali retesz nyitva tartja, végleg
@@ -16,12 +18,13 @@ signal latched_by_pass
 @export var plates: Array[NodePath] = []
 ## Ennyi idő alatt nyílik ki teljesen (mp)
 @export var open_time: float = 1.5
+## Ennyi idő alatt csúszik vissza a kép záráskor (mp)
+@export var close_time: float = 0.25
 ## Ha a hős átment rajta, nyitva marad
 @export var latch_on_pass: bool = false
 
-# A kapu képe a textúrán (az ajtóé): zárt és nyitott állapot
+# A kapu képe a textúrán (az ajtóé, zárva)
 const CLOSED_REGION: Rect2 = Rect2(29, 90, 37, 64)
-const OPEN_REGION: Rect2 = Rect2(29, 154, 37, 64)
 # Kitoláskor ennyivel kerül a test a kapunyíláson kívülre (px)
 const PUSH_MARGIN: float = 4.0
 
@@ -32,6 +35,8 @@ const PUSH_MARGIN: float = 4.0
 
 # 0 = zárva, 1 = teljesen nyitva (csak ekkor lehet átmenni)
 var progress: float = 0.0
+# Amennyire a kép nyitva látszik: nyitáskor a progress, záráskor lassan követi
+var shown_progress: float = 0.0
 var is_open: bool = false
 var latched: bool = false
 var linked_plates: Array[Node] = []
@@ -64,11 +69,13 @@ func _physics_process(delta: float) -> void:
 			progress = minf(progress + delta / open_time, 1.0)
 			if progress >= 1.0:
 				set_open(true)
-			update_sprite()
 	elif progress > 0.0:
 		progress = 0.0
 		if is_open:
 			set_open(false)
+	# A kép nyitáskor a kapuval együtt megy, záráskor close_time alatt csúszik vissza
+	if shown_progress != progress:
+		shown_progress = progress if progress > shown_progress else move_toward(shown_progress, progress, delta / close_time)
 		update_sprite()
 
 func set_open(open: bool) -> void:
@@ -83,17 +90,17 @@ func set_open(open: bool) -> void:
 func latch() -> void:
 	latched = true
 	progress = 1.0
+	shown_progress = 1.0
 	if not is_open:
 		set_open(true)
 	update_sprite()
 
-# Felcsúszó kapu: az alja emelkedik, a teteje a helyén marad
+# Felcsúszó kapu: az alja emelkedik, a teteje a helyén marad; teljesen nyitva nem látszik
 func update_sprite() -> void:
-	if is_open or latched:
-		sprite.region_rect = OPEN_REGION
-	else:
-		sprite.region_rect = Rect2(CLOSED_REGION.position + Vector2(0, CLOSED_REGION.size.y * progress),
-				Vector2(CLOSED_REGION.size.x, CLOSED_REGION.size.y * (1.0 - progress)))
+	sprite.visible = shown_progress < 1.0
+	if sprite.visible:
+		sprite.region_rect = Rect2(CLOSED_REGION.position + Vector2(0, CLOSED_REGION.size.y * shown_progress),
+				Vector2(CLOSED_REGION.size.x, CLOSED_REGION.size.y * (1.0 - shown_progress)))
 
 # --- KAPUNYÍLÁS ---
 

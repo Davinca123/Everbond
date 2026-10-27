@@ -158,5 +158,35 @@ func run() -> void:
 	check("pushed_back_the_way_they_came", in_doorway and not gate.is_open and player.global_position.y < gate.doorway_rect().position.y + 1.0,
 			"in_doorway=%s open=%s player_y=%.0f doorway_top=%.0f" % [in_doorway, gate.is_open, player.global_position.y, gate.doorway_rect().position.y])
 
+	# A kapu képe: teljesen nyitva nem látszik, záráskor close_time alatt csúszik vissza
+	gate.latched = false
+	gate.progress = 1.0
+	gate.shown_progress = 1.0
+	gate.set_open(true)
+	gate.update_sprite()
+	var hidden_when_open: bool = not gate.sprite.visible
+	gate.progress = 0.0
+	gate.set_open(false)
+	await frames(3)
+	var closing_visible: bool = gate.sprite.visible and gate.shown_progress > 0.0 and gate.shown_progress < 1.0
+	await seconds(gate.close_time + 0.1)
+	check("gate_hides_when_open_and_slides_shut", hidden_when_open and closing_visible and gate.shown_progress == 0.0
+			and gate.sprite.region_rect == gate.CLOSED_REGION and not gate.collision_shape.disabled,
+			"hidden=%s closing=%s shown=%.2f" % [hidden_when_open, closing_visible, gate.shown_progress])
+
+	# A tető: kintről látszik, bent elhalványul, kilépve visszaáll
+	var roof: CanvasItem = pen.get_node("Roof")
+	await put_player(gate.global_position + Vector2(0, 150))
+	await seconds(0.4)
+	var outside_alpha: float = roof.modulate.a
+	gate.latch()
+	await put_player(gate.global_position + Vector2(0, -350))
+	await seconds(0.4)
+	var inside_alpha: float = roof.modulate.a
+	await put_player(gate.global_position + Vector2(0, 150))
+	await seconds(0.4)
+	check("roof_fades_inside", outside_alpha == 1.0 and inside_alpha < 0.3 and roof.modulate.a == 1.0,
+			"outside=%.2f inside=%.2f after=%.2f" % [outside_alpha, inside_alpha, roof.modulate.a])
+
 	print("DONE: %d failure(s)" % failures)
 	quit(1 if failures else 0)
