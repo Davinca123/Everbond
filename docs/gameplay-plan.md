@@ -164,6 +164,7 @@ Each step is its own branch from `dev`, merged back with `--no-ff`, with its own
 **1. ✅ `feat/companion-send-range`**: the send range from the training plan (section 1).
 - The destination is clamped to the range around the player (placeholder 500 px) when tapped, and then stays where it is. If the player walks off so far that it falls outside the range (plus a 40 px tolerance), the companion turns back at once. (At first the destination followed the player; it was changed so the spot stays exactly where it was tapped.)
 - A faint circle around the player's feet shows the range (`scenes/player/send_range_circle.gd`).
+- The companion itself never leaves the circle either: if its route would lead outside (e.g. up a staircase to a spot that is inside the circle in a straight line), it stops at the edge and waits there.
 - During the wait, the companion gives up and comes back if the player goes out of range (plus a 40 px tolerance).
 - The range comes from `PlayerData.get_companion_send_range()`, range level 0 for now. Tests that check path finding to far spots set `PlayerData.companion_send_range_override`.
 - Tests in `test/tap_test.gd`: tap inside and beyond the range, the player moving while the companion walks, the player leaving the range during the wait (the cases listed in the training plan, section 11).
