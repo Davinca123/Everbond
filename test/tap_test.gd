@@ -315,24 +315,58 @@ func run_send_range() -> void:
 	await wait_until_idle(6.0)
 	await wait_until_following()
 
-	# 13. A hős mozog, amíg a lény megy: a cél vele mozog, a távolságon belül marad, és ha
-	# a hős visszamegy, a cél visszaáll a koppintott pontra
+	# 13. A hős mozog, amíg a lény megy: a cél ott marad, ahová koppintottak
+	await settle()
+	target = pfeet.global_position + Vector2(300, 0)
+	await tap(to_window(target))
+	await frames(3)
+	var tapped_dest: Vector2 = comp.click_target_pos
+	await walk(Vector2.LEFT, 0.3)
+	await frames(5)
+	var walking: bool = comp.current_state == comp.State.GO_TO_TARGET
+	await check("destination_stays_put", walking and comp.click_target_pos == tapped_dest and tapped_dest.distance_to(target) < 5.0,
+			"walking=%s dest=%s tapped=%s" % [walking, comp.click_target_pos.round(), tapped_dest.round()])
+	await wait_until_idle(6.0)
+	await wait_until_following()
+
+	# 13b. A hős úgy elmegy, hogy a cél kívül esik a küldési körén: a lény azonnal visszafordul
 	await settle()
 	target = pfeet.global_position + Vector2(480, 0)
 	await tap(to_window(target))
 	await frames(3)
-	await walk(Vector2.LEFT, 0.6)
+	var dest: Vector2 = comp.click_target_pos
+	var turned_at: float = -1.0
+	SignalBus.joystick_moved.emit(Vector2.LEFT)
+	for i in 120:
+		await get_tree().physics_frame
+		if comp.current_state != comp.State.GO_TO_TARGET:
+			turned_at = dest.distance_to(pfeet.global_position)
+			break
+	SignalBus.joystick_moved.emit(Vector2.ZERO)
+	var limit_13: float = send_range + comp.SEND_RANGE_TOLERANCE
+	await check("target_out_of_range_turns_back", turned_at > limit_13 - 1.0 and turned_at < limit_13 + 15.0
+			and comp.current_state == comp.State.FOLLOW and comp.returning,
+			"turned_at=%.0f limit=%.0f state=%d" % [turned_at, limit_13, comp.current_state])
+	await wait_until_following()
+
+	# 13c. Végtelen várakozásnál (teszt kapcsoló) a küldés is korlátlan: az új koppintás azonnal átirányít
+	await settle()
+	PlayerData.companion_stay_duration_override = INF
+	var first: Vector2 = pfeet.global_position + Vector2(300, 0)
+	var second: Vector2 = pfeet.global_position + Vector2(0, 250)
+	await tap(to_window(first))
 	await frames(10)
-	var moved_dest: Vector2 = comp.click_target_pos
-	var dest_dist: float = moved_dest.distance_to(pfeet.global_position)
-	var walking: bool = comp.current_state == comp.State.GO_TO_TARGET
-	await walk(Vector2.RIGHT, 0.6)
-	await frames(10)
-	var back_dest: Vector2 = comp.click_target_pos
-	await check("destination_follows_player", walking and moved_dest.x < target.x - 40.0 and dest_dist <= send_range + 2.0 \
-			and back_dest.distance_to(target) < 5.0,
-			"walking=%s moved=%s dist=%.0f back=%s target=%s" % [walking, moved_dest.round(), dest_dist, back_dest.round(), target.round()])
+	await tap(to_window(second))
+	await frames(3)
+	var redirected: bool = comp.current_state == comp.State.GO_TO_TARGET and comp.click_target_pos.distance_to(second) < 40.0
 	await wait_until_idle(6.0)
+	await tap(to_window(first))
+	await frames(3)
+	var resent_while_waiting: bool = comp.current_state == comp.State.GO_TO_TARGET and comp.click_target_pos.distance_to(first) < 40.0
+	PlayerData.companion_stay_duration_override = 0.0
+	SignalBus.companion_recalled.emit()
+	await check("infinite_stay_unlimited_sends", redirected and resent_while_waiting,
+			"redirected=%s resent=%s dest=%s" % [redirected, resent_while_waiting, comp.click_target_pos.round()])
 	await wait_until_following()
 
 	# 14. A hős a távolságon belül mozog a várakozás alatt: a lény kivárja az időt
